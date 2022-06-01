@@ -1,9 +1,12 @@
 import React, {useState, useEffect} from "react";
-
+import Prueba from './Prueba';
+import './App.css';
 const Seve_Days = () => {
   return(
-    <div>
-      {/*Aqui va tu codigo causita*/}
+    <div className="App">
+      <header className="App-header">
+        <Prueba/>
+      </header>
     </div>
   )
 }
