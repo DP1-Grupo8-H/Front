@@ -49,17 +49,19 @@ const App = () => {
             }}
         >
         <Routes >
-          {/* Redireccionamiento - se ven solo si estamos en este PATH */}
+          {/* Redireccionamiento - se ven solo si estamos en este PATH /}
           <Route path="/" exact element={() => <Navigate to = '/home' />} />
-          {/* Redireccionamiento a Home - general */}
+          {/ Redireccionamiento a Home - general /}
           <Route path="/home" exact element = {< Home />} />
-          {/* Redireccionamiento a mant -- mantenimientos*/}
+          {/ Redireccionamiento a mant -- mantenimientos/}
           <Route path="/mant" exact element = {< Home />} />
-          {/* Redireccionamiento a simulations 7 dias*/}
+          {/ Redireccionamiento a simulations 7 dias/}
           <Route path="/sim/7_dias" exact element = {< Seven_Days />} />
-          {/* Redireccionamiento a simulations colapso*/}
+          {/ Redireccionamiento a simulations colapso/}
           <Route path="/sim/colapso" exact element = {< Home />} />
-          {/* Redireccionamiento a reportes */}
+          {/ Redireccionamiento a reportes */}
+           {/* {/ Redireccionamiento a simulations 7 dias/} */}
+          <Route path="/sim/7_dias" exact element = {< Seven_Days />} />
           <Route path="/rep" exact element = {< Home />} />
       </Routes >
       </Box>
@@ -69,4 +71,4 @@ const App = () => {
   );
 }
 
-export default App; 
+export default App;
