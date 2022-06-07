@@ -15,19 +15,26 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 90%;
+  min-width: 77%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  position: absolute;
 }
 
 .App-link {
   color: #61dafb;
 }
 
+.leaflet-container {
+  height: 830px;
+  width: 90%;
+  position: relative;
+}
 
 @keyframes App-logo-spin {
   from {
