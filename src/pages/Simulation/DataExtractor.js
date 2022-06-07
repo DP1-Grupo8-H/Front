@@ -51,6 +51,8 @@ const dataExtractor = async (values, id, fileName) => {
     almacen: almacen[0],
     id_asociado: 0,
     estado: 0,
+    ruta: null,
+    fecha_llegada: null,
   }
 
   return pedido;

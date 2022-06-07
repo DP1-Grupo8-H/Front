@@ -6,15 +6,25 @@ import ModalSimulation from './ModalSimulation'
 import './App.css';
 const Seve_Days = () => {
   const [openPopup, setOpenPopup] = useState(true);
+  //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
+  //Return algoritmo -> rutas y pedidos faltantes.
+  const [rutas, setRutas] = useState([]);
+  const [pedidosFaltantes, setPedidosFaltantes] = useState([]);
+  const hora_ini= "6AM";
+  const hora_sa= "6h";
+  
+  while(1){
+    pedidosProcess = grab_6_hours();
+    //algoritmo-> setRUTAS(pedidos_rutas);
+  }
 
-  console.log(data);
   return(
     <>
       {!openPopup ?       
       <div className="App">
         <header className="App-header">
-          <Prueba/>
+          <Prueba data = {data}/>
         </header>
       </div>
       :

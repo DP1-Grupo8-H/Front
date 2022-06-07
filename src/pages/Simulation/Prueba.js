@@ -92,6 +92,9 @@ class Prueba extends Component{
        this.setState({latlng2:[-3.586306117836121, -80.41144843770009]});
      this.setState({latlng3:[-16.42723302628582, -71.66528915483397]});
      }
+
+     /* prueba para el algoritmo como tal --> LO QUE PIDIO RODRIGO EN FRONT */
+
  render(){
   return (
     <MapContainer center={position1} zoom={6} scrollWheelZoom={true}>
