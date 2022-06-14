@@ -2,18 +2,19 @@
 import { MapContainer, TileLayer, useMap,Marker,Popup, Polyline,Tooltip} from 'react-leaflet';
 import ReactLeafletDriftMarker  from "react-leaflet-drift-marker";
 import { Component } from 'react';
-import React,{useRef} from 'react';
+import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
+import algoritmoService from '../../services/algoritmoService';
 
+const Mapa_Simulacion = ({datos}) => {
+  //USO DE PARÁMETROS
+  const data = useRef(datos);
 
-const Mapa_Simulacion = (data) => {
-  
   //FUNCIONES
   const processData = (data, batch_time) => {
     const pedidos = [];
 
     for(let d of data){
-      console.log(d);
       if(d.fecha_registro > batch_time) return pedidos;
       pedidos.push(d);
     }
@@ -21,8 +22,8 @@ const Mapa_Simulacion = (data) => {
   } 
   
   const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
-    const pedidos = new Array (missingPedidos);
-    pedidos.push(processPedidos);
+    const pedidos = [...processPedidos];
+    pedidos.concat(missingPedidos);
     //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
     if(pedidos.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
       return [];
@@ -36,24 +37,44 @@ const Mapa_Simulacion = (data) => {
   // Primero es el origen y luego el destino
 
   /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
-  const hora_ini = data[0].fecha_registro;  //DEFINIMOS LA HORA DE INICIO DE LA SIMULACIÓN -- AGARRAMOS EL DATA[0] SIN PROCESAR --> OBTENEMOS LA HORA DE INICIO
-  const missingPedidos = [];
+  const hora_ini = useMemo(() => {
+      return new Date (data.current[0].fecha_registro)
+  }, [])   //DEFINIMOS LA HORA DE INICIO DE LA SIMULACIÓN -- AGARRAMOS EL DATA[0] SIN PROCESAR --> OBTENEMOS LA HORA DE INICIO
 
+  let timing = useRef(useMemo(() => {
+      return 1000;
+  }, []));
 
-  hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-  const processPedidos = processData(data, hora_ini);
+  const missingPedidos = useRef([]);
 
-  console.log(processPedidos);
-  data.remove(processPedidos);  //Removemos los pedidos procesados -> asegura iteraciones
-  console.log(data);
-  const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
-  console.log(pedidos);
-  // while(1)
-  // {
+  const [rutas, setRutas] = useState([]);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      timing.current = HORA_ITER;
+      if(data.current.length === 0) {
+        console.log("FINISH");
+        return;
+      }  //Se depleto
+    hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
+    const processPedidos = processData(data.current, hora_ini);
+    
+    data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
+    
+    const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
+    
+    console.log(pedidos);
+    if(pedidos.length === 0) return;//Llego al colapso
+    
+    algoritmoService.testAlgorithm(pedidos)
+    .then(ruta => setRutas(ruta));
+    
+    console.log(rutas);
+  }, timing.current); // DESPUES DE 1 SEGUNDO SE EJECUTA
+  return () => clearTimeout(timer);
+  }, [rutas])
 
-
-  // }
-
+  //FIN DEL ALGORITMO
 
 
   const L = require('leaflet');
@@ -114,7 +135,7 @@ const Mapa_Simulacion = (data) => {
           .then(response => response.json())
           .then(data => 
               {
-                console.log(data);
+                //console.log(data);
                 this.setState({ciudades:data})
                 let aux = [];
                 for(let i=0;i<data.length;i++){
@@ -129,7 +150,7 @@ const Mapa_Simulacion = (data) => {
                   }
                 }
                 this.setState({tramos:aux});
-                console.log(this.state.tramos);
+                //console.log(this.state.tramos);
                 this.setState({camiones:this.state.aux})  
               }
     );
@@ -137,7 +158,7 @@ const Mapa_Simulacion = (data) => {
     .then(response => response.json())
     .then(data => 
         {
-          console.log(data);
+          //console.log(data);
           //Agregar atributo de tiempo y coordenadas actuales  
           for(let i = 0;i<data.length;i++){
             data[i].lat = data[i].almacen.latitud;
@@ -185,7 +206,7 @@ const Mapa_Simulacion = (data) => {
           aux[i].tiempollegada = Date.now() + rand;
         }
       this.setState({camiones:aux});
-      console.log(this.state.camiones);
+      //console.log(this.state.camiones);
 
       setTimeout(
       this.MostrarReferencias
@@ -194,7 +215,7 @@ const Mapa_Simulacion = (data) => {
     }
 
       Acelerarx2(){
-      console.log(this.Marker1.current);
+      //console.log(this.Marker1.current);
       var a = this.state.duracion/2;
       this.setState({duracion:a});
       this.setState({latlng:[-8.474110507351497, -74.82935154356059]});

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import Prueba from './Prueba';
+import Mapa_Simulacion from './Prueba';
 import Popup from '../../components/utils/Popup';
 import ModalSimulation from './ModalSimulation'
 
@@ -9,13 +9,14 @@ const Seve_Days = () => {
   //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
   //Return algoritmo -> rutas y pedidos faltantes.
+  console.log(data);
 
   return(
     <>
-      {!openPopup ?       
+      {(!openPopup && data.length) ?       
       <div className="App">
         <header className="App-header">
-          <Prueba data = {data}/>
+          <Mapa_Simulacion datos = {data}/>
         </header>
       </div>
       :

@@ -9,13 +9,19 @@ export default function EliminarCursos({setOpenPopup, setData}){
 
   const dataLoader = async () => {
     let allLines = myFile.split(/\r?\n|\r/);
-    const results_prev = allLines.filter(element => {
-      return element !== '';
+    
+    //Delimitacion de los datos que
+
+    //Filtramos la ultima linea
+    if(allLines.slice(-1) === '') allLines.pop();
+
+    //Comenzamos a leer a partir del dia actual y hasta 7 dias.
+    const currentDate = new Date();
+    const results = allLines.filter(result => {
+      const data = result.slice(0,2);
+      return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);
     });
 
-    const results = results_prev.filter(result => {
-      return parseInt(result.slice(0,2)) < 8;
-    });
     let i = 0;
 
     let datasets = await Promise.all (results.map(async (lines) => {
@@ -26,15 +32,8 @@ export default function EliminarCursos({setOpenPopup, setData}){
 
       return pedido;
     }));
-    // for(let lines = 0; lines < results.length; lines++){
-    //   const line = results[lines].split(/[\\s,:= ]+/); //6 values in string
-      
-    //   const pedido = await DataExtractor.dataExtractor(line, lines+1, myFileName);
-    //   pedidos.push(pedido);
-    // }
     await setData(datasets);
     setOpenPopup(false);
-    /*Funciontality -- for prev recurses*/
   }
 
   const readFile = e => {
