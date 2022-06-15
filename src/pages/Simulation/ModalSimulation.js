@@ -17,6 +17,9 @@ export default function EliminarCursos({setOpenPopup, setData}){
 
     //Comenzamos a leer a partir del dia actual y hasta 7 dias.
     const currentDate = new Date();
+    currentDate.setDate(1);
+    currentDate.setHours(0);
+    currentDate.setMinutes(0);
     const results = allLines.filter(result => {
       const data = result.slice(0,2);
       return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);

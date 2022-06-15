@@ -1,0 +1,29 @@
+.collapsible{
+  position: absolute;
+  top: 0px;
+  left: 875px;
+  width: 40%;
+  height: 10px;
+}
+.collapsible .toggle{
+  position: relative;
+  top: 0px;
+  background: #000000;
+  border: unset;
+  cursor: pointer;
+  font:unset;
+  border-radius: 5px;
+  z-index: -1;
+}
+
+.collapsible .content{
+  position: relative;
+  border: 1px solid #AFAFAF;
+  height: 0px;
+  overflow: hidden;
+  transition: height ease 0.3s;
+}
+
+.collapsible .content .show {
+  height: 500px;
+}

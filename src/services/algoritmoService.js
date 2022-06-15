@@ -10,7 +10,7 @@ const testAlgorithm = async (data) => {
     d.fecha_entrega_max = format(d.fecha_entrega_max, 'yyyy-MM-dd kk:mm:ss')
   }
   try{
-    const request = await axios.post(`${url}/test/verGenetico/`, data);
+    const request = await axios.post(`${url}/algoritmo/simulacion/`, data);
 
     return request.data;  
   }catch(exception){

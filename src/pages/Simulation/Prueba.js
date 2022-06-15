@@ -100,6 +100,8 @@ const Mapa_Simulacion = ({datos}) => {
     popupAnchor: [2, -40]
   });
 
+
+  
   class Prueba extends Component{
     constructor(props){
       super(props);
