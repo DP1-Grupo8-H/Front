@@ -5,8 +5,11 @@ import { Component } from 'react';
 import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
+import camionService from '../../services/camionService';
+import ciudadService from '../../services/ciudadService';
 
-const Mapa_Simulacion = ({datos}) => {
+const MapaSimulacion = ({datos}) => {
+  console.log(datos);
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -34,6 +37,7 @@ const Mapa_Simulacion = ({datos}) => {
 
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'black' ,weight:0.3,opacity:0.5};
+  console.log("STUCK");
   // Primero es el origen y luego el destino
 
   /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
@@ -128,93 +132,99 @@ const Mapa_Simulacion = ({datos}) => {
     };
 
     async ObtenerRutas(){
-
-      timing.current = HORA_ITER;
+      while(1){
+        timing.current = HORA_ITER;
+  
         if(data.current.length === 0) {
           console.log("FINISH");
           return;
         }  //Se depleto
-      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-      const processPedidos = processData(data.current, hora_ini);
-      
-      data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
-      
-      const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
-      
-      console.log(pedidos);
-      if(pedidos.length === 0) return;//Llego al colapso
-      
-      algoritmoService.testAlgorithm(pedidos)
-      .then(ruta => this.setState({rutas:ruta}));
-      
-      console.log(this.state.rutas);
-
-     setTimeout( this.ObtenerRutas
-    , timing.current);
-      
+  
+        hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
+        const processPedidos = processData(data.current, hora_ini);
+        
+        data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
+        
+        const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
+        
+        console.log(pedidos);
+        if(pedidos.length === 0) return;//Llego al colapso
+        
+        algoritmoService.testAlgorithm(pedidos)
+        .then(ruta => this.setState({rutas:ruta}));
+        
+        console.log(this.state.rutas);
+  
+       setTimeout( this.ObtenerRutas
+      , timing.current);
+      }
   }
+
   async CargarData(){
     var existen = new Array(201);
-      for(let i = 0;i<=200;i++){
-        existen[i] = new Array(201);
+    for(let i = 0;i<=200;i++){
+      existen[i] = new Array(201);
+    }
+    for(let  i = 0;i<200;i++){
+      for(let j =0;j<200;j++){
+        existen[i][j] = false;
       }
-      for(let  i = 0;i<200;i++){
-        for(let j =0;j<200;j++){
-          existen[i][j] = false;
-        }
-      }
-      fetch('http://localhost:8080/ciudad/listar')
-      .then(response => response.json())
-      .then(data => 
-          {
-            //console.log(data);
-            this.setState({ciudades:data})
-            let aux = [];
-            for(let i=0;i<data.length;i++){
-              for(let j=0;j<data[i].tramos1.length;j++){
-                if(!existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] && 
-                  !existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] )
-                  {
-                    aux.push(data[i].tramos1[j]);
-                    existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] = true;
-                    existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] = true;
-                  }
-              }
-            }
-            this.setState({tramos:aux});
-            //console.log(this.state.tramos);
-            
-            fetch('http://localhost:8080/camion/listar')
-            .then(response => response.json())
-            .then(data => 
-              {
-                //console.log(data);
-                //Agregar atributo de tiempo y coordenadas actuales  
-                for(let i = 0;i<data.length;i++){
-                  data[i].lat = data[i].almacen.latitud;
-                  data[i].log = data[i].almacen.longitud;
-                  data[i].tiempo = 10;  
-                  data[i].tiempollegada = new Date();
-                  data[i].ciudadActual = data[i].almacen.id;  
+    }
+    ciudadService.getCiudades()
+    .then(data => 
+        {
+          //console.log(data);
+          this.setState({ciudades:data})
+          let aux = [];
+          for(let i=0;i<data.length;i++){
+            for(let j=0;j<data[i].tramos1.length;j++){
+              if(!existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] && 
+                !existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] )
+                {
+                  aux.push(data[i].tramos1[j]);
+                  existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] = true;
+                  existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] = true;
                 }
-                this.setState({aux:data});
-                this.setState({camiones:this.state.aux});
-                this.MostrarReferencias();
+            }
+          }
+          this.setState({tramos:aux});
+          //console.log(this.state.tramos);
+          
+          camionService.getCamiones()
+          .then(data =>
+            {
+              //console.log(data);
+              //Agregar atributo de tiempo y coordenadas actuales  
+              for(let i = 0;i<data.length;i++){
+                data[i].lat = data[i].almacen.latitud;
+                data[i].log = data[i].almacen.longitud;
+                data[i].tiempo = 10;  
+                data[i].tiempollegada = new Date();
+                data[i].ciudadActual = data[i].almacen.id;  
+                data[i].estado = 1;
               }
-            );
-       }
-  );
+              this.setState({aux:data});
+              this.setState({camiones:this.state.aux});
+              this.MostrarReferencias();
+            }
+          );
+          /* AGREGAR LA LISTA DE BLOQUEOS QUE SE DEBE CARGAR PARA SU VISUALIZACIÓN EN EL MAPA */
+        }
+      );
   
-  }
+  
+    }
 
-   componentDidMount(){
-    this.CargarData();
-    this.ObtenerRutas();
-  }
+    componentDidMount(){
+      this.CargarData();
+      this.ObtenerRutas();
+    }
 
     MostrarReferencias(){
       //Funcion para mover a los camiones aleatoriamente
-      console.log(this.state.rutas); 
+      //console.log(this.state.rutas); 
+      // console.log(this.state.tramos);
+      // console.log(this.state.camiones);
 
       let aux = this.state.camiones;
       // let max = 2000;
@@ -224,30 +234,30 @@ const Mapa_Simulacion = ({datos}) => {
       // let rand ;
 
       for(let i=0;i<this.state.rutas.length;i++){
-          //console.log(aux[i].options.idCamion);
-          //  aux[i].lat =  -8.39275854521267;
-          //  aux[i].log = -73.74649630862517;
-          // if(aux[i].tiempollegada >= Date.now()) {
-          //   console.log("Aun no me puedo mover");
-          //   continue;
-          // }
-          //Hay que randomizar el tramo
-          // mini = 0;
-          // maxi = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1.length-1;
-          // diff=  maxi-mini;
-          // rand = Math.random();
-          // rand = Math.floor( rand * diff);
-          // rand = rand + mini;
-          let nuevaCiudad = this.state.rutas[i].ruta_ciudad[1].id_ciudad.id;
-          aux[this.state.rutas[i].id_camion].lat = this.state.ciudades[nuevaCiudad-1].latitud;
-          aux[this.state.rutas[i].id_camion].log = this.state.ciudades[nuevaCiudad-1].longitud;
-          //aux[rutas[i].id_camion].ciudadActual = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1[rand].ciudad_destino.id;
-          // rand = Math.random();
-          // rand = Math.floor( rand * difference);
-          // rand = rand + min;
-          aux[this.state.rutas[i].id_camion].tiempo = 10000;
-          //aux[rutas[i].id_camion].tiempollegada = Date.now() + rand;
-        }
+        //console.log(aux[i].options.idCamion);
+        //  aux[i].lat =  -8.39275854521267;
+        //  aux[i].log = -73.74649630862517;
+        // if(aux[i].tiempollegada >= Date.now()) {
+        //   console.log("Aun no me puedo mover");
+        //   continue;
+        // }
+        //Hay que randomizar el tramo
+        // mini = 0;
+        // maxi = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1.length-1;
+        // diff=  maxi-mini;
+        // rand = Math.random();
+        // rand = Math.floor( rand * diff);
+        // rand = rand + mini;
+        let nuevaCiudad = this.state.rutas[i].ruta_ciudad[1].id_ciudad.id;
+        aux[this.state.rutas[i].id_camion].lat = this.state.ciudades[nuevaCiudad-1].latitud;
+        aux[this.state.rutas[i].id_camion].log = this.state.ciudades[nuevaCiudad-1].longitud;
+        //aux[rutas[i].id_camion].ciudadActual = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1[rand].ciudad_destino.id;
+        // rand = Math.random();
+        // rand = Math.floor( rand * difference);
+        // rand = rand + min;
+        aux[this.state.rutas[i].id_camion].tiempo = 10000;
+        //aux[rutas[i].id_camion].tiempollegada = Date.now() + rand;
+      }
       this.setState({camiones:aux});
       //console.log(this.state.camiones);
 
@@ -257,75 +267,73 @@ const Mapa_Simulacion = ({datos}) => {
 
     }
 
-      Acelerarx2(){
+    Acelerarx2(){
       //console.log(this.Marker1.current);
       var a = this.state.duracion/2;
       this.setState({duracion:a});
       this.setState({latlng:[-8.474110507351497, -74.82935154356059]});
         this.setState({latlng2:[-3.586306117836121, -80.41144843770009]});
       this.setState({latlng3:[-16.42723302628582, -71.66528915483397]});
-      }
+    }
 
-      /* prueba para el algoritmo como tal --> LO QUE PIDIO RODRIGO EN FRONT */
+    /* prueba para el algoritmo como tal --> LO QUE PIDIO RODRIGO EN FRONT */
 
+    render(){
+      return (
+        <MapContainer center={position1} zoom={6} scrollWheelZoom={true} >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <div style={{position:'relative',zIndex:9999,float:'right'}}>
+          <br></br>
+          <button style={{width:"70px",height:"30px",marginRight:"15px"}}>Stop</button>
+          <button style={{width:"70px",height:"30px",marginRight:"30px"}} onClick={this.MostrarReferencias}>Start</button>
+          {/* <br></br>
+          <button style={{width:"45px",height:"30px"}}>x0.25</button>
+          <button style={{width:"45px",height:"30px"}}>x0.5</button>
+          <button style={{width:"45px",height:"30px"}}>x1</button>
+          <button style={{width:"45px",height:"30px"}} onClick={this.Acelerarx2}>x2</button>
+          <button style={{width:"45px",height:"30px"}}>x4</button> */}
+        </div>
 
-
-  render(){
-    return (
-      <MapContainer center={position1} zoom={6} scrollWheelZoom={true} >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <div style={{position:'relative',zIndex:9999,float:'right'}}>
-        <br></br>
-        <button style={{width:"70px",height:"30px",marginRight:"15px"}}>Stop</button>
-        <button style={{width:"70px",height:"30px",marginRight:"30px"}} onClick={this.MostrarReferencias}>Start</button>
-        {/* <br></br>
-        <button style={{width:"45px",height:"30px"}}>x0.25</button>
-        <button style={{width:"45px",height:"30px"}}>x0.5</button>
-        <button style={{width:"45px",height:"30px"}}>x1</button>
-        <button style={{width:"45px",height:"30px"}} onClick={this.Acelerarx2}>x2</button>
-        <button style={{width:"45px",height:"30px"}}>x4</button> */}
-      </div>
-
-  
-      {(
-        this.state.ciudades?.map((ciudad)=>(
-            ciudad.tipo==1 ? (
-            <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}/>):
-            (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen}  />)
-        ))
-      )
-      }
-
-    {/* {(
-        this.state.tramos?.map((tramo)=>(
-          <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
-            ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/>       
-        ))
-      )
-      } */}
-
-    {
-      (
-        this.state.camiones?.map((camion)=>(
-          <ReactLeafletDriftMarker  icon={myIcon}
-              position={[camion.lat,camion.log]}
-              duration={camion.tiempo}
-              keepAtCenter={false}/>  
-          )
-        )
-      )
-      }
-
-    </MapContainer>
     
-    );
-  }
+        {(
+          this.state.ciudades?.map((ciudad)=>(
+              ciudad.tipo===1 ? (
+              <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}/>):
+              (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen}  />)
+          ))
+        )
+        }
+
+        {/* {(
+            this.state.tramos?.map((tramo)=>(
+              <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
+                ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/>       
+            ))
+          )
+          } */}
+
+        {
+          (
+            this.state.camiones?.map((camion)=>(
+                <ReactLeafletDriftMarker  icon={myIcon}
+                    position={[camion.lat,camion.log]}
+                    duration={camion.tiempo}
+                    keepAtCenter={false}/>  
+              )
+            )
+          )
+        }
+
+      </MapContainer>
+      
+      );
+    }
   }
   return(
     <Prueba/>
   );
 }
-export default Mapa_Simulacion;
+export default MapaSimulacion;

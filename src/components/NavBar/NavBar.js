@@ -43,8 +43,6 @@ const Navbar = () => {
 
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-  console.log("Data: anchoElUser - ", " anchorElUser", anchorElUser)
-
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };

@@ -9,7 +9,7 @@ export default function Legend(){
   const [isOpen, setIsOpen] = useState(false);
   return(
     <Grid container className='collapsible' style ={{zIndex: 99999}}  align = 'right'>
-      <Grid item className = 'toggle' md = '12' xs = '12' 
+      <Grid item className = 'toggle' md = '4' xs = '4' 
           onMouseOver = {() => setIsOpen(true)} 
           onMouseOut = {() => setIsOpen(false)}
           style ={{zIndex: 99999}}

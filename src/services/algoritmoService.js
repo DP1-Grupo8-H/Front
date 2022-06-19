@@ -11,7 +11,7 @@ const testAlgorithm = async (data) => {
   }
   try{
     const request = await axios.post(`${url}/algoritmo/simulacion/`, data);
-    console.log(request.data);
+    // console.log(request.data);
     return request.data;  
   }catch(exception){
     console.error(exception);

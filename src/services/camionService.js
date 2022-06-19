@@ -4,17 +4,17 @@ import axios from 'axios';
 const url = 'http://localhost:8080';
 //const url = 'https://teamwork-api-softbrilliance.herokuapp.com';
 
-const getCiudades = async () => {
+const getCamiones = async () => {
   try{
-    const request = await axios.get(`${url}/ciudad/listar/`);
-    console.log(request.data);
+    const request = await axios.get(`${url}/camion/listar/`);
+
     return request.data;  
   }catch(exception){
     console.error(exception);
   }
 }
 
-const getCiudad = async (id) => {
+const getCamion = async (id) => {
   try{
     const request = await axios.get(`${url}/ciudad/listar/${id}`);
 
@@ -24,4 +24,4 @@ const getCiudad = async (id) => {
   }
 }
 
-export default { getCiudades, getCiudad }
+export default { getCamiones, getCamion }
