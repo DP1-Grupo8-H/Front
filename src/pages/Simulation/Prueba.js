@@ -142,18 +142,20 @@ const Mapa_Simulacion = ({datos}) => {
       
       data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
       
+      console.log(data);
       const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
       
-      console.log(pedidos);
-      if(pedidos.length === 0) return;//Llego al colapso
+      if(pedidos.length === 0) return;//Llego al colapso --
       
-      algoritmoService.testAlgorithm(pedidos)
-      .then(ruta => this.setState({rutas:ruta}));
+      const ruta = await algoritmoService.simSemanal(pedidos, this.state.camiones, hora_ini);
+        
+      //console.log(ruta);
+      await this.setState({rutas:ruta});
       
       console.log(this.state.rutas);
 
-    //  setTimeout( this.ObtenerRutas
-    // , timing.current);
+     setTimeout( this.ObtenerRutas
+    , timing.current);
       
   }
   async CargarData(){
@@ -202,6 +204,7 @@ const Mapa_Simulacion = ({datos}) => {
                 }
                 this.setState({aux:data});
                 this.setState({camiones:this.state.aux});
+                this.ObtenerRutas();
                 this.MostrarReferencias();
               }
             );
@@ -210,16 +213,15 @@ const Mapa_Simulacion = ({datos}) => {
   
   }
 
-   componentDidMount(){
+  componentDidMount(){
     this.CargarData();
-    this.ObtenerRutas();
   }
 
     MostrarReferencias(){
       //Funcion para mover a los camiones aleatoriamente
       //console.log(this.state.rutas); 
       //Si estado esta lleno debemos vaciar al final
-      console.log(this.state.rutas);
+      //console.log(this.state.rutas);
       if(this.state.rutas!=null){
         this.state.moviXCamion= Array(this.state.camiones.length);
         for(let i =0;i<this.state.camiones.length;i++){
@@ -243,7 +245,7 @@ const Mapa_Simulacion = ({datos}) => {
         this.state.faltantes = this.state.rutas.pedidos_faltantes;
         this.state.rutas = null;
       }  
-      console.log(this.state.moviXCamion);
+      //console.log(this.state.moviXCamion);
 
       let aux = this.state.camiones;
 
@@ -256,11 +258,11 @@ const Mapa_Simulacion = ({datos}) => {
       for(let i=0;i<this.state.moviXCamion.length;i++){
           if(this.state.moviXCamion[i].length==0) continue; //No mas movimientos para ese camion
           if(aux[i].tiempollegada >= Date.now()) { //Aun no regresa
-            console.log("Aun no me puedo mover");
+            //console.log("Aun no me puedo mover");
             continue;
           }
           var nuevaCiudad = this.state.moviXCamion[i].shift();
-          console.log(nuevaCiudad);
+          //console.log(nuevaCiudad);
           aux[i].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
           aux[i].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
           let min = nuevaCiudad.tiempo/(1000*60*60);
