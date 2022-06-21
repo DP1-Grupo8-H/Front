@@ -5,11 +5,8 @@ import { Component } from 'react';
 import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
-import camionService from '../../services/camionService';
-import ciudadService from '../../services/ciudadService';
 
-const MapaSimulacion = ({datos}) => {
-  console.log(datos);
+const Mapa_Simulacion = ({datos}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -37,7 +34,6 @@ const MapaSimulacion = ({datos}) => {
 
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'black' ,weight:0.3,opacity:0.5};
-  console.log("STUCK");
   // Primero es el origen y luego el destino
 
   /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
@@ -128,212 +124,226 @@ const MapaSimulacion = ({datos}) => {
       idxCamiones : 0,
       referencias:[],
       creados:0,
-      rutas:[]
+      rutas:null,
+      moviXCamion:[],
+      faltantes:[]
     };
 
     async ObtenerRutas(){
-      while(1){
-        timing.current = HORA_ITER;
-  
+     
+     //console.log("Obtuve Rutas"); 
+      timing.current = HORA_ITER;
         if(data.current.length === 0) {
           console.log("FINISH");
           return;
         }  //Se depleto
-  
-        hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-        const processPedidos = processData(data.current, hora_ini);
-        
-        data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
-        
-        const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
-        
-        console.log(pedidos);
-        if(pedidos.length === 0) return;//Llego al colapso
-        
-        algoritmoService.testAlgorithm(pedidos)
-        .then(ruta => this.setState({rutas:ruta}));
-        
-        console.log(this.state.rutas);
-  
-       setTimeout( this.ObtenerRutas
-      , timing.current);
-      }
-  }
+      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
+      const processPedidos = processData(data.current, hora_ini);
+      
+      data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
+      
+      const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
+      
+      console.log(pedidos);
+      if(pedidos.length === 0) return;//Llego al colapso
+      
+      algoritmoService.testAlgorithm(pedidos)
+      .then(ruta => this.setState({rutas:ruta}));
+      
+      console.log(this.state.rutas);
 
+    //  setTimeout( this.ObtenerRutas
+    // , timing.current);
+      
+  }
   async CargarData(){
     var existen = new Array(201);
-    for(let i = 0;i<=200;i++){
-      existen[i] = new Array(201);
-    }
-    for(let  i = 0;i<200;i++){
-      for(let j =0;j<200;j++){
-        existen[i][j] = false;
+      for(let i = 0;i<=200;i++){
+        existen[i] = new Array(201);
       }
-    }
-    ciudadService.getCiudades()
-    .then(data => 
-        {
-          //console.log(data);
-          this.setState({ciudades:data})
-          let aux = [];
-          for(let i=0;i<data.length;i++){
-            for(let j=0;j<data[i].tramos1.length;j++){
-              if(!existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] && 
-                !existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] )
-                {
-                  aux.push(data[i].tramos1[j]);
-                  existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] = true;
-                  existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] = true;
-                }
-            }
-          }
-          this.setState({tramos:aux});
-          //console.log(this.state.tramos);
-          
-          camionService.getCamiones()
-          .then(data =>
-            {
-              //console.log(data);
-              //Agregar atributo de tiempo y coordenadas actuales  
-              for(let i = 0;i<data.length;i++){
-                data[i].lat = data[i].almacen.latitud;
-                data[i].log = data[i].almacen.longitud;
-                data[i].tiempo = 10;  
-                data[i].tiempollegada = new Date();
-                data[i].ciudadActual = data[i].almacen.id;  
-                data[i].estado = 1;
-              }
-              this.setState({aux:data});
-              this.setState({camiones:this.state.aux});
-              this.MostrarReferencias();
-            }
-          );
-          /* AGREGAR LA LISTA DE BLOQUEOS QUE SE DEBE CARGAR PARA SU VISUALIZACIÓN EN EL MAPA */
+      for(let  i = 0;i<200;i++){
+        for(let j =0;j<200;j++){
+          existen[i][j] = false;
         }
-      );
+      }
+      fetch('http://localhost:8080/ciudad/listar')
+      .then(response => response.json())
+      .then(data => 
+          {
+            //console.log(data);
+            this.setState({ciudades:data})
+            let aux = [];
+            for(let i=0;i<data.length;i++){
+              for(let j=0;j<data[i].tramos1.length;j++){
+                if(!existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] && 
+                  !existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] )
+                  {
+                    aux.push(data[i].tramos1[j]);
+                    existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] = true;
+                    existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] = true;
+                  }
+              }
+            }
+            this.setState({tramos:aux});
+            //console.log(this.state.tramos);
+            
+            fetch('http://localhost:8080/camion/listar')
+            .then(response => response.json())
+            .then(data => 
+              {
+                //console.log(data);
+                //Agregar atributo de tiempo y coordenadas actuales  
+                for(let i = 0;i<data.length;i++){
+                  data[i].lat = data[i].almacen.latitud;
+                  data[i].log = data[i].almacen.longitud;
+                  data[i].tiempo = 10;  
+                  data[i].tiempollegada = new Date();
+                  data[i].ciudadActual = data[i].almacen.id;  
+                }
+                this.setState({aux:data});
+                this.setState({camiones:this.state.aux});
+                this.MostrarReferencias();
+              }
+            );
+       }
+  );
   
-  
-    }
+  }
 
-    componentDidMount(){
-      this.CargarData();
-      this.ObtenerRutas();
-    }
+   componentDidMount(){
+    this.CargarData();
+    this.ObtenerRutas();
+  }
 
     MostrarReferencias(){
       //Funcion para mover a los camiones aleatoriamente
       //console.log(this.state.rutas); 
-      // console.log(this.state.tramos);
-      // console.log(this.state.camiones);
+      //Si estado esta lleno debemos vaciar al final
+      console.log(this.state.rutas);
+      if(this.state.rutas!=null){
+        this.state.moviXCamion= Array(this.state.camiones.length);
+        for(let i =0;i<this.state.camiones.length;i++){
+          this.state.moviXCamion[i] = [];
+        }
+        for(let i =0;i<this.state.rutas.movimientos.length;i++){  //Creamos cola por cada camion
+          // this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
+          //    idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[0].id_ciudad.id,
+          //    tiempo: 0.0  //Primera ciudad tiempo 0
+          // });
+          let inicial =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada);
+          for(let j=1;j<this.state.rutas.movimientos[i].ruta_ciudad.length;j++){
+            let final =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[j].fecha_llegada);
+            var diff = Math.abs(final - inicial)
+            this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
+              idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[j].id_ciudad.id,
+              tiempo: diff
+           });
+          }
+        }
+        this.state.faltantes = this.state.rutas.pedidos_faltantes;
+        this.state.rutas = null;
+      }  
+      console.log(this.state.moviXCamion);
 
       let aux = this.state.camiones;
-      // let max = 2000;
-      // let min = 1000;
-      // let mini,maxi,diff;
-      // let difference = max - min;
-      // let rand ;
 
-      for(let i=0;i<this.state.rutas.length;i++){
-        //console.log(aux[i].options.idCamion);
-        //  aux[i].lat =  -8.39275854521267;
-        //  aux[i].log = -73.74649630862517;
-        // if(aux[i].tiempollegada >= Date.now()) {
-        //   console.log("Aun no me puedo mover");
-        //   continue;
-        // }
-        //Hay que randomizar el tramo
-        // mini = 0;
-        // maxi = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1.length-1;
-        // diff=  maxi-mini;
-        // rand = Math.random();
-        // rand = Math.floor( rand * diff);
-        // rand = rand + mini;
-        let nuevaCiudad = this.state.rutas[i].ruta_ciudad[1].id_ciudad.id;
-        aux[this.state.rutas[i].id_camion].lat = this.state.ciudades[nuevaCiudad-1].latitud;
-        aux[this.state.rutas[i].id_camion].log = this.state.ciudades[nuevaCiudad-1].longitud;
-        //aux[rutas[i].id_camion].ciudadActual = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1[rand].ciudad_destino.id;
-        // rand = Math.random();
-        // rand = Math.floor( rand * difference);
-        // rand = rand + min;
-        aux[this.state.rutas[i].id_camion].tiempo = 10000;
-        //aux[rutas[i].id_camion].tiempollegada = Date.now() + rand;
-      }
-      this.setState({camiones:aux});
-      //console.log(this.state.camiones);
+      //Conversion 6h a 1 minuto
+
+      //Definimos tiempo en el que se deben mover todos
+      //La diferencia de tiempo entre ahora y el tiempo referencial
+      //lanzara la funcion de movimiento individual
+
+      for(let i=0;i<this.state.moviXCamion.length;i++){
+          if(this.state.moviXCamion[i].length==0) continue; //No mas movimientos para ese camion
+          if(aux[i].tiempollegada >= Date.now()) { //Aun no regresa
+            console.log("Aun no me puedo mover");
+            continue;
+          }
+          var nuevaCiudad = this.state.moviXCamion[i].shift();
+          console.log(nuevaCiudad);
+          aux[i].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+          aux[i].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+          let min = nuevaCiudad.tiempo/(1000*60*60);
+          aux[i].tiempo = 500*min; //1h es 10 seg reales
+          aux[i].tiempollegada = Date.now()+aux[i].tiempo; //Buscar mejor bandera
+          this.setState({camiones:aux});
+        }
 
       setTimeout(
       this.MostrarReferencias
-      ,2000);
+      ,1000);
 
     }
 
-    Acelerarx2(){
+      Acelerarx2(){
       //console.log(this.Marker1.current);
       var a = this.state.duracion/2;
       this.setState({duracion:a});
       this.setState({latlng:[-8.474110507351497, -74.82935154356059]});
         this.setState({latlng2:[-3.586306117836121, -80.41144843770009]});
       this.setState({latlng3:[-16.42723302628582, -71.66528915483397]});
-    }
+      }
 
-    /* prueba para el algoritmo como tal --> LO QUE PIDIO RODRIGO EN FRONT */
+      /* prueba para el algoritmo como tal --> LO QUE PIDIO RODRIGO EN FRONT */
 
-    render(){
-      return (
-        <MapContainer center={position1} zoom={6} scrollWheelZoom={true} >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <div style={{position:'relative',zIndex:9999,float:'right'}}>
-          <br></br>
-          <button style={{width:"70px",height:"30px",marginRight:"15px"}}>Stop</button>
-          <button style={{width:"70px",height:"30px",marginRight:"30px"}} onClick={this.MostrarReferencias}>Start</button>
-          {/* <br></br>
-          <button style={{width:"45px",height:"30px"}}>x0.25</button>
-          <button style={{width:"45px",height:"30px"}}>x0.5</button>
-          <button style={{width:"45px",height:"30px"}}>x1</button>
-          <button style={{width:"45px",height:"30px"}} onClick={this.Acelerarx2}>x2</button>
-          <button style={{width:"45px",height:"30px"}}>x4</button> */}
-        </div>
 
-    
-        {(
-          this.state.ciudades?.map((ciudad)=>(
-              ciudad.tipo===1 ? (
-              <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}/>):
-              (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen}  />)
-          ))
+
+  render(){
+    return (
+      <MapContainer center={position1} zoom={6} scrollWheelZoom={true} >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {/* <div style={{position:'relative',zIndex:9999,float:'right'}}>
+        <br></br>
+        <button style={{width:"70px",height:"30px",marginRight:"15px"}}>Stop</button>
+        <button style={{width:"70px",height:"30px",marginRight:"30px"}} onClick={this.MostrarReferencias}>Start</button>
+        <br></br>
+        <button style={{width:"45px",height:"30px"}}>x0.25</button>
+        <button style={{width:"45px",height:"30px"}}>x0.5</button>
+        <button style={{width:"45px",height:"30px"}}>x1</button>
+        <button style={{width:"45px",height:"30px"}} onClick={this.Acelerarx2}>x2</button>
+        <button style={{width:"45px",height:"30px"}}>x4</button>
+      </div> */}
+
+  
+      {(
+        this.state.ciudades?.map((ciudad)=>(
+            ciudad.tipo==1 ? (
+            <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}/>):
+            (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen}  />)
+        ))
+      )
+      }
+
+    {/* {(
+        this.state.tramos?.map((tramo)=>(
+          <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
+            ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/>       
+        ))
+      )
+      } */}
+
+    {
+      (
+        this.state.camiones?.map((camion)=>(
+          <ReactLeafletDriftMarker  icon={myIcon}
+              position={[camion.lat,camion.log]}
+              duration={camion.tiempo*0.6}
+              keepAtCenter={false}/>  
+          )
         )
-        }
+      )
+      }
 
-        {/* {(
-            this.state.tramos?.map((tramo)=>(
-              <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
-                ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/>       
-            ))
-          )
-          } */}
-
-        {
-          (
-            this.state.camiones?.map((camion)=>(
-                <ReactLeafletDriftMarker  icon={myIcon}
-                    position={[camion.lat,camion.log]}
-                    duration={camion.tiempo}
-                    keepAtCenter={false}/>  
-              )
-            )
-          )
-        }
-
-      </MapContainer>
-      
-      );
-    }
+    </MapContainer>
+    
+    );
+  }
   }
   return(
     <Prueba/>
   );
 }
-export default MapaSimulacion;
+export default Mapa_Simulacion;
