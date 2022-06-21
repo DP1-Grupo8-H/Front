@@ -124,11 +124,14 @@ const Mapa_Simulacion = ({datos}) => {
       idxCamiones : 0,
       referencias:[],
       creados:0,
-      rutas:[]
+      rutas:null,
+      moviXCamion:[],
+      faltantes:[]
     };
 
     async ObtenerRutas(){
-
+     
+     console.log("Obtuve Rutas"); 
       timing.current = HORA_ITER;
         if(data.current.length === 0) {
           console.log("FINISH");
@@ -149,8 +152,8 @@ const Mapa_Simulacion = ({datos}) => {
       
       console.log(this.state.rutas);
 
-     setTimeout( this.ObtenerRutas
-    , timing.current);
+    //  setTimeout( this.ObtenerRutas
+    // , timing.current);
       
   }
   async CargarData(){
@@ -214,46 +217,61 @@ const Mapa_Simulacion = ({datos}) => {
 
     MostrarReferencias(){
       //Funcion para mover a los camiones aleatoriamente
-      console.log(this.state.rutas); 
+      //console.log(this.state.rutas); 
+      //Si estado esta lleno debemos vaciar al final
+      console.log(this.state.rutas);
+      if(this.state.rutas!=null){
+        this.state.moviXCamion= Array(this.state.camiones.length);
+        for(let i =0;i<this.state.camiones.length;i++){
+          this.state.moviXCamion[i] = [];
+        }
+        for(let i =0;i<this.state.rutas.movimientos.length;i++){  //Creamos cola por cada camion
+          // this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
+          //    idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[0].id_ciudad.id,
+          //    tiempo: 0.0  //Primera ciudad tiempo 0
+          // });
+          let inicial =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada);
+          for(let j=1;j<this.state.rutas.movimientos[i].ruta_ciudad.length;j++){
+            let final =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[j].fecha_llegada);
+            var diff = Math.abs(final - inicial)
+            this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
+              idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[j].id_ciudad.id,
+              tiempo: diff
+           });
+          }
+        }
+        this.state.faltantes = this.state.rutas.pedidos_faltantes;
+        this.state.rutas = null;
+      }  
+      console.log(this.state.moviXCamion);
 
       let aux = this.state.camiones;
-      // let max = 2000;
-      // let min = 1000;
-      // let mini,maxi,diff;
-      // let difference = max - min;
-      // let rand ;
 
-      for(let i=0;i<this.state.rutas.length;i++){
-          //console.log(aux[i].options.idCamion);
-          //  aux[i].lat =  -8.39275854521267;
-          //  aux[i].log = -73.74649630862517;
-          // if(aux[i].tiempollegada >= Date.now()) {
-          //   console.log("Aun no me puedo mover");
-          //   continue;
-          // }
-          //Hay que randomizar el tramo
-          // mini = 0;
-          // maxi = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1.length-1;
-          // diff=  maxi-mini;
-          // rand = Math.random();
-          // rand = Math.floor( rand * diff);
-          // rand = rand + mini;
-          let nuevaCiudad = this.state.rutas[i].ruta_ciudad[1].id_ciudad.id;
-          aux[this.state.rutas[i].id_camion].lat = this.state.ciudades[nuevaCiudad-1].latitud;
-          aux[this.state.rutas[i].id_camion].log = this.state.ciudades[nuevaCiudad-1].longitud;
-          //aux[rutas[i].id_camion].ciudadActual = this.state.ciudades[(aux[i].ciudadActual)-1].tramos1[rand].ciudad_destino.id;
-          // rand = Math.random();
-          // rand = Math.floor( rand * difference);
-          // rand = rand + min;
-          aux[this.state.rutas[i].id_camion].tiempo = 10000;
-          //aux[rutas[i].id_camion].tiempollegada = Date.now() + rand;
+      //Conversion 6h a 1 minuto
+
+      //Definimos tiempo en el que se deben mover todos
+      //La diferencia de tiempo entre ahora y el tiempo referencial
+      //lanzara la funcion de movimiento individual
+
+      for(let i=0;i<this.state.moviXCamion.length;i++){
+          if(this.state.moviXCamion[i].length==0) continue; //No mas movimientos para ese camion
+          if(aux[i].tiempollegada >= Date.now()) { //Aun no regresa
+            console.log("Aun no me puedo mover");
+            continue;
+          }
+          var nuevaCiudad = this.state.moviXCamion[i].shift();
+          console.log(nuevaCiudad);
+          aux[i].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+          aux[i].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+          let min = nuevaCiudad.tiempo/(1000*60*60);
+          aux[i].tiempo = 1000*min; //1h es 10 seg reales
+          aux[i].tiempollegada = Date.now()+aux[i].tiempo; //Buscar mejor bandera
+          this.setState({camiones:aux});
         }
-      this.setState({camiones:aux});
-      //console.log(this.state.camiones);
 
       setTimeout(
       this.MostrarReferencias
-      ,2000);
+      ,1000);
 
     }
 
@@ -277,17 +295,17 @@ const Mapa_Simulacion = ({datos}) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <div style={{position:'relative',zIndex:9999,float:'right'}}>
+      {/* <div style={{position:'relative',zIndex:9999,float:'right'}}>
         <br></br>
         <button style={{width:"70px",height:"30px",marginRight:"15px"}}>Stop</button>
         <button style={{width:"70px",height:"30px",marginRight:"30px"}} onClick={this.MostrarReferencias}>Start</button>
-        {/* <br></br>
+        <br></br>
         <button style={{width:"45px",height:"30px"}}>x0.25</button>
         <button style={{width:"45px",height:"30px"}}>x0.5</button>
         <button style={{width:"45px",height:"30px"}}>x1</button>
         <button style={{width:"45px",height:"30px"}} onClick={this.Acelerarx2}>x2</button>
-        <button style={{width:"45px",height:"30px"}}>x4</button> */}
-      </div>
+        <button style={{width:"45px",height:"30px"}}>x4</button>
+      </div> */}
 
   
       {(
@@ -312,7 +330,7 @@ const Mapa_Simulacion = ({datos}) => {
         this.state.camiones?.map((camion)=>(
           <ReactLeafletDriftMarker  icon={myIcon}
               position={[camion.lat,camion.log]}
-              duration={camion.tiempo}
+              duration={camion.tiempo*0.6}
               keepAtCenter={false}/>  
           )
         )
