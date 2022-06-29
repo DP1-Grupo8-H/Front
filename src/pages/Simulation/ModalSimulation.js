@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { Typography, Button, Grid, TextField } from '@mui/material';
+import { Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
 
 import DataExtractor from './DataExtractor';
 import CustomizedInputs from "../../components/utils/CustomizedInputs";
@@ -128,7 +128,13 @@ export default function EliminarCursos({setOpenPopup, setData}){
         </Grid>
         </>
         :
-        <></>
+        <>
+        {(myFile !== null) && 
+        <Grid item xs = {12} sm = {12} align = "center" >
+            <CircularProgress />
+        </Grid>
+        }
+        </>
       }
     </Grid>
     )

@@ -5,77 +5,16 @@ import { Component } from 'react';
 import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
+import  SimFunction from './Func_Sim';
 
 const Mapa_Simulacion = ({datos}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
-  //FUNCIONES
-  const processData = (data, batch_time) => {
-    const pedidos = [];
 
-    for(let d of data){
-      if(d.fecha_registro > batch_time) return pedidos;
-      pedidos.push(d);
-    }
-    return pedidos; //En caso haya finalizado toda la lista
-  } 
-  
-  const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
-    const pedidos = [...processPedidos];
-    pedidos.concat(missingPedidos);
-    //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
-    if(pedidos.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
-      return [];
-    //Priorizamos los pedidos: fecha_registro
-    pedidos.sort((a,b) => a.fecha_registro - b.fecha_registro); 
-    return pedidos;
-  }
 
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'black' ,weight:0.3,opacity:0.5};
-  // Primero es el origen y luego el destino
-
-  /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
-  const hora_ini = useMemo(() => {
-      return new Date (data.current[0].fecha_registro)
-  }, [])   //DEFINIMOS LA HORA DE INICIO DE LA SIMULACIÓN -- AGARRAMOS EL DATA[0] SIN PROCESAR --> OBTENEMOS LA HORA DE INICIO
-
-  let timing = useRef(useMemo(() => {
-      return 1000;
-  }, []));
-
-  const missingPedidos = useRef([]);
-
-  // const [rutas, setRutas] = useState([]);
-  
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     timing.current = HORA_ITER;
-  //     if(data.current.length === 0) {
-  //       console.log("FINISH");
-  //       return;
-  //     }  //Se depleto
-  //   hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-  //   const processPedidos = processData(data.current, hora_ini);
-    
-  //   data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
-    
-  //   const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
-    
-  //   console.log(pedidos);
-  //   if(pedidos.length === 0) return;//Llego al colapso
-    
-  //   algoritmoService.testAlgorithm(pedidos)
-  //   .then(ruta => setRutas(ruta));
-    
-  //   console.log(rutas);
-  // }, timing.current); // DESPUES DE 1 SEGUNDO SE EJECUTA
-  // return () => clearTimeout(timer);
-  // }, [rutas])
-
-  //FIN DEL ALGORITMO
-
 
   const L = require('leaflet');
 
@@ -100,8 +39,25 @@ const Mapa_Simulacion = ({datos}) => {
     popupAnchor: [2, -40]
   });
 
-
+  /**********************************************************************/
+  /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
+  const hora_ini = useMemo(() => {
+    return new Date (data.current[0].fecha_registro)
+  }, [])   //DEFINIMOS LA HORA DE INICIO DE LA SIMULACIÓN -- AGARRAMOS EL DATA[0] SIN PROCESAR --> OBTENEMOS LA HORA DE INICIO
   
+  let timing = useRef(useMemo(() => {
+    return 1000;
+  }, []));
+  
+  let missingPedidos = useRef([]);
+
+  let historico = useRef([]);
+
+  let cantPedidos = useRef(data.current.length);
+
+
+  /**********************************************************************/
+  /* CLASE PRINCIPAL */
   class Prueba extends Component{
     constructor(props){
       super(props);
@@ -129,35 +85,49 @@ const Mapa_Simulacion = ({datos}) => {
       faltantes:[]
     };
 
+    /**********************************************************************/
     async ObtenerRutas(){
      
-     //console.log("Obtuve Rutas"); 
       timing.current = HORA_ITER;
-        if(data.current.length === 0) {
+        if(data.current.length === 0) { 
           console.log("FINISH");
           return;
         }  //Se depleto
-      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-      const processPedidos = processData(data.current, hora_ini);
+      //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
+      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  
+      let processPedidos = SimFunction.processData(data.current, hora_ini);
       
+      historico.current.concat(processPedidos); //PARA TENER EL HISTORIAL DE LOS PEDIDOS --> Originalmente los llenamos con los sacados -- luego aniadamos los parciales
       data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
       
-      console.log(data);
-      const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
+      var arr = SimFunction.processParciales(processPedidos, this.state.rutas.camiones, cantPedidos); //Procesamos la creacion de pedidos parciales en caso sea requerido.
+      processPedidos = arr[0];    cantPedidos.current = arr[1];
+      //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
+      const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos, hora_ini);
       
       if(pedidos.length === 0) return;//Llego al colapso --
-      
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //PETICION AL BACK
       const ruta = await algoritmoService.simSemanal(pedidos, this.state.camiones, hora_ini);
-        
-      //console.log(ruta);
-      await this.setState({rutas:ruta});
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       
+      //console.log(ruta);
+      await this.setState({rutas:ruta});  //SET_STATE--> RUTAS -- SE LLENAS LAS RUTAS :: RUTAS : MOVIMIENTOS - PLANES {CAMIONES, MOVIMIENTOS, PEDIDOS_FALT (NO HAY PEDIDO ORIGINAL - SOLO EL PARCIAL), PLANES}
+
+      //Llenado de pedidos faltantes
+      missingPedidos.current = await this.state.rutas.pedidos_faltantes;
+      
+      //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
+      historico.current = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
+
+      console.log("MISSING: ", missingPedidos.current);
       console.log(this.state.rutas);
 
      setTimeout( this.ObtenerRutas
     , timing.current);
       
   }
+  /**********************************************************************/
   async CargarData(){
     var existen = new Array(201);
       for(let i = 0;i<=200;i++){

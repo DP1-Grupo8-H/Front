@@ -5,3 +5,4 @@ export const HORA_ITER = 1000;  //TIMER -> SE LANZARÁ DE NUEVO LA SIMULACIÓN C
 export const K_DAY = 1; //En proporcion al tiempo 
 export const K_7 = 14; //En proporcion al tiempo
 export const K_COLAPSE = 75; //En proporcion al tiempo
+export const PROM_CARG = (90+45+30)/3;
