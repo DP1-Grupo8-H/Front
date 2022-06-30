@@ -166,8 +166,8 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
 
         console.log(this.state.rutas);
   
-       setTimeout( this.ObtenerRutas
-      , timing.current);
+      //  setTimeout( this.ObtenerRutas
+      // , timing.current);
   }
   async CargarData(){
     // var existen = new Array(201);
@@ -226,6 +226,9 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
                             }
                             this.setState({camiones:auxi});
                             this.ObtenerRutas();
+                            setInterval(() => {
+                              this.ObtenerRutas();
+                            }, 60000);
                             this.ObtenerMantenimientos();
                             this.MostrarReferencias();
                             //Una vez cargada la data ,activamos el reloj
