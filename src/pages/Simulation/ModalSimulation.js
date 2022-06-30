@@ -6,7 +6,7 @@ import CustomizedInputs from "../../components/utils/CustomizedInputs";
 
 import { format } from 'date-fns';
 
-export default function EliminarCursos({setOpenPopup, setData}){
+export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
   const [myFile, setMyFile] = useState(null);
   const [simData, setSimData] = 
     useState({ini: '', fin: '', cant: '', data: []});
@@ -22,9 +22,10 @@ export default function EliminarCursos({setOpenPopup, setData}){
 
     //Comenzamos a leer a partir del dia actual y hasta 7 dias.
     let currentDate = new Date();
-    // currentDate.setDate(1);
-    // currentDate.setHours(0);
-    // currentDate.setMinutes(0);
+    currentDate.setDate(1);
+    currentDate.setHours(0);
+    currentDate.setMinutes(0);
+    currentDate.setSeconds(0);
     const results = allLines.filter(result => {
       const data = result.slice(0,2);
       return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);
@@ -45,7 +46,7 @@ export default function EliminarCursos({setOpenPopup, setData}){
     //Data set --> for simulation
     let futureDate = new Date(currentDate)
     futureDate.setDate(futureDate.getDate()+7)
-
+    await setFechaActual(new Date(currentDate));
     currentDate = format(currentDate, 'yyyy-MM-dd hh:mm:ss')
     futureDate = format(futureDate, 'yyyy-MM-dd hh:mm:ss')
 

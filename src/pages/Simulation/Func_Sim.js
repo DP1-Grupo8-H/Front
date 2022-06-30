@@ -57,7 +57,7 @@ const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedi
   if(prom < PROM_CARG) prom = PROM_CARG;
 
   for(let pedido of pedidos){
-    console.log(pedido);
+    //console.log(pedido);
     if(pedido.cantidad > prom){
       //Evaluamos promedio
       while(1){

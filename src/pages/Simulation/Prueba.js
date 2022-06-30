@@ -6,15 +6,19 @@ import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
 import  SimFunction from './Func_Sim';
+import Chrono from './Chrono';
+import { color } from '@mui/system';
 
-const Mapa_Simulacion = ({datos}) => {
+const Mapa_Simulacion = ({datos,fechaActual}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
-
-
   const position1 = [-9.880358501459673, -74.46566630628085];
-  const limeOptions = { color: 'black' ,weight:0.3,opacity:0.5};
+  const limeOptions = { color: 'red' ,weight:1,opacity:1};
+  // Primero es el origen y luego el destino
+
+  //FIN DEL ALGORITMO
+
 
   const L = require('leaflet');
 
@@ -24,6 +28,13 @@ const Mapa_Simulacion = ({datos}) => {
       iconAnchor: [9, 10],
       popupAnchor: [2, -40]
   });
+
+  const IconMantenimiento = L.icon({
+    iconUrl:  require('../../archives/red-circle-32.png'),
+    iconSize: [18, 18],
+    iconAnchor: [9, 10],
+    popupAnchor: [2, -40]
+ });
 
   const myOficina = L.icon({
     iconUrl:  require('../../archives/oficina2.png'),
@@ -39,10 +50,11 @@ const Mapa_Simulacion = ({datos}) => {
     popupAnchor: [2, -40]
   });
 
-  /**********************************************************************/
+ /**********************************************************************/
   /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
   const hora_ini = useMemo(() => {
-    return new Date (data.current[0].fecha_registro)
+    //return new Date (data.current[0].fecha_registro)
+    return new Date(fechaActual)
   }, [])   //DEFINIMOS LA HORA DE INICIO DE LA SIMULACIÓN -- AGARRAMOS EL DATA[0] SIN PROCESAR --> OBTENEMOS LA HORA DE INICIO
   
   let timing = useRef(useMemo(() => {
@@ -57,7 +69,7 @@ const Mapa_Simulacion = ({datos}) => {
 
 
   /**********************************************************************/
-  /* CLASE PRINCIPAL */
+  
   class Prueba extends Component{
     constructor(props){
       super(props);
@@ -65,6 +77,8 @@ const Mapa_Simulacion = ({datos}) => {
       this.MostrarReferencias = this.MostrarReferencias.bind(this);
       this.ObtenerRutas = this.ObtenerRutas.bind(this);
       this.CargarData = this.CargarData.bind(this);
+      this.ObtenerMantenimientos = this.ObtenerMantenimientos.bind(this);
+      this.currentTime = this.currentTime.bind(this);
     }
     state = {
       latlng: [-12.13166084108361, -76.98237622750722],
@@ -82,111 +96,187 @@ const Mapa_Simulacion = ({datos}) => {
       creados:0,
       rutas:null,
       moviXCamion:[],
-      faltantes:[]
+      faltantes:[],
+      cami:"",
+      tiempo: "",
+      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000)
     };
 
-    /**********************************************************************/
     async ObtenerRutas(){
      
+     //console.log("Obtuve Rutas"); 
       timing.current = HORA_ITER;
-        if(data.current.length === 0) { 
+        if(data.current.length === 0) {
           console.log("FINISH");
           return;
         }  //Se depleto
-      //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  
+      //+5 Horas por el desfase de zona horaria  
+      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH+5);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
       let processPedidos = SimFunction.processData(data.current, hora_ini);
-      
-      historico.current.concat(processPedidos); //PARA TENER EL HISTORIAL DE LOS PEDIDOS --> Originalmente los llenamos con los sacados -- luego aniadamos los parciales
-      data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
-      
-      var arr = SimFunction.processParciales(processPedidos, this.state.rutas.camiones, cantPedidos); //Procesamos la creacion de pedidos parciales en caso sea requerido.
-      processPedidos = arr[0];    cantPedidos.current = arr[1];
-      //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
-      const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos, hora_ini);
-      
-      if(pedidos.length === 0) return;//Llego al colapso --
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      //PETICION AL BACK
-      const ruta = await algoritmoService.simSemanal(pedidos, this.state.camiones, hora_ini);
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      
-      //console.log(ruta);
-      await this.setState({rutas:ruta});  //SET_STATE--> RUTAS -- SE LLENAS LAS RUTAS :: RUTAS : MOVIMIENTOS - PLANES {CAMIONES, MOVIMIENTOS, PEDIDOS_FALT (NO HAY PEDIDO ORIGINAL - SOLO EL PARCIAL), PLANES}
+      hora_ini.setHours(hora_ini.getHours() -5); 
+      var diferencia = new Date(hora_ini.getTime() - 5 * 60 * 60 * 1000); //Diferencia de zona horaria
+      var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
+      console.log(ahora);
+      fetch('http://localhost:8080/bloqueo/listarFront/' + ahora)
+          .then(response => response.json())
+          .then(data => 
+            {
+              console.log(data);
+              var auxi = this.state.tramos;
+              for(let i = 0;i<auxi.length;i++){
+                auxi[i].bloqueado = 0;
+              }
+              for(let i = 0;i<data.length;i++){
+                 auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
+              }
+              this.setState({tramos:auxi});
+            }
+        );
 
-      //Llenado de pedidos faltantes
-      missingPedidos.current = await this.state.rutas.pedidos_faltantes;
-      
-      //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
-      historico.current = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
+        historico.current.concat(processPedidos); //PARA TENER EL HISTORIAL DE LOS PEDIDOS --> Originalmente los llenamos con los sacados -- luego aniadamos los parciales
+        data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
+        
+        var arr = SimFunction.processParciales(processPedidos, this.state.camiones, cantPedidos); //Procesamos la creacion de pedidos parciales en caso sea requerido.
+        processPedidos = arr[0];    cantPedidos.current = arr[1];
+        //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
+        const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos.current, hora_ini);
+        console.log(pedidos); 
+        if(pedidos.length === 0) return;//Llego al colapso --
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //PETICION AL BACK
+        console.log(hora_ini);
+        const ruta = await algoritmoService.simSemanal(pedidos, this.state.camiones, hora_ini);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        //console.log(ruta);
+        await this.setState({rutas:ruta});  //SET_STATE--> RUTAS -- SE LLENAS LAS RUTAS :: RUTAS : MOVIMIENTOS - PLANES {CAMIONES, MOVIMIENTOS, PEDIDOS_FALT (NO HAY PEDIDO ORIGINAL - SOLO EL PARCIAL), PLANES}
+  
+        //Llenado de pedidos faltantes
+        missingPedidos.current = await this.state.rutas.pedidos_faltantes;
 
-      console.log("MISSING: ", missingPedidos.current);
-      console.log(this.state.rutas);
+        //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
+        historico.current = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
+  
+        console.log("MISSING: ", missingPedidos.current);
 
-     setTimeout( this.ObtenerRutas
-    , timing.current);
-      
+        console.log(this.state.rutas);
+  
+       setTimeout( this.ObtenerRutas
+      , timing.current);
   }
-  /**********************************************************************/
   async CargarData(){
-    var existen = new Array(201);
-      for(let i = 0;i<=200;i++){
-        existen[i] = new Array(201);
-      }
-      for(let  i = 0;i<200;i++){
-        for(let j =0;j<200;j++){
-          existen[i][j] = false;
-        }
-      }
+    // var existen = new Array(201);
+    //   for(let i = 0;i<=200;i++){
+    //     existen[i] = new Array(201);
+    //   }
+    //   for(let  i = 0;i<200;i++){
+    //     for(let j =0;j<200;j++){
+    //       existen[i][j] = false;
+    //     }
+    //   }
       fetch('http://localhost:8080/ciudad/listar')
       .then(response => response.json())
       .then(data => 
           {
             //console.log(data);
             this.setState({ciudades:data})
-            let aux = [];
-            for(let i=0;i<data.length;i++){
-              for(let j=0;j<data[i].tramos1.length;j++){
-                if(!existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] && 
-                  !existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] )
-                  {
-                    aux.push(data[i].tramos1[j]);
-                    existen[data[i].tramos1[j].ciudad_destino.id][data[i].tramos1[j].ciudad_origen.id] = true;
-                    existen[data[i].tramos1[j].ciudad_origen.id][data[i].tramos1[j].ciudad_destino.id] = true;
-                  }
-              }
-            }
-            this.setState({tramos:aux});
-            //console.log(this.state.tramos);
-            
-            fetch('http://localhost:8080/camion/listar')
+            fetch('http://localhost:8080/tramo/listar')
             .then(response => response.json())
             .then(data => 
               {
-                //console.log(data);
-                //Agregar atributo de tiempo y coordenadas actuales  
-                for(let i = 0;i<data.length;i++){
-                  data[i].lat = data[i].almacen.latitud;
-                  data[i].log = data[i].almacen.longitud;
-                  data[i].tiempo = 10;  
-                  data[i].tiempollegada = new Date();
-                  data[i].ciudadActual = data[i].almacen.id;  
-                }
-                this.setState({aux:data});
-                this.setState({camiones:this.state.aux});
-                this.ObtenerRutas();
-                this.MostrarReferencias();
+                console.log(data);
+                this.setState({tramos:data});
+                var diferencia = new Date(hora_ini.getTime() +1 * 60 * 60 * 1000); //Diferencia de zona horaria
+                var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
+                fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
+                  .then(response => response.json())
+                  .then(data => 
+                    {
+                      console.log(data);
+                      var dat = data;
+                      fetch('http://localhost:8080/camion/listar')
+                        .then(response => response.json())
+                        .then(data => 
+                          {
+                              console.log(data);
+                            //Agregar atributo de tiempo y coordenadas actuales  
+                            for(let i = 0;i<data.length;i++){
+                              data[i].lat = data[i].almacen.latitud;
+                              data[i].log = data[i].almacen.longitud;
+                              data[i].tiempo = 10;  
+                              data[i].tiempollegada = new Date();
+                              data[i].ciudadActual = data[i].almacen.id;
+                              data[i].estado = 1;  
+                            }
+                            this.setState({aux:data});
+                            this.setState({camiones:this.state.aux});
+                            var auxi = this.state.camiones;
+                            for(let  i = 0;i<auxi.length;i++){
+                              if(auxi[i].estado==2) auxi[i].estado = 1;
+                            }
+                            for(let i =0;i<dat.length;i++){
+                              auxi[(dat[i].id_camion.id)-1].estado = 2;
+                            }
+                            this.setState({camiones:auxi});
+                            this.ObtenerRutas();
+                            //this.ObtenerMantenimientos();
+                            this.MostrarReferencias();
+                            //Una vez cargada la data ,activamos el reloj
+                            setInterval(() => {
+                              this.currentTime()
+                            }, 1000);
+                          }
+                        );
+                    }
+                  );
               }
             );
        }
   );
   
   }
-
+ 
+  currentTime(){
+    this.state.guardado.setMinutes(this.state.guardado.getMinutes() + 6); 
+    var diferencia = new Date(this.state.guardado.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
+    var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    this.setState({tiempo:ahora});
+  }
   componentDidMount(){
+    // var diferencia = new Date(hora_ini.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
+    // var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    // console.log(hora_ini);
+    // var a = hora_ini;
+    // a.setHours(hora_ini.getHours());
+    // this.setState({guardado:a});
+    // this.setState({tiempo:ahora});
     this.CargarData();
   }
 
+
+    ObtenerMantenimientos(){
+      var diferencia = new Date(hora_ini.getTime() +1 * 60 * 60 * 1000); //Diferencia de zona horaria
+      var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
+      fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
+        .then(response => response.json())
+        .then(data => 
+          {
+            console.log(data);
+            var auxi = this.state.camiones;
+            for(let  i = 0;i<auxi.length;i++){
+              if(auxi[i].estado==2) auxi[i].estado = 1;
+            }
+            for(let i =0;i<data.length;i++){
+              auxi[(data[i].id_camion.id)-1].estado = 2;
+            }
+            this.setState({camiones:auxi});
+          }
+        );
+      
+      setTimeout(
+          this.ObtenerMantenimientos
+          ,10000); //Cada hora
+    }  
     MostrarReferencias(){
       //Funcion para mover a los camiones aleatoriamente
       //console.log(this.state.rutas); 
@@ -226,17 +316,24 @@ const Mapa_Simulacion = ({datos}) => {
       //lanzara la funcion de movimiento individual
 
       for(let i=0;i<this.state.moviXCamion.length;i++){
-          if(this.state.moviXCamion[i].length==0) continue; //No mas movimientos para ese camion
+          if(this.state.moviXCamion[i].length==0 && aux[i].tiempollegada >= Date.now()) {
+                   aux[i].estado = 1;
+                   continue;
+            } //No mas movimientos para ese camion
+           else if (this.state.moviXCamion[i].length==0){
+            continue;
+           }
           if(aux[i].tiempollegada >= Date.now()) { //Aun no regresa
             //console.log("Aun no me puedo mover");
             continue;
           }
           var nuevaCiudad = this.state.moviXCamion[i].shift();
+          aux[i].estado = 0;
           //console.log(nuevaCiudad);
           aux[i].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
           aux[i].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
           let min = nuevaCiudad.tiempo/(1000*60*60);
-          aux[i].tiempo = 500*min; //1h es 10 seg reales
+          aux[i].tiempo = 10000*min; //1h es 10 seg reales
           aux[i].tiempollegada = Date.now()+aux[i].tiempo; //Buscar mejor bandera
           this.setState({camiones:aux});
         }
@@ -267,8 +364,12 @@ const Mapa_Simulacion = ({datos}) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {/* <div style={{position:'relative',zIndex:9999,float:'right'}}>
-        <br></br>
+      <div style={{position:'relative',zIndex:9999,float:'right'}}>
+        <p style={{color:"black",fontSize:"24px"}}>
+          {this.state.tiempo}
+        </p>
+        {/* <Chrono/> */}
+        {/* <br></br>
         <button style={{width:"70px",height:"30px",marginRight:"15px"}}>Stop</button>
         <button style={{width:"70px",height:"30px",marginRight:"30px"}} onClick={this.MostrarReferencias}>Start</button>
         <br></br>
@@ -276,34 +377,62 @@ const Mapa_Simulacion = ({datos}) => {
         <button style={{width:"45px",height:"30px"}}>x0.5</button>
         <button style={{width:"45px",height:"30px"}}>x1</button>
         <button style={{width:"45px",height:"30px"}} onClick={this.Acelerarx2}>x2</button>
-        <button style={{width:"45px",height:"30px"}}>x4</button>
-      </div> */}
+        <button style={{width:"45px",height:"30px"}}>x4</button> */}
+
+      </div>
 
   
       {(
         this.state.ciudades?.map((ciudad)=>(
             ciudad.tipo==1 ? (
-            <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}/>):
-            (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen}  />)
+            <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}>
+              <Tooltip>
+                {ciudad.ciudad}
+              </Tooltip>
+              </Marker>):
+            (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen} >
+              <Tooltip>
+                {ciudad.ciudad}
+              </Tooltip>
+              </Marker>)
         ))
       )
       }
 
-    {/* {(
+    {(
         this.state.tramos?.map((tramo)=>(
+          tramo.bloqueado == 1 ? (
           <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
-            ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/>       
+            ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>)      
         ))
       )
-      } */}
+      }
 
     {
       (
         this.state.camiones?.map((camion)=>(
-          <ReactLeafletDriftMarker  icon={myIcon}
+          camion.estado == 2 ? (
+          <ReactLeafletDriftMarker  icon={IconMantenimiento}
               position={[camion.lat,camion.log]}
-              duration={camion.tiempo*0.6}
-              keepAtCenter={false}/>  
+              duration={camion.tiempo*0.55}
+              keepAtCenter={false}>
+              <Tooltip>
+                {"Id: " + camion.id}
+                <br></br>
+                {"Placa: " + camion.placa}
+              </Tooltip>
+              </ReactLeafletDriftMarker>):(
+            <ReactLeafletDriftMarker  icon={myIcon}
+            position={[camion.lat,camion.log]}
+            duration={camion.tiempo*0.63}
+            keepAtCenter={false}>
+            <Tooltip>
+              {"Id: " + camion.id}
+              <br></br>
+              {"Placa: " + camion.placa}
+            </Tooltip>
+            </ReactLeafletDriftMarker>
+              ) 
           )
         )
       )
