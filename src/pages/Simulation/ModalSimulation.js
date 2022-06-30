@@ -1,22 +1,22 @@
 import React, {useState} from "react";
-<<<<<<< Updated upstream
-import { Typography, Button, Grid } from '@mui/material';
-=======
 import { Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
->>>>>>> Stashed changes
 
 import DataExtractor from './DataExtractor';
+import CustomizedInputs from "../../components/utils/CustomizedInputs";
+
+import { format } from 'date-fns';
 
 export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
   const [myFile, setMyFile] = useState(null);
-  const [myFileName, setMyFileName] = useState(null);
-
-<<<<<<< Updated upstream
-  const dataLoader = async () => {
+  const [simData, setSimData] = 
+    useState({ini: '', fin: '', cant: '', data: []});
+    
+  const dataLoader = async (myFile, myFileName) => {
     let allLines = myFile.split(/\r?\n|\r/);
-    const results_prev = allLines.filter(element => {
-      return element !== '';
-=======
+    console.log("LLEGAMOS");
+    
+    //Delimitacion de los datos que
+
     //Filtramos la ultima linea
     if(allLines.slice(-1) === '') allLines.pop();
 
@@ -29,12 +29,8 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     const results = allLines.filter(result => {
       const data = result.slice(0,2);
       return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);
->>>>>>> Stashed changes
     });
 
-    const results = results_prev.filter(result => {
-      return parseInt(result.slice(0,2)) < 8;
-    });
     let i = 0;
 
     let datasets = await Promise.all (results.map(async (lines) => {
@@ -45,17 +41,6 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
 
       return pedido;
     }));
-<<<<<<< Updated upstream
-    // for(let lines = 0; lines < results.length; lines++){
-    //   const line = results[lines].split(/[\\s,:= ]+/); //6 values in string
-      
-    //   const pedido = await DataExtractor.dataExtractor(line, lines+1, myFileName);
-    //   pedidos.push(pedido);
-    // }
-    await setData(datasets);
-    setOpenPopup(false);
-    /*Funciontality -- for prev recurses*/
-=======
     
 
     //Data set --> for simulation
@@ -68,10 +53,9 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     const sim = { ini: currentDate, fin: futureDate, cant: i+1, data: datasets };
     
     await setSimData(simData => ({...simData, ...sim}));
->>>>>>> Stashed changes
   }
 
-  const readFile = e => {
+  const readFile =  e => {
     const file = e.target.files[0];
     if( !file) return;
 
@@ -80,10 +64,9 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     const fileReader = new FileReader();
 
     fileReader.readAsText( file );
-    fileReader.onload = () => {
-      setMyFile(fileReader.result);
-      const name = file.name.split(".")[1];
-      setMyFileName(name);
+    fileReader.onload = async () => {
+      await setMyFile(fileReader.result);
+      dataLoader(fileReader.result, file.name.split(".")[1]);
     }
 
     fileReader.onerror = () => {
@@ -91,10 +74,15 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     }
   }
 
+  const handleClick = async e => {
+    await setData(simData.data);
+    setOpenPopup(false);
+  }
+
   return(
     <Grid container  >
       <Grid item xs = {12} sm = {4} align = "right" marginTop = {3} marginRight = {2}>    
-        < Typography variant="h6" mb={2} >
+        < Typography variant="b1" mb={2} >
             Ingrese el archivo de pedidos:
         </Typography>
       </Grid>
@@ -108,10 +96,38 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
             El archivo de pedidos debe estar en el formato .txt
         </Typography>
       </Grid>
-      { myFile !== null ?
-        <Grid item xs = {12} sm = {12} align = "center" marginTop = {3}>
-          <Button variant = "contained" color = "primary" size = "large" type = "submit" fullWidth onClick = {dataLoader}> Iniciar Simulación </Button>
+      { (myFile !== null && simData.cant > 0) ?
+        <>
+        <Grid container padding= "20px 0px 0px 0px" alignItems = "center">
+          <Grid item xs = {1.3} sm = {1.3} align = "right">
+            < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
+                Fecha inicio:
+            </Typography>
+          </Grid>
+          <Grid item xs = {3} sm = {3} align = "left" >
+            <CustomizedInputs value = {simData.ini} readOnly = "true"/>
+          </Grid>
+          <Grid item xs = {1.8} sm = {1.8} align = "right">
+            < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
+                Fecha fin:
+            </Typography>
+          </Grid>
+          <Grid item xs = {3} sm = {3} align = "left" >
+            <CustomizedInputs value = {simData.fin} readOnly = "true"/>
+          </Grid>
+          <Grid item xs = {1.8} sm = {1.8} align = "right">
+            < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
+                Pedidos:
+            </Typography>
+          </Grid>
+          <Grid item xs = {0.7} sm = {0.7} align = "left" >
+            <CustomizedInputs value = {simData.cant} readOnly = "true"/>
+          </Grid>
         </Grid>
+        <Grid item xs = {12} sm = {12} align = "center" marginTop = {3}>
+          <Button variant = "contained" color = "primary" size = "large" type = "submit" fullWidth onClick = {handleClick}> <Typography variant = "button_max" > Iniciar Simulación </Typography></Button>
+        </Grid>
+        </>
         :
         <>
         {(myFile !== null) && 

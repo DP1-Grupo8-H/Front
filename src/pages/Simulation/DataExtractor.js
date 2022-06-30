@@ -17,12 +17,7 @@ const dataExtractor = async (values, id, fileName) => {
   currentDate.setMinutes(parseInt(values[2]));
   currentDate.setSeconds(0);
   
-  const maxDate = new Date();
-  maxDate.setFullYear(currentDate.getFullYear());
-  maxDate.setMonth(currentDate.getMonth());
-  maxDate.setDate(currentDate.getDate());
-  maxDate.setHours(currentDate.getHours());
-  maxDate.setMinutes(currentDate.getMinutes());
+  const maxDate = new Date(currentDate);
 
   switch (ciudad[0].region){
       case 'COSTA':
@@ -49,8 +44,10 @@ const dataExtractor = async (values, id, fileName) => {
     cliente: null,
     ciudad: ciudad[0],
     almacen: almacen[0],
-    id_asociado: 0,
+    id_padre: 0,
     estado: 0,
+    ruta: null,
+    fecha_entrega: null,
   }
 
   return pedido;

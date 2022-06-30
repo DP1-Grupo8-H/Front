@@ -1,38 +1,31 @@
 import React, {useState, useEffect} from "react";
-import Prueba from './Prueba';
+import MapaSimulacion from './Prueba';
 import Popup from '../../components/utils/Popup';
 import ModalSimulation from './ModalSimulation'
 
 import './App.css';
-const Seve_Days = () => {
+import Legend from "../../components/Legend/Legend";
+const SevenDays = () => {
   const [openPopup, setOpenPopup] = useState(true);
+  //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
-<<<<<<< Updated upstream
-=======
 
   const[fechaActual,setFechaActual] = useState([]);
   //Return algoritmo -> rutas y pedidos faltantes.
   console.log(data);
->>>>>>> Stashed changes
 
-  console.log(data);
   return(
     <>
-      {!openPopup ?       
+      {(!openPopup && data.length >= 0) ? 
       <div className="App">
         <header className="App-header">
-<<<<<<< Updated upstream
-          <Prueba/>
-=======
           {/*<Legend />*/}
           <MapaSimulacion datos = {data} fechaActual={fechaActual}/>
 
->>>>>>> Stashed changes
         </header>
       </div>
       :
-      <div className="App">
-      </div>
+      <div></div>
       }
       <div>
         <Popup
@@ -48,4 +41,4 @@ const Seve_Days = () => {
 }
 
 
-export default Seve_Days;
+export default SevenDays;
