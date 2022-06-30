@@ -13,69 +13,9 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
-  // //FUNCIONES
-  // const processData = (data, batch_time) => {
-  //   const pedidos = [];
-
-  //   for(let d of data){
-  //     if(d.fecha_registro > batch_time) return pedidos;
-  //     pedidos.push(d);
-  //   }
-  //   return pedidos; //En caso haya finalizado toda la lista
-  // } 
-  
-  // const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
-  //   const pedidos = [...processPedidos];
-  //   pedidos.concat(missingPedidos);
-  //   //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
-  //   if(pedidos.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
-  //     return [];
-  //   //Priorizamos los pedidos: fecha_registro
-  //   pedidos.sort((a,b) => a.fecha_registro - b.fecha_registro); 
-  //   return pedidos;
-  // }
-
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
   // Primero es el origen y luego el destino
-
-  /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
-  // const hora_ini = useMemo(() => {
-  //     return new Date (data.current[0].fecha_registro)
-  // }, [])   //DEFINIMOS LA HORA DE INICIO DE LA SIMULACIÓN -- AGARRAMOS EL DATA[0] SIN PROCESAR --> OBTENEMOS LA HORA DE INICIO
-
-  // let timing = useRef(useMemo(() => {
-  //     return 1000;
-  // }, []));
-
-  // const missingPedidos = useRef([]);
-
-  // const [rutas, setRutas] = useState([]);
-  
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     timing.current = HORA_ITER;
-  //     if(data.current.length === 0) {
-  //       console.log("FINISH");
-  //       return;
-  //     }  //Se depleto
-  //   hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
-  //   const processPedidos = processData(data.current, hora_ini);
-    
-  //   data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
-    
-  //   const pedidos = priorityPedidos(processPedidos, missingPedidos, hora_ini);
-    
-  //   console.log(pedidos);
-  //   if(pedidos.length === 0) return;//Llego al colapso
-    
-  //   algoritmoService.testAlgorithm(pedidos)
-  //   .then(ruta => setRutas(ruta));
-    
-  //   console.log(rutas);
-  // }, timing.current); // DESPUES DE 1 SEGUNDO SE EJECUTA
-  // return () => clearTimeout(timer);
-  // }, [rutas])
 
   //FIN DEL ALGORITMO
 
@@ -159,7 +99,7 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
       faltantes:[],
       cami:"",
       tiempo: "",
-      guardado:""
+      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000)
     };
 
     async ObtenerRutas(){
@@ -213,11 +153,12 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
   
         //Llenado de pedidos faltantes
         missingPedidos.current = await this.state.rutas.pedidos_faltantes;
-        
+
         //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
         historico.current = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
   
         console.log("MISSING: ", missingPedidos.current);
+
         console.log(this.state.rutas);
   
        setTimeout( this.ObtenerRutas
@@ -304,10 +245,10 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
   componentDidMount(){
     // var diferencia = new Date(hora_ini.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
     // var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-    console.log(hora_ini);
-    var a = hora_ini;
-    a.setHours(hora_ini.getHours()-6);
-    this.setState({guardado:a});
+    // console.log(hora_ini);
+    // var a = hora_ini;
+    // a.setHours(hora_ini.getHours());
+    // this.setState({guardado:a});
     // this.setState({tiempo:ahora});
     this.CargarData();
   }

@@ -101,7 +101,7 @@ const addRoutes = (historico, planes) => {
 
 const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
   let pedidos = [...processPedidos];
-  if(missingPedidos.length!=0) pedidos = pedidos.concat(missingPedidos);
+  pedidos = pedidos.concat(missingPedidos);
   //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
   if(pedidos.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
     return [];
