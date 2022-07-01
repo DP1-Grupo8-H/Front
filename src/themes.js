@@ -18,7 +18,7 @@ const newTheme = () => {
       },
       secondary_white: {
         main: '#FFFFFF',
-        darker: '#FFFFFF',
+        darker: '#AFAFAF',
         contrastText: '#000000',
       },
       neutral: {

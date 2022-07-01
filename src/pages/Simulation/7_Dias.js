@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from "react";
 import MapaSimulacion from './Prueba';
 import Popup from '../../components/utils/Popup';
-import ModalSimulation from './ModalSimulation';
-import ModalResume from './ModalResume';
+import ModalSimulation from './Modals/ModalSimulation';
+import ModalResume from './Modals/ModalResume';
 
 import './App.css';
 import Legend from "../../components/Legend/Legend";
@@ -14,6 +14,7 @@ const SevenDays = () => {
   const [historico, setHistorico] = useState([]);
 
   const[fechaActual,setFechaActual] = useState([]);
+  const[fechaFin, setFechaFin] = useState([]);
   //Return algoritmo -> rutas y pedidos faltantes.
   console.log(data);
 
@@ -23,7 +24,7 @@ const SevenDays = () => {
       <div className="App">
         <header className="App-header">
           {/*<Legend />*/}
-          <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico}/>
+          <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin}/>
 
         </header>
       </div>
@@ -43,7 +44,7 @@ const SevenDays = () => {
           setOpenPopup={setOpenResume}
           title="Finalización de la Simulación"
           >
-          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual}/>
+          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin}/>
         </Popup>
       </div>
     </>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PROM_CARG } from '../../constants/Sim_Params';
+import ciudadService from '../../services/ciudadService';
 
 //FUNCIONES
 function gcd(a, b) 
@@ -92,7 +93,7 @@ const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedi
 //    |-> LOS PEDIDOS PROCESADOS -> ANTES DE LA SIMULACION Y DE PROCESAR LOS PARCIALES -> DONE ^ PAntalla ant.
 //    |-> DSP DE LA SIMULACION CUANDO TENEMOS LAS RUTAS PARA PEDIDOS Y PEDISO PARCIALES. -> function addRoutes
 
-const addRoutes = (historico, planes) => {
+const addRoutes = (historico, planes, ciudades) => {
 
   //PLANES - {[[PEDIDOS_NORMALES], [PEDIDOS_PARCIALES]]} ->  CADA PLAN TIENE EL CAMION Y UN ARREGLO DE RUTAS --> CIUDADES A DONDE TIENE QUE IR CADA 
   //  PLANES TIENE PARTIDO -- DE LA CIUDAD DEL ALMACEN - HACIA LA CIUDAD1 - ES PARA EL PEDIDO1::
@@ -102,7 +103,19 @@ const addRoutes = (historico, planes) => {
   for(let plan of planes){
     let allRoute = [];
     for(let ruta of plan.rutas){
-      allRoute = allRoute.concat(ruta.ruta_ciudad); //Hacemos que vaya creciendo la ruta
+      const newRoutes = [];
+      ruta.ruta_ciudad.forEach(r => {
+        newRoutes.push(
+          {
+            fecha_llegada:r.fecha_llegada,
+            id_ciudad:r.id_ciudad,
+            ciudad: ciudades[r.id_ciudad.id-1],
+            orden: r.orden,
+          }
+        )
+      })
+      newRoutes.pop();      newRoutes.shift();
+      allRoute = allRoute.concat(newRoutes); //Hacemos que vaya creciendo la ruta
       if(ruta.pedido.id_pedido > historico.length){
         //ES UN PEDIDO PARCIAL QUE SE DEBE AGREGAR AL ARREGLO DEL PEDIDO PRINCIPAL
         historico[ruta.pedido.id_padre-1].plan_transporte.push({
@@ -146,6 +159,8 @@ const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
   pedidos_final = pedidos_final.sort((a,b) => new Date(a.fecha_registro) - new Date(b.fecha_registro));
   pedidos_final = pedidos_final.concat(pedidos);
   //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
+  console.log(pedidos_final);
+  console.log(hora_ini);
   if(pedidos_final.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
     return [];
   return pedidos_final;

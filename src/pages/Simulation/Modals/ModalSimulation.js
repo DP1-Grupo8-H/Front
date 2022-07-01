@@ -1,9 +1,9 @@
 import React, {useState} from "react";
 import { Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
 
-import DataExtractor from './DataExtractor';
-import CustomizedInputs from "../../components/utils/CustomizedInputs";
-import CiudadService from '../../services/ciudadService.js'
+import DataExtractor from '../DataExtractor';
+import CustomizedInputs from "../../../components/utils/CustomizedInputs";
+import CiudadService from '../../../services/ciudadService.js'
 
 import { format } from 'date-fns';
 

@@ -1,18 +1,31 @@
 import React, {useState, useEffect} from "react";
 import { Typography, Button, Grid, TextField, CircularProgress, Box } from '@mui/material';
 
-import DataExtractor from './DataExtractor';
-import CustomizedInputs from "../../components/utils/CustomizedInputs";
-import CiudadService from '../../services/ciudadService.js'
+import DataExtractor from '../DataExtractor';
+import CustomizedInputs from "../../../components/utils/CustomizedInputs";
+import CiudadService from '../../../services/ciudadService.js'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 
 import { format } from 'date-fns';
 
-export default function ModalResume({setOpenResume, historico, fechaActual}){
+import {useNavigate} from 'react-router-dom';
+
+
+export default function ModalResume({setOpenResume, historico, fechaActual, fechaFin}){
+  const navigate = useNavigate(); //Para poder hacer uso de redux
   
+  const openNav = (nav) => {
+    console.log(historico);
+    navigate('/sim/7_dias/resumen', { state: {historico: historico} });
+  }
+
+  const handleClick = (event) => {
+    openNav(event.currentTarget);
+  };
+    
   const [data, setData] = useState({ped_entr: '', paq_entr: '', km_rec: ''});
-  
+
   const retrievePaq = (historico) => {
     let cant_paq = 0;
     for(let h of historico){
@@ -70,17 +83,17 @@ export default function ModalResume({setOpenResume, historico, fechaActual}){
               Fecha inicio:
           </Typography>
         </Grid>
-        <Grid item xs = {1} sm = {1} align = "left" >
+        <Grid item xs = {1.5} sm = {1.5} align = "left" >
           <CustomizedInputs value = {format(fechaActual, 'yyyy-MM-dd')} readOnly = "true"/>
         </Grid>
-        <Grid item xs = {6} sm = {6} align = "right"></Grid>
+        <Grid item xs = {5} sm = {5} align = "right"></Grid>
         <Grid item xs = {1.5} sm = {1.5} align = "right">
           < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
               Fecha fin:
           </Typography>
         </Grid>
-        <Grid item xs = {1} sm = {1} align = "left" >
-          <CustomizedInputs value = {format(new Date(fechaActual.getDate() + 7), 'yyyy-MM-dd')} readOnly = "true"/>
+        <Grid item xs = {1.5} sm = {1.5} align = "left" >
+          <CustomizedInputs value = {format(fechaFin, 'yyyy-MM-dd')} readOnly = "true"/>
         </Grid>
         <Grid item xs = {1.5} sm = {1.5} align = "right">
           < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
@@ -90,7 +103,7 @@ export default function ModalResume({setOpenResume, historico, fechaActual}){
         <Grid item xs = {1} sm = {1} align = "left" >
           <CustomizedInputs value = {format(fechaActual, 'hh:mm:ss')} readOnly = "true"/>
         </Grid>
-        <Grid item xs = {6} sm = {6} align = "right"></Grid>
+        <Grid item xs = {5.5} sm = {5.5} align = "right"></Grid>
         <Grid item xs = {1.5} sm = {1.5} align = "right">
           < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
               Hora fin:
@@ -142,7 +155,7 @@ export default function ModalResume({setOpenResume, historico, fechaActual}){
         </Grid>
         <Grid item xs = {12} sm = {12} align = "right" marginTop = {0}>
         <Grid item xs = {3} sm = {3} align = "right" marginTop = {0}>
-            <Button variant = "text" color = "primary" size = "large" type = "submit"  onClick = {() => setOpenResume(false)}> 
+            <Button variant = "text" color = "primary" size = "large" type = "submit"  onClick = {handleClick}> 
               <Typography variant = "button_max" > Ver Detalle </Typography>
               <ArrowCircleRightOutlinedIcon sx={{ fontSize: 40, color:'primary.main' }}/>
             </Button>

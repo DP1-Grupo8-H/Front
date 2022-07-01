@@ -9,6 +9,7 @@ import newTheme from './themes.js'
 import Home from "./pages/Home/Home"
 import SevenDays from "./pages/Simulation/7_Dias"
 import Navbar from "./components/NavBar/NavBar";
+import ResumenDetalle from "./pages/Simulation/Modals/Resumen_Detalle.js";
 
 
 const App = () => {
@@ -34,6 +35,8 @@ const App = () => {
           <Route path="/mant" exact element = {< Home />} />
           {/* Redireccionamiento a simulations 7 dias*/}
           <Route path="/sim/7_dias" exact element = {< SevenDays />} />
+          {/* Redireccionamiento - hacia un detalle */}
+          <Route path="sim/7_dias/resumen" exact element = {< ResumenDetalle />} />
           {/* Redireccionamiento a simulations colapso*/}
           <Route path="/sim/colapso" exact element = {< Home />} />
           {/*Redireccionamiento a reportes */}

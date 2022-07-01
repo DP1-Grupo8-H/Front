@@ -9,7 +9,7 @@ import  SimFunction from './Func_Sim';
 import Chrono from './Chrono';
 import { color } from '@mui/system';
 
-const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
+const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -111,6 +111,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
         //DEBE CAMBIAR -> A QUE TERMINE CUANDO LOS CAMIONES REGRESAN A SU ESTADO INICIAL
         if(data.current.length === 0) {
           console.log("FINISH");
+          setFechaFin(hora_ini);
           setOpenResume(true);
           setHistorico(historico.current);
           return;
@@ -169,7 +170,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
   
         
         //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
-        arr = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
+        arr = SimFunction.addRoutes(historico.current, this.state.rutas.planes, this.state.ciudades);
         historico.current = arr[0];        const pedido_plan = arr[1];
         
         //Llenado de pedidos faltantes
