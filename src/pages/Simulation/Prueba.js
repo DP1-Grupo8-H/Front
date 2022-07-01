@@ -50,6 +50,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
     popupAnchor: [2, -40]
   });
 
+ 
+
  /**********************************************************************/
   /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
   const hora_ini = useMemo(() => {
@@ -114,11 +116,14 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
           return;
         }  //Se depleto
       //+5 Horas por el desfase de zona horaria  
-      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes. -> LE QUITE EL +5
+      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);
       let processPedidos = SimFunction.processData(data.current, hora_ini);
-      //hora_ini.setHours(hora_ini.getHours() -5);  
-      var diferencia = new Date(hora_ini.getTime() - 5 * 60 * 60 * 1000); //Diferencia de zona horaria
-      var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
+      //hora_ini.setHours(hora_ini.getHours() +5);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
+      //var diferencia = new Date(hora_ini.getTime()); //Diferencia de zona horaria
+      var aux = new Date(hora_ini);
+      aux.setHours(aux.getHours() - 5);
+      var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
+      console.log("Hora para bloqueos: ");  
       console.log(ahora);
       fetch('http://localhost:8080/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
@@ -144,6 +149,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
           }
         );});
 
+        aux.setHours(aux.getHours() +5); 
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
         
         var arr = SimFunction.processParciales(processPedidos, this.state.camiones, cantPedidos.current); //Procesamos la creacion de pedidos parciales en caso sea requerido.
@@ -172,8 +178,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
         console.log("HISTORICOOOOOO::: ", historico.current);
         console.log(this.state.rutas);
   
-       setTimeout( this.ObtenerRutas
-      , timing.current);
+      //  setTimeout( this.ObtenerRutas
+      // , timing.current);
   }
   async CargarData(){
     // var existen = new Array(201);
@@ -199,6 +205,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
                 this.setState({tramos:data});
                 var diferencia = new Date(hora_ini.getTime() +1 * 60 * 60 * 1000); //Diferencia de zona horaria
                 var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
+                console.log("Hora para mantenimientos")
+                console.log(ahora);
                 fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
                   .then(response => response.json())
                   .then(data => 
@@ -230,7 +238,10 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
                             }
                             this.setState({camiones:auxi});
                             this.ObtenerRutas();
-                            //this.ObtenerMantenimientos();
+                            setInterval(() => {
+                              this.ObtenerRutas();
+                            }, 60000);
+                            this.ObtenerMantenimientos();
                             this.MostrarReferencias();
                             //Una vez cargada la data ,activamos el reloj
                             setInterval(() => {
@@ -267,7 +278,9 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
 
     ObtenerMantenimientos(){
       var diferencia = new Date(hora_ini.getTime() +1 * 60 * 60 * 1000); //Diferencia de zona horaria
-      var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
+      var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, ''); 
+      console.log("Hora para mantenimiento: ");
+      console.log(ahora);    
       fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
         .then(response => response.json())
         .then(data => 
@@ -286,7 +299,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
       
       setTimeout(
           this.ObtenerMantenimientos
-          ,10000); //Cada hora
+          ,60000); //Cada 6 horas
     }  
     MostrarReferencias(){
       //Funcion para mover a los camiones aleatoriamente
