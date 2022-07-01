@@ -3,6 +3,7 @@ import { Typography, Button, Grid, TextField, CircularProgress } from '@mui/mate
 
 import DataExtractor from './DataExtractor';
 import CustomizedInputs from "../../components/utils/CustomizedInputs";
+import CiudadService from '../../services/ciudadService.js'
 
 import { format } from 'date-fns';
 
@@ -32,11 +33,11 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     });
 
     let i = 0;
-
+    const ciudades = await CiudadService.getCiudades();
     let datasets = await Promise.all (results.map(async (lines) => {
       const line = lines.split(/[\\s,:= ]+/); //6 values in string
       
-      const pedido = DataExtractor.dataExtractor(line, i+1, myFileName);
+      const pedido = DataExtractor.dataExtractor(line, i+1, myFileName, ciudades);
       i++;
 
       return pedido;
@@ -50,7 +51,7 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     currentDate = format(currentDate, 'yyyy-MM-dd hh:mm:ss')
     futureDate = format(futureDate, 'yyyy-MM-dd hh:mm:ss')
 
-    const sim = { ini: currentDate, fin: futureDate, cant: i+1, data: datasets };
+    const sim = { ini: currentDate, fin: futureDate, cant: i, data: datasets };
     
     await setSimData(simData => ({...simData, ...sim}));
   }

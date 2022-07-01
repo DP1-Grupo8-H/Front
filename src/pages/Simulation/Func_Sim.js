@@ -24,9 +24,10 @@ function findGCD (arr, n)
 } 
 function promedio (camiones)
 {
-  const results = camiones.filter(result => {
-    return (camiones.estado == 1);
+  const results = camiones.filter(camion => {
+    return (camion.estado === 1);
   });
+  console.log("camiones disponibles: ", results);
 
   var sum = 0;
   for( var i = 0; i < results.length; i++ ){
@@ -40,7 +41,7 @@ function promedio (camiones)
 //EXPORTS
 const processData = (data, batch_time) => { //PROCESAMOS LA DATA -> agarramos 6 horas
   const pedidos = [];
-
+  console.log(batch_time);
   for(let d of data){
     if(d.fecha_registro > batch_time) return pedidos;
     pedidos.push(d);
@@ -49,9 +50,8 @@ const processData = (data, batch_time) => { //PROCESAMOS LA DATA -> agarramos 6 
 } 
 
 const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedidos parciales de acuerdo a la lista de pedidos extraida.
-  let newPedidos = [];
   let prom = promedio(camiones);
-
+  let numPed = cantPedidos;
   console.log(prom);
 
   if(prom < PROM_CARG) prom = PROM_CARG;
@@ -59,24 +59,28 @@ const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedi
   for(let pedido of pedidos){
     //console.log(pedido);
     if(pedido.cantidad > prom){
+      let newPedidos = [];
       //Evaluamos promedio
       while(1){
-        const pedido1 = pedido;    pedido1.id_pedido = cantPedidos+1;   newPedidos.push(pedido1);//1 pedido
-        const pedido2 = pedido;    pedido2.id_pedido = cantPedidos+2;   newPedidos.push(pedido2);//2 pedido
+        const pedido1 = structuredClone(pedido);    pedido1.id_pedido = numPed+1;   pedido1.id_padre=pedido.id_pedido;      newPedidos.push(pedido1);//1 pedido
+        const pedido2 = structuredClone(pedido);    pedido2.id_pedido = numPed+2;   pedido2.id_padre=pedido.id_pedido;      newPedidos.push(pedido2);//2 pedido
 
         //A toda la lista le reducimos la cantidad a la mitada
         newPedidos.forEach(p => p.cantidad = Math.trunc(pedido.cantidad/newPedidos.length)); //Se divide a la mitad de la iteracion actual
-        newPedidos.at(-1).cantidad = pedido.cantidad - (newPedidos.at(-1).cantidad * newPedidos.length);  //Al ultimo se le agregan los pedidos que no fueron ingresados - MEAN number.
+        newPedidos.at(-1).cantidad += pedido.cantidad - (newPedidos.at(-1).cantidad * newPedidos.length);  //Al ultimo se le agregan los pedidos que no fueron ingresados - MEAN number.
 
-        cantPedidos += 2;
-        if(newPedidos.at(-1).cantidad <= prom) break; //Fin cuando ya se cumple la condicion inicial
+        numPed = numPed + 2;
+        if(newPedidos.at(-1).cantidad <= prom){
+          pedidos = pedidos.filter(d => {return d.id_pedido !== pedido.id_pedido;});
+          break; //Fin cuando ya se cumple la condicion inicial
+        } 
       }
       //Añadimos newPedidos con pedidos
       pedidos = pedidos.concat(newPedidos);
     }
   }
-  console.log([pedidos, cantPedidos]);
-  return [pedidos, cantPedidos];
+  console.log([pedidos, numPed]);
+  return [pedidos, numPed];
   //MCD - SOLAMENTE PEDIDOS PARCIALES -> Nueva pedid        |-> ALEATORIO (2 - CAMIONES) <- MCD >  PROM(CAP_TIPO_CAMION)    |-> ALEATORIO (2- CAMIONES) > PROM (4_TIPO_CAMIONES) - MCD.
   //EL SENCILLLO -> ENTRE 2 Y SI NO ES SUFICIENTE - MÁS.    PEIDO -2 > PROM(CAP_TIPO_CAMION) -4 -> 
 
@@ -93,22 +97,71 @@ const addRoutes = (historico, planes) => {
   //PLANES - {[[PEDIDOS_NORMALES], [PEDIDOS_PARCIALES]]} ->  CADA PLAN TIENE EL CAMION Y UN ARREGLO DE RUTAS --> CIUDADES A DONDE TIENE QUE IR CADA 
   //  PLANES TIENE PARTIDO -- DE LA CIUDAD DEL ALMACEN - HACIA LA CIUDAD1 - ES PARA EL PEDIDO1::
   // -------------------------DE LA CIUDAD1 - CIUDAD2 - CIUDAD3 - CIUDAD 4 ES PARA EL PEDIDO2:: -- TENGO QUE SUMAR ALMACEN - CIUDAD1
+  const pedido_plan = [];
+  //VAMOS A ARREGLAR LAS RUTAS EN LOS PLANES QUE CORRESPONDEN
+  for(let plan of planes){
+    let allRoute = [];
+    for(let ruta of plan.rutas){
+      allRoute = allRoute.concat(ruta.ruta_ciudad); //Hacemos que vaya creciendo la ruta
+      if(ruta.pedido.id_pedido > historico.length){
+        //ES UN PEDIDO PARCIAL QUE SE DEBE AGREGAR AL ARREGLO DEL PEDIDO PRINCIPAL
+        historico[ruta.pedido.id_padre-1].plan_transporte.push({
+          'id_plan_transporte': plan.id_plan_transporte,
+          'id_ruta': ruta.id_ruta,
+          'id_hijo': ruta.pedido.id_pedido,
+          'cantidad': ruta.pedido.cantidad,
+          'hora_llegada': ruta.pedido.fecha_entrega,
+          'camion': plan.camion,
+          'plan_transporte': allRoute,
+        });
+      }
+      else{
+        //ES UN PEDIDO ATENDIDO COMPLETAMENTE
+        historico[ruta.pedido.id_pedido-1].plan_transporte.push({
+          'id_plan_transporte': plan.id_plan_transporte,
+          'id_ruta': ruta.id_ruta,
+          'id_hijo': 0,
+          'cantidad': ruta.pedido.cantidad,
+          'hora_llegada': ruta.pedido.fecha_entrega,
+          'camion': plan.camion,
+          'plan_transporte': allRoute,
+        });
+      }
+      //LLENAMOS EL PEDIDO_PLAN --> PARA SABER CUALES SON LOS PEDIDOS ATENDIDOS
+      pedido_plan.push(ruta.pedido);
+    }
+  }
 
   //PROBLEMA: "QUE NO SEA DEL PEDIDO 1 Y LUEGO SIGUE EL PEDIDO 2 - SINO EL PEDIDO50" - Voy a tener un arreglo de pedidos con las rutas para atender el pedido.
   
-  return historico;
+  return [historico, pedido_plan];
 }
 
 const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
+  console.log("PEDIDOS: ", processPedidos, "\\nMISSING: ", missingPedidos);
   let pedidos = [...processPedidos];
-  pedidos = pedidos.concat(missingPedidos);
-  //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
-  if(pedidos.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
-    return [];
   //Priorizamos los pedidos: fecha_registro
-  pedidos = pedidos.sort((a,b) => a.fecha_registro - b.fecha_registro); 
+  pedidos = pedidos.sort((a,b) => new Date(a.fecha_registro) - new Date(b.fecha_registro));
+  let pedidos_final = [...missingPedidos]; 
+  pedidos_final = pedidos_final.sort((a,b) => new Date(a.fecha_registro) - new Date(b.fecha_registro));
+  pedidos_final = pedidos_final.concat(pedidos);
+  //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
+  if(pedidos_final.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
+    return [];
+  return pedidos_final;
+}
+
+const llenarMissingPedidos = (pedidos_faltantes, pedidos, pedidos_plan) => {
+  console.log(pedidos_plan, '->',pedidos_faltantes);
+  for(let plan of pedidos_plan){
+    pedidos = pedidos.filter(d => {return d.id_pedido !== plan.id_pedido;});  //FILTRAMOS LOS QUE YA SE ATENDIERON
+  }
+  for(let miss of pedidos_faltantes){
+    if(!pedidos.some(d =>  d.id_pedido === miss.id_pedido))
+      pedidos.push(miss);  //AGREGAMOS LOS QUE NO ESTÁN
+    }
   return pedidos;
 }
 
 
-export default {processData, processParciales, addRoutes, priorityPedidos};
+export default {processData, processParciales, addRoutes, priorityPedidos, llenarMissingPedidos};

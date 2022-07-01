@@ -2,12 +2,20 @@ import React, {useState} from "react";
 
 import CiudadService from '../../services/ciudadService.js'
 
-const dataExtractor = async (values, id, fileName) => {
+
+const findCiudades = async (ciudades, line) => {
+  const ciudad = await ciudades.find(c => {
+    return (c.ubigeo === parseInt(line.trim()))
+  })
+  return ciudad;
+}
+
+const dataExtractor = async (values, id, fileName, ciudades) => {
   const year = fileName.slice(6,-2);
   const month = fileName.slice(-2);
 
-  const ciudad = await CiudadService.getCiudad(values[5].trim());
-  const almacen = await CiudadService.getCiudad(values[3].trim());
+  const ciudad = await findCiudades(ciudades, values[5]);
+  const almacen = await findCiudades(ciudades, values[3]); 
   //Obtain the date   -- THIS NEEDS TO CHANGE -- TO A GLOBAL STATE
   const currentDate = new Date();
   currentDate.setFullYear(parseInt(year));
@@ -19,7 +27,7 @@ const dataExtractor = async (values, id, fileName) => {
   
   const maxDate = new Date(currentDate);
 
-  switch (ciudad[0].region){
+  switch (ciudad.region){
       case 'COSTA':
           maxDate.setDate(maxDate.getDate() + 1);
           break;
@@ -42,8 +50,8 @@ const dataExtractor = async (values, id, fileName) => {
     // hora_entrega_max_mm: parseInt(values[2]),
     cantidad: parseInt(values[6]), 
     cliente: null,
-    ciudad: ciudad[0],
-    almacen: almacen[0],
+    ciudad: ciudad,
+    almacen: almacen,
     id_padre: 0,
     estado: 0,
     ruta: null,

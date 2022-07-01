@@ -9,7 +9,7 @@ import  SimFunction from './Func_Sim';
 import Chrono from './Chrono';
 import { color } from '@mui/system';
 
-const Mapa_Simulacion = ({datos,fechaActual}) => {
+const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -106,14 +106,17 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
      
      //console.log("Obtuve Rutas"); 
       timing.current = HORA_ITER;
+        //DEBE CAMBIAR -> A QUE TERMINE CUANDO LOS CAMIONES REGRESAN A SU ESTADO INICIAL
         if(data.current.length === 0) {
           console.log("FINISH");
+          setOpenResume(true);
+          setHistorico(historico.current);
           return;
         }  //Se depleto
       //+5 Horas por el desfase de zona horaria  
-      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH+5);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
+      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes. -> LE QUITE EL +5
       let processPedidos = SimFunction.processData(data.current, hora_ini);
-      hora_ini.setHours(hora_ini.getHours() -5); 
+      //hora_ini.setHours(hora_ini.getHours() -5);  
       var diferencia = new Date(hora_ini.getTime() - 5 * 60 * 60 * 1000); //Diferencia de zona horaria
       var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
       console.log(ahora);
@@ -133,10 +136,17 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
             }
         );
 
-        historico.current.concat(processPedidos); //PARA TENER EL HISTORIAL DE LOS PEDIDOS --> Originalmente los llenamos con los sacados -- luego aniadamos los parciales
+        //PARA TENER EL HISTORIAL DE LOS PEDIDOS --> Originalmente los llenamos con los sacados -- luego aniadamos los parciales
+        processPedidos.forEach((ped) =>{ historico.current.push(
+          {
+          'pedido': ped,
+          'plan_transporte': [],
+          }
+        );});
+
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
         
-        var arr = SimFunction.processParciales(processPedidos, this.state.camiones, cantPedidos); //Procesamos la creacion de pedidos parciales en caso sea requerido.
+        var arr = SimFunction.processParciales(processPedidos, this.state.camiones, cantPedidos.current); //Procesamos la creacion de pedidos parciales en caso sea requerido.
         processPedidos = arr[0];    cantPedidos.current = arr[1];
         //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
         const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos.current, hora_ini);
@@ -151,14 +161,15 @@ const Mapa_Simulacion = ({datos,fechaActual}) => {
         //console.log(ruta);
         await this.setState({rutas:ruta});  //SET_STATE--> RUTAS -- SE LLENAS LAS RUTAS :: RUTAS : MOVIMIENTOS - PLANES {CAMIONES, MOVIMIENTOS, PEDIDOS_FALT (NO HAY PEDIDO ORIGINAL - SOLO EL PARCIAL), PLANES}
   
-        //Llenado de pedidos faltantes
-        missingPedidos.current = await this.state.rutas.pedidos_faltantes;
-
+        
         //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
-        historico.current = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
-  
+        arr = SimFunction.addRoutes(historico.current, this.state.rutas.planes);
+        historico.current = arr[0];        const pedido_plan = arr[1];
+        
+        //Llenado de pedidos faltantes
+        missingPedidos.current = SimFunction.llenarMissingPedidos(this.state.rutas.pedidos_faltantes, missingPedidos.current, pedido_plan);
         console.log("MISSING: ", missingPedidos.current);
-
+        console.log("HISTORICOOOOOO::: ", historico.current);
         console.log(this.state.rutas);
   
        setTimeout( this.ObtenerRutas
