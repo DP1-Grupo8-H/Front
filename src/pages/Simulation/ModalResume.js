@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { Typography, Button, Grid, TextField, CircularProgress, Box } from '@mui/material';
 
 import DataExtractor from './DataExtractor';
@@ -10,13 +10,49 @@ import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOu
 import { format } from 'date-fns';
 
 export default function ModalResume({setOpenResume, historico, fechaActual}){
- 
   
+  const [data, setData] = useState({ped_entr: '', paq_entr: '', km_rec: ''});
+  
+  const retrievePaq = (historico) => {
+    let cant_paq = 0;
+    for(let h of historico){
+      for(let plan of h.plan_transporte){
+        cant_paq+=plan.cantidad;
+      }
+    }
+    if(Math.trunc(cant_paq/1000) > 0){
+      if(Math.trunc(cant_paq/1000000) > 0){
+        cant_paq = (Math.trunc(cant_paq/1000000)).toString().concat('M');
+      }
+      else{
+        cant_paq = (Math.trunc(cant_paq/1000)).toString().concat('K');
+      }
+    }
+    else{
+      cant_paq = cant_paq.toString().concat('');
+    }
+    return cant_paq;
+  }
+
+  useEffect(() => {
+    const ped_entr = historico.filter(ped => {
+      return (ped.plan_transporte.length > 0);
+    }).length;
+    const paq_entr = retrievePaq(historico);
+    const km_rec = [];
+    
+    const sim = { ped_entr: ped_entr, paq_entr: paq_entr, km_rec: km_rec };
+    
+    setData(setData => ({...setData, ...sim}));
+  
+  }, [historico])
+  console.log(data);
+
   console.log(historico);
 
   return(
     <>
-    { (historico.length > 0) ?
+    { (historico.length > 0 && data.ped_entr > 0) ?
     <>
     < Typography variant="b1" mb={2} fontFamily = "Roboto">
       La simulación termino su ejecución. El resumen de la ejecución es el siguiente:
@@ -74,7 +110,7 @@ export default function ModalResume({setOpenResume, historico, fechaActual}){
               </Typography>
             </Grid>
             <Grid item xs = {2} sm = {2} align = "left" >
-              <CustomizedInputs value = {format(fechaActual, 'hh:mm:ss')} readOnly = "true"/>
+              <CustomizedInputs value = {data.ped_entr} readOnly = "true"/>
             </Grid>
             <Grid item xs = {10} sm = {10} align = "left">
               < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
@@ -82,15 +118,7 @@ export default function ModalResume({setOpenResume, historico, fechaActual}){
               </Typography>
             </Grid>
             <Grid item xs = {2} sm = {2} align = "left" >
-              <CustomizedInputs value = {format(fechaActual, 'hh:mm:ss')} readOnly = "true"/>
-            </Grid>
-            <Grid item xs = {10} sm = {10} align = "left">
-              < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
-                  Cantidad de Kilometros Recorridos:
-              </Typography>
-            </Grid>
-            <Grid item xs = {2} sm = {2} align = "left" >
-              <CustomizedInputs value = {format(fechaActual, 'hh:mm:ss')} readOnly = "true"/>
+              <CustomizedInputs value = {data.paq_entr} readOnly = "true"/>
             </Grid>
           </Grid>
         </Grid>
@@ -112,19 +140,23 @@ export default function ModalResume({setOpenResume, historico, fechaActual}){
           </Grid>
           </Box>
         </Grid>
-        {/* <Grid item xs = {12} sm = {12} align = "right" marginTop = {0}>
+        <Grid item xs = {12} sm = {12} align = "right" marginTop = {0}>
         <Grid item xs = {3} sm = {3} align = "right" marginTop = {0}>
             <Button variant = "text" color = "primary" size = "large" type = "submit"  onClick = {() => setOpenResume(false)}> 
               <Typography variant = "button_max" > Ver Detalle </Typography>
               <ArrowCircleRightOutlinedIcon sx={{ fontSize: 40, color:'primary.main' }}/>
             </Button>
         </Grid>
-        </Grid> */}
+        </Grid>
       </Grid>
     </Box>
     </>
     :
-    <></>
+    <>
+    <Grid item xs = {12} sm = {12} align = "center" >
+        <CircularProgress />
+    </Grid>
+    </>
   }
   </>
   );
