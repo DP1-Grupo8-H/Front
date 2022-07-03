@@ -10,6 +10,8 @@ import Home from "./pages/Home/Home"
 import SevenDays from "./pages/Simulation/7_Dias"
 import Navbar from "./components/NavBar/NavBar";
 import ResumenDetalle from "./pages/Simulation/Modals/Resumen_Detalle.js";
+import Colapse from "./pages/Colapse/Colapse.js";
+import ResumenDetalleColapse from "./pages/Colapse/Modals/Resumen_Detalle.js";
 
 
 const App = () => {
@@ -38,7 +40,9 @@ const App = () => {
           {/* Redireccionamiento - hacia un detalle */}
           <Route path="sim/7_dias/resumen" exact element = {< ResumenDetalle />} />
           {/* Redireccionamiento a simulations colapso*/}
-          <Route path="/sim/colapso" exact element = {< Home />} />
+          <Route path="/sim/colapso" exact element = {< Colapse />} />
+          {/* Redireccionamiento - hacia un detalle */}
+          <Route path="sim/colapso/resumen" exact element = {< ResumenDetalleColapse />} />
           {/*Redireccionamiento a reportes */}
           <Route path="/sim/7_dias" exact element = {< Home />} />
           <Route path="/rep" exact element = {< Home />} />

@@ -4,12 +4,11 @@ import Popup from '../../components/utils/Popup';
 import ModalSimulation from './Modals/ModalSimulation';
 import ModalResume from './Modals/ModalResume';
 
-
 import './App.css';
 import Legend from "../../components/Legend/Legend";
 import { Box, Grid, Typography} from "@mui/material";
 
-const SevenDays = () => {
+const Colapse = () => {
 
   const [openPopup, setOpenPopup] = useState(true);
   const [openReusme, setOpenResume] = useState(false);
@@ -58,7 +57,7 @@ const SevenDays = () => {
         <Popup
           openPopup={openPopup}
           setOpenPopup={setOpenPopup}
-          title="Inicio de la Simulación a 7 Dias"
+          title="Inicio de la Simulación hasta el Colapso"
           >
           <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual}/>
         </Popup>
@@ -75,4 +74,4 @@ const SevenDays = () => {
 }
 
 
-export default SevenDays;
+export default Colapse;

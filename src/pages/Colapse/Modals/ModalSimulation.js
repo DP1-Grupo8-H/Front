@@ -12,7 +12,7 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
   const [simData, setSimData] = 
     useState({ini: '', fin: '', cant: '', data: []});
     
-  const dataLoader = async (myFile, myFileName) => {
+  const dataLoader = async (myFile) => {
     let allLines = myFile.split(/\r?\n|\r/);
     console.log("LLEGAMOS");
     
@@ -27,31 +27,35 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     // currentDate.setHours(0);
     // currentDate.setMinutes(0);
     currentDate.setSeconds(0);
-    const results = allLines.filter(result => {
-      const data = result.slice(0,2);
-      return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);
-    });
 
     let i = 0;
     const ciudades = await CiudadService.getCiudades();
-    let datasets = await Promise.all (results.map(async (lines) => {
+    let year = '',  month = '';
+    let datasets = await Promise.all (allLines.map(async (lines) => {
       const line = lines.split(/[\\s,:= ]+/); //6 values in string
-      
-      const pedido = DataExtractor.dataExtractor(line, i+1, myFileName, ciudades);
-      i++;
-
+      let pedido = null;
+      if(line[0].includes("VENTAS")){
+        year = line[0].slice(6,-2);
+        month = line[0].slice(-2);
+      }
+      else{
+        pedido = DataExtractor.dataExtractor(line, i+1, ciudades, year, month);
+        i++;
+        
+      }
       return pedido;
     }));
     
-
+    const results = datasets.filter(result => {
+      return (result !== null);
+    });
+    
+    console.log(results);
     //Data set --> for simulation
-    let futureDate = new Date(currentDate)
-    futureDate.setDate(futureDate.getDate()+7)
     await setFechaActual(new Date(currentDate));
     currentDate = format(currentDate, 'yyyy-MM-dd hh:mm:ss')
-    futureDate = format(futureDate, 'yyyy-MM-dd hh:mm:ss')
 
-    const sim = { ini: currentDate, fin: futureDate, cant: i, data: datasets };
+    const sim = { ini: currentDate, cant: i, data: results };
     
     await setSimData(simData => ({...simData, ...sim}));
   }
@@ -67,7 +71,7 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     fileReader.readAsText( file );
     fileReader.onload = async () => {
       await setMyFile(fileReader.result);
-      dataLoader(fileReader.result, file.name.split(".")[1]);
+      dataLoader(fileReader.result);
     }
 
     fileReader.onerror = () => {
@@ -97,7 +101,7 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
             El archivo de pedidos debe estar en el formato .txt
         </Typography>
       </Grid>
-      { (myFile !== null && simData.cant > 0) ?
+      { (myFile !== null && simData.ini !== '') ?
         <>
         <Grid container padding= "20px 0px 0px 0px" alignItems = "center">
           <Grid item xs = {1.3} sm = {1.3} align = "right">
@@ -107,22 +111,6 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
           </Grid>
           <Grid item xs = {3} sm = {3} align = "left" >
             <CustomizedInputs value = {simData.ini} readOnly = "true"/>
-          </Grid>
-          <Grid item xs = {1.8} sm = {1.8} align = "right">
-            < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
-                Fecha fin:
-            </Typography>
-          </Grid>
-          <Grid item xs = {3} sm = {3} align = "left" >
-            <CustomizedInputs value = {simData.fin} readOnly = "true"/>
-          </Grid>
-          <Grid item xs = {1.8} sm = {1.8} align = "right">
-            < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
-                Pedidos:
-            </Typography>
-          </Grid>
-          <Grid item xs = {0.7} sm = {0.7} align = "left" >
-            <CustomizedInputs value = {simData.cant} readOnly = "true"/>
           </Grid>
         </Grid>
         <Grid item xs = {12} sm = {12} align = "center" marginTop = {3}>

@@ -117,7 +117,7 @@ function findFecha_entrega(planes){
 }
 
 
-export default function ResumenDetalle(){
+export default function ResumenDetalleColapse(){
   //Uso de Redux - seleccionamso la data que regresará de Topics y lo llenamos
   const {state} = useLocation();
   const historico = state.historico;
