@@ -101,7 +101,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
       faltantes:[],
       cami:"",
       tiempo: "",
-      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000)
+      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000),
+      mostrarTramos:false
     };
 
     async ObtenerRutas(){
@@ -423,8 +424,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico}) => {
       }
 
     {(
-        this.state.tramos?.map((tramo)=>(
-          tramo.bloqueado == 1 ? (
+        this.state.tramos ?.map((tramo)=>(
+          tramo.bloqueado == 1 && this.state.mostrarTramos == true ? (
           <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
             ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>)      
         ))
