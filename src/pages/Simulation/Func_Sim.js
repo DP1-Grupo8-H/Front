@@ -109,14 +109,14 @@ const addRoutes = (historico, planes, ciudades) => {
       ruta.ruta_ciudad.forEach(r => {
         newRoutes.push(
           {
-            fecha_llegada:r.fecha_llegada,
-            id_ciudad:r.id_ciudad,
-            ciudad: ciudades[r.id_ciudad.id-1],
-            orden: r.orden,
+            'fecha_llegada':r.fecha_llegada,
+            'id_ciudad':r.id_ciudad,
+            'ciudad': ciudades[r.id_ciudad.id-1],
+            'orden': r.orden,
           }
         )
       })
-      newRoutes.shift();
+      //newRoutes.shift();
       allRoute = allRoute.concat(newRoutes); //Hacemos que vaya creciendo la ruta
       if(ruta.pedido.id_pedido > historico.length){
         //ES UN PEDIDO PARCIAL QUE SE DEBE AGREGAR AL ARREGLO DEL PEDIDO PRINCIPAL
@@ -125,7 +125,8 @@ const addRoutes = (historico, planes, ciudades) => {
           'id_ruta': ruta.id_ruta,
           'id_hijo': ruta.pedido.id_pedido,
           'cantidad': ruta.pedido.cantidad,
-          'hora_llegada': ruta.pedido.fecha_entrega,
+          'hora_llegada': allRoute.at(-1).fecha_llegada,
+          'hora_salida': allRoute[0].fecha_llegada,
           'camion': plan.camion,
           'plan_transporte': allRoute,
         });
@@ -137,7 +138,8 @@ const addRoutes = (historico, planes, ciudades) => {
           'id_ruta': ruta.id_ruta,
           'id_hijo': 0,
           'cantidad': ruta.pedido.cantidad,
-          'hora_llegada': ruta.pedido.fecha_entrega,
+          'hora_llegada': allRoute.at(-1).fecha_llegada,
+          'hora_salida': allRoute[0].fecha_llegada,
           'camion': plan.camion,
           'plan_transporte': allRoute,
         });

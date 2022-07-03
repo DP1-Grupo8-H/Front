@@ -3,7 +3,7 @@ import { Typography, Button, Grid, TextField, CircularProgress, Box } from '@mui
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import { Divider, CardActionArea, CardActions, ButtonBase, Tab, Tabs, LinearProgress } from '@mui/material';
+import { Divider, TablePagination, CardActionArea, CardActions, ButtonBase, Tab, Tabs, LinearProgress } from '@mui/material';
 
 import { format } from 'date-fns';
 import useStyles from './styles';
@@ -41,15 +41,20 @@ function TabPanel(props) {
                 height: 'auto',borderColor: 'primary.main', borderRadius: '0px 0px 16px 16px ' }}>
           {/* PLAN DE TRANSPORTE IMPLEMENTACIÓN */}
           <Grid container padding= "0rem 0rem 0rem 0rem" alignItems = "center">
-            <Grid item xs = {6} sm = {6} align = "left" >
+            <Grid item xs = {4} sm = {4} align = "left" >
                   < Typography variant="body1_bold" mb={2} color = "primary" fontFamily = "Roboto">
                       <LocalShippingIcon color = "secondary_white.darker" fontSize = "large" sx = {{paddingRight: "1rem", 'vertical-align':'-0.7rem'}} />
                       {plan.camion.placa} - Tipo: {plan.camion.tipo}
                   </Typography>
             </Grid>
-            <Grid item xs = {6} sm = {6} align = "right" >
+            <Grid item xs = {4} sm = {4} align = "right" >
                   < Typography variant="body1_bold" mb={2} color = "primary" fontFamily = "Roboto">
-                      Hora de llegada al Almacen: {plan.camion.fecha_llegada}
+                      Hora de salida del Almacen: {plan.hora_salida}
+                  </Typography>
+            </Grid>
+            <Grid item xs = {4} sm = {4} align = "right" >
+                  < Typography variant="body1_bold" mb={2} color = "primary" fontFamily = "Roboto">
+                      Hora de llegada a la Oficina: {plan.hora_llegada}
                   </Typography>
             </Grid>
              <Grid item xs = {12} sm = {12} align = "center" >
@@ -93,6 +98,23 @@ function a11yProps(index) {
   };
 }
 
+function findFecha_entrega(planes){
+    if (planes.length === 0) {
+        return -1;
+    }
+
+    var max = planes[0];
+    var maxIndex = 0;
+
+    for (var i = 1; i < planes.length; i++) {
+        if (planes[i].hora_llegada > max.hora_llegada) {
+            maxIndex = i;
+            max = planes[i];
+        }
+    }
+
+    return planes[maxIndex].hora_llegada;
+}
 
 
 export default function ResumenDetalle(){
@@ -101,16 +123,35 @@ export default function ResumenDetalle(){
   const historico = state.historico;
   //Segunda version - ahora con paginación
   const classes = useStyles();  
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
+  const [pedidos, setPedidos] = useState([]);
 
-  console.log(historico);
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
+
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  useEffect(() => {
+    const pedAux = historico.slice((page)*rowsPerPage,(page+1)*rowsPerPage);
+    console.log(historico);
+    setPedidos(pedAux);
+  }, [page]);
+  
   return(
     //Si post.length es cero - retornaremos un LOADING - sino veremos el Grid
-    !historico?.length ? ( 
+    !pedidos?.length ? ( 
         <Grid align = "center">
           <CircularProgress/>
         </Grid>) : (
@@ -142,7 +183,7 @@ export default function ResumenDetalle(){
                       </Grid>
                       <Grid container spacing = {0} padding = "0rem 2rem 0rem 2rem">
                         <Grid item xs = {4} sm = {4} align = "left">
-                          <Typography variant="h6" color="textSecondary" component="p">Plane(s) de Transporte:</Typography>
+                          <Typography variant="h6" color="textSecondary" component="p">Plan(es) de Transporte:</Typography>
                         </Grid>
                         <Grid item xs = {4} sm = {4} align = "left">
                           <Typography variant="body1_bold" color="textSecondary" component="p">Desde: {hist.pedido.almacen.ciudad}
@@ -189,7 +230,10 @@ export default function ResumenDetalle(){
 
                   <CardContent>
                     <Grid container spacing = {0}>
-                      <Grid item xs = {12} sm = {12} align = "right">
+                      <Grid item xs = {6} sm = {6} align = "left">
+                        <Typography display="inline" color = "primary" variant="body1">{`Entrega: ${findFecha_entrega(hist.plan_transporte)}`}</Typography>
+                      </Grid>
+                      <Grid item xs = {6} sm = {6} align = "right">
                         <Typography display="inline" color = "primary" variant="body1">{`Cantidad: ${hist.pedido.cantidad}`}</Typography>
                       </Grid>
                     </Grid>
@@ -200,6 +244,14 @@ export default function ResumenDetalle(){
             ))
             //En este caso - tenemos otro Grid - para items - que contendran cada post
           }
+          <TablePagination
+            component="div"
+            count={historico?.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
        </Grid>
     )
   )
