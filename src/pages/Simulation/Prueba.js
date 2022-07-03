@@ -101,7 +101,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       faltantes:[],
       cami:"",
       tiempo: "",
-      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000)
+      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000),
+      mostrarTramos:false
     };
 
     async ObtenerRutas(){
@@ -141,7 +142,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
               this.setState({tramos:auxi});
             }
         );
-
+        aux.setHours(aux.getHours() +5); 
         //PARA TENER EL HISTORIAL DE LOS PEDIDOS --> Originalmente los llenamos con los sacados -- luego aniadamos los parciales
         processPedidos.forEach((ped) =>{ historico.current.push(
           {
@@ -150,7 +151,6 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
           }
         );});
 
-        aux.setHours(aux.getHours() +5); 
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
         
         var arr = SimFunction.processParciales(processPedidos, this.state.camiones, cantPedidos.current); //Procesamos la creacion de pedidos parciales en caso sea requerido.
@@ -425,8 +425,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       }
 
     {(
-        this.state.tramos?.map((tramo)=>(
-          tramo.bloqueado == 1 ? (
+        this.state.tramos ?.map((tramo)=>(
+          tramo.bloqueado == 1 && this.state.mostrarTramos == true ? (
           <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
             ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>)      
         ))
