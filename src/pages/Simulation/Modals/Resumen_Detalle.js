@@ -64,7 +64,7 @@ function TabPanel(props) {
                 </Grid>
                 <Grid item xs = {2.5} sm = {2.5} align = "center" >
                   < Typography variant="body1" mb={2} fontFamily = "Roboto">
-                      {ruta.ciudad.ciudad} - { moment(ruta.fecha_llegada).from(pedido.fecha_registro)} 
+                      {ruta.ciudad.ciudad} - { moment(ruta.fecha_llegada).format('DD-MM-YYYY h:mm:ss a')} 
                   </Typography>
                 </Grid>
               </>
