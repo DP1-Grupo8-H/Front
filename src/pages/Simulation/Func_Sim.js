@@ -102,8 +102,10 @@ const addRoutes = (historico, planes, ciudades) => {
   //VAMOS A ARREGLAR LAS RUTAS EN LOS PLANES QUE CORRESPONDEN
   for(let plan of planes){
     let allRoute = [];
+    //plan.rutas.pop(); //Quitamos el ultimo de todos
     for(let ruta of plan.rutas){
       const newRoutes = [];
+      if(ruta.pedido.id_pedido == 0)  continue;
       ruta.ruta_ciudad.forEach(r => {
         newRoutes.push(
           {
@@ -114,7 +116,7 @@ const addRoutes = (historico, planes, ciudades) => {
           }
         )
       })
-      newRoutes.pop();      newRoutes.shift();
+      newRoutes.shift();
       allRoute = allRoute.concat(newRoutes); //Hacemos que vaya creciendo la ruta
       if(ruta.pedido.id_pedido > historico.length){
         //ES UN PEDIDO PARCIAL QUE SE DEBE AGREGAR AL ARREGLO DEL PEDIDO PRINCIPAL
