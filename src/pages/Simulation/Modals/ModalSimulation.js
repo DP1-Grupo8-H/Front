@@ -29,7 +29,7 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     currentDate.setSeconds(0);
     const results = allLines.filter(result => {
       const data = result.slice(0,2);
-      return (data >= currentDate.getDate() && data < currentDate.getDate() + 4);
+      return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);
     });
 
     let i = 0;
