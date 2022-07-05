@@ -153,13 +153,15 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
           setHistorico(historico.current);
           return;
         }  //Se depleto
-        console.log(data);
+        console.log(data.current);
         var arr = SimFunction.processParciales(processPedidos, this.state.camiones, cantPedidos.current); //Procesamos la creacion de pedidos parciales en caso sea requerido.
         processPedidos = arr[0];    cantPedidos.current = arr[1];
         //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
         const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos.current, hora_ini);
-        console.log(pedidos); 
-        if(pedidos.length === 0) return;//Llego al colapso --
+        console.log("PEDIDOS FINAL ->", pedidos); 
+        if(pedidos === []) {
+          return;
+        };//Llego al colapso --
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //PETICION AL BACK
         console.log(hora_ini);

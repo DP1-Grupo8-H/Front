@@ -39,23 +39,39 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
         month = line[0].slice(-2);
       }
       else{
-        pedido = DataExtractor.dataExtractor(line, i+1, ciudades, year, month);
-        i++;
-        
+        if(year == '2022' && month == '07'){
+          //Continue if the value is not in the range of the current Date
+          const lineDate = new Date();
+          lineDate.setFullYear(parseInt(year));
+          lineDate.setMonth(parseInt(month)-1);
+          lineDate.setDate(parseInt(line[0]));
+          lineDate.setHours(parseInt(line[1]));
+          lineDate.setMinutes(parseInt(line[2]));
+          lineDate.setSeconds(0);
+
+          if(lineDate >= currentDate){
+            pedido = DataExtractor.dataExtractor(line, i+1, ciudades, year, month);
+            i++;
+          }
+        }
+        else{
+          pedido = DataExtractor.dataExtractor(line, i+1, ciudades, year, month);
+          i++;
+        }
       }
       return pedido;
     }));
     
-    const results = datasets.filter(result => {
+    const results_2 = datasets.filter(result => {
       return (result !== null);
     });
     
-    console.log(results);
+    console.log(results_2);
     //Data set --> for simulation
     await setFechaActual(new Date(currentDate));
     currentDate = format(currentDate, 'yyyy-MM-dd hh:mm:ss')
 
-    const sim = { ini: currentDate, cant: i, data: results };
+    const sim = { ini: currentDate, cant: i, data: results_2 };
     
     await setSimData(simData => ({...simData, ...sim}));
   }

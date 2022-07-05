@@ -27,12 +27,12 @@
 .collapsible .content .show {
   height: 500px;
 }
-.noncollapsible{
+.noncollapsibleResume{
   position: relative;
   width: stretch;
 
 }
-.noncollapsible .toggle{
+.noncollapsibleResume .toggle{
   position: relative;
   top: 0px;
   background: #000000;
@@ -42,14 +42,14 @@
   border-radius: 0px;
 }
 
-.noncollapsible .content{
+.noncollapsibleResume .content{
   position: relative;
   border: 2px solid #AFAFAF;
   border-radius: 0px 0px 10px 10px;
-  height: 8rem;
+  height: 12rem;
   overflow: hidden;
 }
 
-.noncollapsible .content .show {
+.noncollapsibleResume .content .show {
   height: 500px;
 }
