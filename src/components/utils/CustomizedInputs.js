@@ -39,6 +39,8 @@ const CustomTextField = styled((props) => (
     borderRadius: 4,
     fontSize: 14,
     fontWeight: 500,
+    paddingRight: "1rem", 
+    verticalAlign:'-0.7rem',
     minWidth: "100%",
     backgroundColor: theme.palette.mode === 'light' ? '#FFF6E7' : '#FFF6E7',
     transition: theme.transitions.create([
@@ -58,11 +60,10 @@ const CustomTextField = styled((props) => (
 }));
 
 export default function CustomizedInputs(props) {
-  const { label, value, id, readOnly } = props;
-
+  const { label, value, id, readOnly, onChange } = props;
   return (
     <>
-    {readOnly ?
+    {readOnly==='true' ?
       <>
       {label === null ?? 
         <InputLabel shrink htmlFor="bootstrap-input">
@@ -70,20 +71,21 @@ export default function CustomizedInputs(props) {
         </InputLabel>
       }
         <BootstrapInput 
-          defaultValue={value ? value : '...'} 
+          defaultValue={value ? value : ''} 
           id={id ? id : 'reddit-input'} 
           style ={{width: '100%'}}
-          
+          label = {label ? label : ' '}
         />
       </>
       :
       <CustomTextField
         label={label ? label : ' '}
-        defaultValue={value ? value : '...'}
+        defaultValue={value ? value : ''}
         id={id ? id : 'reddit-input'}
         variant="filled"
         style={{}}
         fullWidth
+        onChange= {onChange}
       />
     }
     </>

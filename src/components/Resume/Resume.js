@@ -9,7 +9,7 @@ import CustomizedInputs from "../utils/CustomizedInputs";
 export default function Resume({data}){
 
   return(
-    <Grid container className='noncollapsibleResume' align = 'left' marginBottom='1rem'>
+    <Grid container className='collapsible' align = 'left' marginBottom='1rem'>
       <Grid item className = 'toggle' md = '12' xs = '12' align = 'left' >
           <Typography align = 'left' marginLeft = '1rem' marginTop = '0.2rem' variant="h5" color = 'secondary.contrastText'>
            Resumen

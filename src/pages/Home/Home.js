@@ -123,7 +123,7 @@ const Home = () => {
           title="AGREGAR LISTA DE PEDIDOS"
           size="sm"
           >
-          <ModalListaPed setOpenPopup = {setOpenListaPed}/>
+          <ModalListaPed setOpenPopup = {setOpenListaPed} setPedidos = {setPedidos}/>
           </Popup>
           <Popup
           openPopup={openPed}
@@ -131,7 +131,7 @@ const Home = () => {
           title="AGREGAR PEDIDOS"
           size="sm"
           >
-          <ModalPed setOpenResume = {setOpenPed}/>
+          <ModalPed setOpenPopup = {setOpenPed} setPedidos = {setPedidos}/>
         </Popup>
       </div>
     </div>

@@ -10,18 +10,17 @@
   top: 0px;
   background: #000000;
   border: unset;
-  cursor: pointer;
-  font:unset;
-  border-radius: 5px;
-  z-index: -1;
+  font: unset;
+  height: 2rem;
+  border-radius: 0px;
 }
 
 .collapsible .content{
   position: relative;
-  border: 1px solid #AFAFAF;
-  height: 0px;
+  border: 2px solid #AFAFAF;
+  border-radius: 0px 0px 10px 10px;
+  height: 8rem;
   overflow: hidden;
-  transition: height ease 0.3s;
 }
 
 .collapsible .content .show {
@@ -46,7 +45,7 @@
   position: relative;
   border: 2px solid #AFAFAF;
   border-radius: 0px 0px 10px 10px;
-  height: 8rem;
+  height: 12rem;
   overflow: hidden;
 }
 

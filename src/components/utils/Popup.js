@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 export default function Popup(props) {
 
-  const { title, children, openPopup, setOpenPopup, handleClose, size } = props;
+  const { title, children, openPopup, setOpenPopup, handleClose, size, noClose } = props;
 
   return (
     // Outer invisible box
@@ -30,12 +30,15 @@ export default function Popup(props) {
           <Typography align = 'left' variant="h4" style={{flexGrow:1}}>
             {title}
           </Typography>
-          <IconButton
-            color="secondary_white"
-            onClick={() => setOpenPopup(false)}
-          >
-            <CloseIcon/>
-          </IconButton>
+          { noClose ? <></>
+            :
+            <IconButton
+              color="secondary_white"
+              onClick={() => setOpenPopup(false)}
+            >
+              <CloseIcon/>
+            </IconButton>
+          }
         </div>
       </DialogTitle>
       </Box>

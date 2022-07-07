@@ -121,7 +121,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -195,13 +195,13 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     //       existen[i][j] = false;
     //     }
     //   }
-      fetch('http://localhost:8000/ciudad/listar')
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/ciudad/listar')
       .then(response => response.json())
       .then(data => 
           {
             //console.log(data);
             this.setState({ciudades:data})
-            fetch('http://localhost:8000/tramo/listar')
+            fetch('http://inf226g8.inf.pucp.edu.pe:8000/tramo/listar')
             .then(response => response.json())
             .then(data => 
               {
@@ -211,13 +211,13 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
                 var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');     
                 console.log("Hora para mantenimientos")
                 console.log(ahora);
-                fetch('http://localhost:8000/mantenimiento/listarActual/'+ahora)
+                fetch('http://inf226g8.inf.pucp.edu.pe:8000/mantenimiento/listarActual/'+ahora)
                   .then(response => response.json())
                   .then(data => 
                     {
                       console.log(data);
                       var dat = data;
-                      fetch('http://localhost:8000/camion/listar')
+                      fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
                         .then(response => response.json())
                         .then(data => 
                           {
@@ -285,7 +285,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, ''); 
       console.log("Hora para mantenimiento: ");
       console.log(ahora);    
-      fetch('http://localhost:8000/mantenimiento/listarActual/'+ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/mantenimiento/listarActual/'+ahora)
         .then(response => response.json())
         .then(data => 
           {

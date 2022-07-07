@@ -122,6 +122,7 @@ const SevenDays = () => {
         <Popup
           openPopup={openPopup}
           setOpenPopup={setOpenPopup}
+          noClose={true}
           title="Inicio de la Simulación a 7 Dias"
           >
           <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual}/>
@@ -129,6 +130,7 @@ const SevenDays = () => {
         <Popup
           openPopup={openReusme}
           setOpenPopup={setOpenResume}
+          noClose={true}
           title="Finalización de la Simulación"
           >
           <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin}/>
