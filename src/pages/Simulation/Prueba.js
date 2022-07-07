@@ -75,11 +75,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
   class Prueba extends Component{
     constructor(props){
       super(props);
-      this.Acelerarx2 = this.Acelerarx2.bind(this);
-      this.MostrarReferencias = this.MostrarReferencias.bind(this);
       this.ObtenerRutas = this.ObtenerRutas.bind(this);
       this.CargarData = this.CargarData.bind(this);
-      this.ObtenerMantenimientos = this.ObtenerMantenimientos.bind(this);
       this.currentTime = this.currentTime.bind(this);
       this.funcionCiclica = this.funcionCiclica.bind(this);
       this.sleep = this.sleep.bind(this);
@@ -100,6 +97,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       creados:0,
       rutas:null,
       moviXCamion:[],
+      mantXCamion:[],
       faltantes:[],
       cami:"",
       tiempo: "",
@@ -223,35 +221,54 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
               {
                 console.log(data);
                 this.setState({tramos:data});
-                fetch('http://localhost:8080/camion/listar')
-                        .then(response => response.json())
-                        .then(data => 
-                          {
-                            console.log(data);
-                            //Agregar atributo de tiempo y coordenadas actuales  
-                            for(let i = 0;i<data.length;i++){
-                              data[i].lat = data[i].almacen.latitud;
-                              data[i].log = data[i].almacen.longitud;
-                              data[i].tiempo = 10;  
-                              data[i].tiempollegada = new Date();
-                              data[i].ciudadActual = data[i].almacen.id;
-                              data[i].estado = 1;
-                              this.funcionCiclica(i);  
-                            }
-                            this.setState({camiones:data});
-                            this.ObtenerRutas();
-                            setInterval(() => {
-                              this.ObtenerRutas();
-                            }, 60000);
-                            // this.ObtenerMantenimientos();
-                            // this.MostrarReferencias();
+                fetch('http://localhost:8080/mantenimiento/listar')
+                .then(response => response.json())
+                .then(data => {
+                    //console.log("Los mantenimientos son: ")
+                    //console.log(data);
+                    var dat = data;
+                    fetch('http://localhost:8080/camion/listar')
+                            .then(response => response.json())
+                            .then(data => 
+                              {
+                                if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
+                                  this.state.mantXCamion= Array(data.length);
+                                  for(let i =0;i<data.length;i++){
+                                    this.state.mantXCamion[i] = [];
+                                  }
+                                }
+                                for(let i =0;i<dat.length;i++){
+                                  this.state.mantXCamion[dat[i].id_camion.id-1].push({
+                                    fecha:dat[i].fecha
+                                  });
+                                }
+                                //console.log(data);
+                                //Agregar atributo de tiempo y coordenadas actuales  
+                                for(let i = 0;i<data.length;i++){
+                                  data[i].lat = data[i].almacen.latitud;
+                                  data[i].log = data[i].almacen.longitud;
+                                  data[i].tiempo = 10;  
+                                  data[i].tiempollegada = new Date();
+                                  data[i].ciudadActual = data[i].almacen.id;
+                                  data[i].estado = 1;
+                                  this.funcionCiclica(i);  
+                                }
+                                this.setState({camiones:data});
+                                //console.log("CTMRRR");
+                                this.ObtenerRutas();
+                                setInterval(() => {
+                                  this.ObtenerRutas();
+                                }, 60000);
+                                // this.ObtenerMantenimientos();
+                                // this.MostrarReferencias();
 
-                            //Comenzar Timer una vez se halla iniciado con todo
-                            setInterval(() => {
-                              this.currentTime()
-                            }, 1000);
-                        }
-                      );
+                                //Comenzar Timer una vez se halla iniciado con todo
+                                setInterval(() => {
+                                  this.currentTime()
+                                }, 1000);
+                            }
+                          );
+                  })     
               }
             );
        }
@@ -264,6 +281,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
   async funcionCiclica(idx){
    //Revisar movimientos individuales
    var aux = this.state.camiones;
+   //console.log(this.state.camiones);
    //console.log(this.state.moviXCamion);
    if(this.state.moviXCamion.length!=0){
       if(this.state.moviXCamion[idx].length!=0){
@@ -289,11 +307,30 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       }
     }
    //Revisar mantenimiento
-
-   //Lanzar misma funcion dentro de 5 seg
+  //  console.log(this.state.mantXCamion[idx]);
+  //  await this.sleep(10000);
+  if(aux.length!=0){
+      for(let i = 0;i<this.state.mantXCamion[idx].length;i++){
+        //Queremos obtener las 00 de ese dia
+        var inicio = new Date(this.state.mantXCamion[idx][i].fecha);
+        inicio.setHours(0);
+        inicio.setMinutes(0);
+        var final = new Date(this.state.mantXCamion[idx][i].fecha);
+        final.setHours(23);
+        final.setMinutes(59);
+        if(this.state.guardado>=inicio && this.state.guardado<=final){
+          var espera  = final.getTime() - this.state.guardado.getTime();
+          aux[idx].estado = 2;
+          console.log("Estoy en mantenimiento: " + idx);
+          await this.sleep(espera/(1000*60*60)*10000);
+          aux[idx].estado = 1;
+        }
+      }
+   }
+   //Lanzar misma funcion dentro de 1.5 seg
     setTimeout(() => {
       this.funcionCiclica(idx);
-    }, 2000);
+    }, 1500);
   }
   currentTime(){
     this.state.guardado.setMinutes(this.state.guardado.getMinutes() + 6); 
@@ -306,88 +343,88 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     }
     else this.state.segundos+=1;
   }
+
   componentDidMount(){
     this.CargarData();
   }
 
-
-    ObtenerMantenimientos(){
-      var diferencia = new Date(hora_ini.getTime() +1 * 60 * 60 * 1000); //Diferencia de zona horaria
-      var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, ''); 
-      console.log("Hora para mantenimiento: ");
-      console.log(ahora);    
-      fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
-        .then(response => response.json())
-        .then(data => 
-          {
-            console.log(data);
-            var auxi = this.state.camiones;
-            for(let  i = 0;i<auxi.length;i++){
-              if(auxi[i].estado==2) auxi[i].estado = 1;
-            }
-            for(let i =0;i<data.length;i++){
-              auxi[(data[i].id_camion.id)-1].estado = 2;
-            }
-            this.setState({camiones:auxi});
-          }
-        );
+    // ObtenerMantenimientos(){
+    //   var diferencia = new Date(hora_ini.getTime() +1 * 60 * 60 * 1000); //Diferencia de zona horaria
+    //   var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, ''); 
+    //   console.log("Hora para mantenimiento: ");
+    //   console.log(ahora);    
+    //   fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
+    //     .then(response => response.json())
+    //     .then(data => 
+    //       {
+    //         console.log(data);
+    //         var auxi = this.state.camiones;
+    //         for(let  i = 0;i<auxi.length;i++){
+    //           if(auxi[i].estado==2) auxi[i].estado = 1;
+    //         }
+    //         for(let i =0;i<data.length;i++){
+    //           auxi[(data[i].id_camion.id)-1].estado = 2;
+    //         }
+    //         this.setState({camiones:auxi});
+    //       }
+    //     );
       
-      setTimeout(
-          this.ObtenerMantenimientos
-          ,60000); //Cada 6 horas
-    }  
-    MostrarReferencias(){
-      //Funcion para mover a los camiones aleatoriamente
-      //console.log(this.state.rutas); 
-      //Si estado esta lleno debemos vaciar al final
-      //console.log(this.state.rutas);
-      //console.log(this.state.moviXCamion);
+    //   setTimeout(
+    //       this.ObtenerMantenimientos
+    //       ,60000); //Cada 6 horas
+    // }  
+    // MostrarReferencias(){
+    //   //Funcion para mover a los camiones aleatoriamente
+    //   //console.log(this.state.rutas); 
+    //   //Si estado esta lleno debemos vaciar al final
+    //   //console.log(this.state.rutas);
+    //   //console.log(this.state.moviXCamion);
 
-      let aux = this.state.camiones;
+    //   let aux = this.state.camiones;
 
-      //Conversion 6h a 1 minuto
+    //   //Conversion 6h a 1 minuto
 
-      //Definimos tiempo en el que se deben mover todos
-      //La diferencia de tiempo entre ahora y el tiempo referencial
-      //lanzara la funcion de movimiento individual
+    //   //Definimos tiempo en el que se deben mover todos
+    //   //La diferencia de tiempo entre ahora y el tiempo referencial
+    //   //lanzara la funcion de movimiento individual
 
-      for(let i=0;i<this.state.moviXCamion.length;i++){
-          if(this.state.moviXCamion[i].length==0 && aux[i].tiempollegada >= Date.now()) {
-                   aux[i].estado = 1;
-                   continue;
-            } //No mas movimientos para ese camion
-           else if (this.state.moviXCamion[i].length==0){
-            continue;
-           }
-          if(aux[i].tiempollegada >= Date.now()) { //Aun no regresa
-            //console.log("Aun no me puedo mover");
-            continue;
-          }
-          var nuevaCiudad = this.state.moviXCamion[i].shift();
-          aux[i].estado = 0;
-          //console.log(nuevaCiudad);
-          aux[i].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
-          aux[i].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
-          let min = nuevaCiudad.tiempo/(1000*60*60);
-          aux[i].tiempo = 10000*min; //1h es 10 seg reales
-          aux[i].tiempollegada = Date.now()+aux[i].tiempo; //Buscar mejor bandera
-          this.setState({camiones:aux});
-        }
+    //   for(let i=0;i<this.state.moviXCamion.length;i++){
+    //       if(this.state.moviXCamion[i].length==0 && aux[i].tiempollegada >= Date.now()) {
+    //                aux[i].estado = 1;
+    //                continue;
+    //         } //No mas movimientos para ese camion
+    //        else if (this.state.moviXCamion[i].length==0){
+    //         continue;
+    //        }
+    //       if(aux[i].tiempollegada >= Date.now()) { //Aun no regresa
+    //         //console.log("Aun no me puedo mover");
+    //         continue;
+    //       }
+    //       var nuevaCiudad = this.state.moviXCamion[i].shift();
+    //       aux[i].estado = 0;
+    //       //console.log(nuevaCiudad);
+    //       aux[i].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+    //       aux[i].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+    //       let min = nuevaCiudad.tiempo/(1000*60*60);
+    //       aux[i].tiempo = 10000*min; //1h es 10 seg reales
+    //       aux[i].tiempollegada = Date.now()+aux[i].tiempo; //Buscar mejor bandera
+    //       this.setState({camiones:aux});
+    //     }
 
-      setTimeout(
-      this.MostrarReferencias
-      ,1000);
+    //   setTimeout(
+    //   this.MostrarReferencias
+    //   ,1000);
 
-    }
+    // }
 
-      Acelerarx2(){
-      //console.log(this.Marker1.current);
-      var a = this.state.duracion/2;
-      this.setState({duracion:a});
-      this.setState({latlng:[-8.474110507351497, -74.82935154356059]});
-        this.setState({latlng2:[-3.586306117836121, -80.41144843770009]});
-      this.setState({latlng3:[-16.42723302628582, -71.66528915483397]});
-      }
+      // Acelerarx2(){
+      // //console.log(this.Marker1.current);
+      // var a = this.state.duracion/2;
+      // this.setState({duracion:a});
+      // this.setState({latlng:[-8.474110507351497, -74.82935154356059]});
+      //   this.setState({latlng2:[-3.586306117836121, -80.41144843770009]});
+      // this.setState({latlng3:[-16.42723302628582, -71.66528915483397]});
+      // }
 
       /* prueba para el algoritmo como tal --> LO QUE PIDIO RODRIGO EN FRONT */
 
