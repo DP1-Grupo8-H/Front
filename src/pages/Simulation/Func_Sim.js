@@ -182,5 +182,10 @@ const llenarMissingPedidos = (pedidos_faltantes, pedidos, pedidos_plan) => {
   return pedidos;
 }
 
+const obtainCurrentPedidos = async (historico, missingPedidos, tiempoActual) => {
+  console.log(historico, missingPedidos, tiempoActual);
+  return [];
+}
 
-export default {processData, processParciales, addRoutes, priorityPedidos, llenarMissingPedidos};
+
+export default {processData, processParciales, addRoutes, priorityPedidos, llenarMissingPedidos, obtainCurrentPedidos};

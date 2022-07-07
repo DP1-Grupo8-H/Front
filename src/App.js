@@ -30,7 +30,7 @@ const App = () => {
         >
         <Routes >
           {/* Redireccionamiento - se ven solo si estamos en este PATH */}
-          <Route path="/" exact element={() => <Navigate to = '/home' />} />
+          <Route path="/" exact element={<Navigate to = '/home' />} />
           {/* Redireccionamiento a Home - general */}
           <Route path="/home" exact element = {< Home />} />
           {/* Redireccionamiento a mant -- mantenimientos*/}

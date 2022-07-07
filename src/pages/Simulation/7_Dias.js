@@ -4,10 +4,42 @@ import Popup from '../../components/utils/Popup';
 import ModalSimulation from './Modals/ModalSimulation';
 import ModalResume from './Modals/ModalResume';
 
+import { Box, Grid, Typography} from "@mui/material";
 
 import './App.css';
 import Legend from "../../components/Legend/Legend";
-import { Box, Grid, Typography} from "@mui/material";
+import Resume from "../../components/Resume/Resume";
+
+const convertMath = (number) => {
+  if(Math.trunc(number/1000) > 0){
+    if(Math.trunc(number/1000000) > 0){
+      number = (Math.round(number/1000000)).toFixed(2).toString().concat('M');
+    }
+    else{
+      number = (Math.round(number/1000)).toFixed(2).toString().concat('K');
+    }
+  }
+  else{
+    number = number.toString().concat('');
+  }
+}
+
+const retrievePaq = (historico, processPedidos) => {
+  let data = {cant : 0, cur : 0, paq : 0, paqcur : 0};
+  for(let ped of historico){
+    if(ped.plan_transporte.length > 0)  data.cant++;
+    for(let plan of ped.plan_transporte){
+      data.paq+=plan.cantidad;
+    }
+  }
+  data.cant = convertMath(data.cant);
+  data.cur = convertMath(data.cur);
+  data.paq = convertMath(data.paq);
+  data.paqcur = convertMath(data.paqcur);
+
+  return data;
+}
+
 
 const SevenDays = () => {
 
@@ -16,21 +48,53 @@ const SevenDays = () => {
   //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
   const [historico, setHistorico] = useState([]);
+  const [processPedidos, setProcessPedidos] = useState([]);
 
   const[fechaActual,setFechaActual] = useState([]);
   const[fechaFin, setFechaFin] = useState([]);
   //Return algoritmo -> rutas y pedidos faltantes.
-  console.log(data);
-
+  
+  const [historicoProcess, setHistoricoProcess] = useState({cant: '', cur: '', paq: '', paqcur: ''});
+  // useEffect(()=>{
+  //   const auxHist = retrievePaq(historico, processPedidos);
+  //   setHistoricoProcess(auxHist);
+  // }, [historico]);
+  console.log("HISTORICO PROCESS - ", historicoProcess);
   return(
     <>
       {(!openPopup && data.length > 0) ? 
       <div className="App">
-        <header className="App-header">
-          {/*<Legend />*/}
-          <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin}/>
-
-        </header>
+        <Grid container padding= "2rem" alignItems = "center">
+          <Grid item xs = {12} sm = {12} align = "left" >
+            < Typography variant="h4" mb={2} color = "primary.contrastText">
+                Mapa de las Entregas en Tiempo Real
+            </Typography>
+          </Grid>
+          <Grid item xs = {12} sm = {12} align = "center" sx = {{backgroundColor: '#282c34'}}>
+              {/* MAPA DE LA SIMULACION */}
+              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setProcessPedidos={setProcessPedidos} setFechaFin={setFechaFin}/>
+          </Grid>
+          <Grid item xs = {12} sm = {12} align = "left" >
+            {/* RESUMEN Y DETALLES */}
+            <Grid container >
+              <Grid item xs = {4} sm = {4} align = "left" marginTop = "1rem" >
+                <Grid container >
+                  <Grid item xs = {12} sm = {12} align = "left" >
+                    <Legend/>
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs = {0.5} sm = {0.5} align = "left" ></Grid>
+              <Grid item xs = {7.5} sm = {7.5} align = "left" marginTop = "1rem">
+                <Grid container >
+                  <Grid item xs = {12} sm = {12} align = "left" >
+                    {/* <Resume data = {historicoProcess}/> */}
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
       </div>
       :
       <Box
