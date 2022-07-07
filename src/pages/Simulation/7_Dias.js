@@ -67,7 +67,7 @@ const SevenDays = () => {
         <Grid container padding= "2rem" alignItems = "center">
           <Grid item xs = {12} sm = {12} align = "left" >
             < Typography variant="h4" mb={2} color = "primary.contrastText">
-                Mapa de las Entregas en Tiempo Real
+                Mapa de entregas para Simulación 7 días
             </Typography>
           </Grid>
           <Grid item xs = {12} sm = {12} align = "center" sx = {{backgroundColor: '#282c34'}}>
@@ -80,7 +80,7 @@ const SevenDays = () => {
               <Grid item xs = {4} sm = {4} align = "left" marginTop = "1rem" >
                 <Grid container >
                   <Grid item xs = {12} sm = {12} align = "left" >
-                    <Legend/>
+                    {/* <Legend/> */}
                   </Grid>
                 </Grid>
               </Grid>
