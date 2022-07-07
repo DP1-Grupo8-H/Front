@@ -101,7 +101,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       faltantes:[],
       cami:"",
       tiempo: "",
-      guardado: new Date(hora_ini.getTime()+6*60 * 60 * 1000),
+      guardado: new Date(fechaActual.getTime()),
       mostrarTramos:false,
       segundos:0,
       minutos:0
@@ -199,7 +199,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
               var diff = Math.abs(final - inicial)
               this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
                 idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[j].id_ciudad.id,
-                tiempo: diff
+                tiempo: diff,
+                inicial: this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada
              });
              inicial = final;
             }
@@ -254,7 +255,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
                                   this.funcionCiclica(i);  
                                 }
                                 this.setState({camiones:data});
-                                //console.log("CTMRRR");
+                                
                                 this.ObtenerRutas();
                                 setInterval(() => {
                                   this.ObtenerRutas();
@@ -286,6 +287,11 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
    if(this.state.moviXCamion.length!=0){
       if(this.state.moviXCamion[idx].length!=0){
          //console.log(this.state.moviXCamion[idx]);
+         if(this.state.guardado<=this.state.moviXCamion[idx][0].inicial){ //Esperar que sea la hora correcta
+          var aux = this.state.moviXCamion[idx][0].inicial.getTime()-this.state.guardado.getTime();
+          aux = aux /(1000*60*60)*10000;
+           await this.sleep(aux);
+         }
          this.state.camiones[idx].estado = 0;
          for (let i =0;i<this.state.moviXCamion[idx].length;i++){
           var nuevaCiudad = this.state.moviXCamion[idx][i];
