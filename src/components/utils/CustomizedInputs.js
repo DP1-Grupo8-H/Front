@@ -70,7 +70,7 @@ export default function CustomizedInputs(props) {
         </InputLabel>
       }
         <BootstrapInput 
-          defaultValue={value ? value : 'Input text here...'} 
+          defaultValue={value ? value : '...'} 
           id={id ? id : 'reddit-input'} 
           style ={{width: '100%'}}
           
@@ -79,7 +79,7 @@ export default function CustomizedInputs(props) {
       :
       <CustomTextField
         label={label ? label : ' '}
-        defaultValue={value ? value : 'Input text here...'}
+        defaultValue={value ? value : '...'}
         id={id ? id : 'reddit-input'}
         variant="filled"
         style={{}}

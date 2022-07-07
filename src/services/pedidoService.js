@@ -4,9 +4,9 @@ import axios from 'axios';
 const url = 'http://localhost:8000';
 //const url = 'http://inf226g8.inf.pucp.edu.pe:8000';
 
-const getCamiones = async () => {
+const getPedidos = async () => {
   try{
-    const request = await axios.get(`${url}/camion/listar/`);
+    const request = await axios.get(`${url}/pedido/listar/`);
 
     return request.data;  
   }catch(exception){
@@ -14,9 +14,9 @@ const getCamiones = async () => {
   }
 }
 
-const getCamion = async (id) => {
+const getActualPedidos = async (date) => {
   try{
-    const request = await axios.get(`${url}/camion/listar/${id}`);
+    const request = await axios.get(`${url}/pedido/listarActual/${date}`);
 
     return request.data;  
   }catch(exception){
@@ -24,9 +24,9 @@ const getCamion = async (id) => {
   }
 }
 
-const insertCamion = async (object) => {
+const insertPedido = async (object) => {
   try{
-    const request = await axios.post(`${url}/camion/insertar/`, object);
+    const request = await axios.post(`${url}/pedido/insertar/`, object);
 
     return request.data;  
   }catch(exception){
@@ -34,4 +34,4 @@ const insertCamion = async (object) => {
   }
 }
 
-export default { getCamiones, getCamion, insertCamion }
+export default { getPedidos,getActualPedidos,insertPedido }

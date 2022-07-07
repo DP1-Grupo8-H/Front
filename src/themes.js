@@ -49,8 +49,18 @@ const newTheme = () => {
       fontSize: 16,
       fontWeight: 600 // or 'bold'
      },
+     body2_bold: {
+      fontFamily: ['Roboto', 'Arial'].join(','),
+      fontSize: 14,
+      fontWeight: 600 // or 'bold'
+     },
      h4:{
       fontFamily: ['Times New Roman', 'Arial'].join(','),
+     },
+     h5:{
+      fontFamily: ['Roboto', 'Arial'].join(','),
+      fontSize: 20,
+      letterSpacing: '2px',
      },
      h6:{
       fontFamily: ['Roboto', 'Arial'].join(','),
@@ -66,6 +76,12 @@ const newTheme = () => {
       fontFamily: ['Roboto', 'Arial'].join(','),
       fontWeight: 600,
       fontSize: 18,
+      letterSpacing: '2px',
+     },
+     button_min:{
+      fontFamily: ['Roboto', 'Arial'].join(','),
+      fontWeight: 600,
+      fontSize: 14,
       letterSpacing: '2px',
      }
    }
