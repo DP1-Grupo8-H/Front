@@ -59,7 +59,7 @@ const SevenDays = () => {
   //   const auxHist = retrievePaq(historico, processPedidos);
   //   setHistoricoProcess(auxHist);
   // }, [historico]);
-  console.log("HISTORICO PROCESS - ", historicoProcess);
+  //console.log("HISTORICO PROCESS - ", historicoProcess);
   return(
     <>
       {(!openPopup && data.length > 0) ? 

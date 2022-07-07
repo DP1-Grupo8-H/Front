@@ -27,22 +27,36 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     // currentDate.setHours(0);
     // currentDate.setMinutes(0);
     currentDate.setSeconds(0);
-    const results = allLines.filter(result => {
-      const data = result.slice(0,2);
-      return (data >= currentDate.getDate() && data < currentDate.getDate() + 8);
-    });
 
     let i = 0;
     const ciudades = await CiudadService.getCiudades();
-    let datasets = await Promise.all (results.map(async (lines) => {
+    let datasets = await Promise.all (allLines.map(async (lines) => {
+      let pedido = null;
       const line = lines.split(/[\\s,:= ]+/); //6 values in string
-      
-      const pedido = DataExtractor.dataExtractor(line, i+1, myFileName, ciudades);
-      i++;
+      const year = myFileName.slice(6,-2);
+      const month = myFileName.slice(-2);
+      if(line[0] >= currentDate.getDate() && line[0] < currentDate.getDate() + 8){
+        //Continue if the value is not in the range of the current Date
+        const lineDate = new Date();
+        lineDate.setFullYear(parseInt(year));
+        lineDate.setMonth(parseInt(month)-1);
+        lineDate.setDate(parseInt(line[0]));
+        lineDate.setHours(parseInt(line[1]));
+        lineDate.setMinutes(parseInt(line[2]));
+        lineDate.setSeconds(0);
+
+        if(lineDate >= currentDate){
+          pedido = DataExtractor.dataExtractor(line, i+1, myFileName, ciudades);
+          i++;
+        }
+      }
 
       return pedido;
     }));
-    
+
+    const results_2 = datasets.filter(result => {
+      return (result !== null);
+    });
 
     //Data set --> for simulation
     let futureDate = new Date(currentDate)
@@ -51,7 +65,7 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     currentDate = format(currentDate, 'yyyy-MM-dd hh:mm:ss')
     futureDate = format(futureDate, 'yyyy-MM-dd hh:mm:ss')
 
-    const sim = { ini: currentDate, fin: futureDate, cant: i, data: datasets };
+    const sim = { ini: currentDate, fin: futureDate, cant: i, data: results_2 };
     
     await setSimData(simData => ({...simData, ...sim}));
   }

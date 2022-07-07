@@ -108,7 +108,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     };
 
     async ObtenerRutas(){
-     
+     //11am -> [+6 HORAS |- 5am]
      //console.log("Obtuve Rutas"); 
       timing.current = HORA_ITER;
         //DEBE CAMBIAR -> A QUE TERMINE CUANDO LOS CAMIONES REGRESAN A SU ESTADO INICIAL
@@ -223,13 +223,13 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
               {
                 console.log(data);
                 this.setState({tramos:data});
-                fetch('http://localhost:8080/mantenimiento/listar')
+                fetch('http://localhost:8000/mantenimiento/listar')
                 .then(response => response.json())
                 .then(data => {
                     //console.log("Los mantenimientos son: ")
                     //console.log(data);
                     var dat = data;
-                    fetch('http://localhost:8080/camion/listar')
+                    fetch('http://localhost:8000/camion/listar')
                             .then(response => response.json())
                             .then(data => 
                               {
@@ -355,7 +355,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     //   var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, ''); 
     //   console.log("Hora para mantenimiento: ");
     //   console.log(ahora);    
-    //   fetch('http://localhost:8080/mantenimiento/listarActual/'+ahora)
+    //   fetch('http://localhost:8000/mantenimiento/listarActual/'+ahora)
     //     .then(response => response.json())
     //     .then(data => 
     //       {
