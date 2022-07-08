@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import {useNavigate} from 'react-router-dom';
 
 
-export default function ModalResume({setOpenResume, historico, fechaActual, fechaFin}){
+export default function ModalResume({setOpenResume, historico, fechaActual, fechaFin,minutosFin,segundosFin}){
   const navigate = useNavigate(); //Para poder hacer uso de redux
   
   const openNav = (nav) => {
@@ -110,7 +110,16 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
           </Typography>
         </Grid>
         <Grid item xs = {1} sm = {1} align = "left" >
-          <CustomizedInputs value = {format(fechaActual, 'hh:mm:ss')} readOnly = "true"/>
+          <CustomizedInputs value = {format(fechaFin, 'hh:mm:ss')} readOnly = "true"/>
+        </Grid>
+        <Grid item xs = {5} sm = {5} align = "left"></Grid>
+        <Grid item xs = {1.5} sm = {1.5} align = "left">
+          < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
+              Tiempo de ejecución:
+          </Typography>
+        </Grid>
+        <Grid item xs = {1} sm = {1} align = "left" >
+          <CustomizedInputs value = {minutosFin + "m " + segundosFin +"s"} readOnly = "true"/>
         </Grid>
       </Grid>
       <Grid container padding= "0px 0px 0px 0px" alignItems = "center">
