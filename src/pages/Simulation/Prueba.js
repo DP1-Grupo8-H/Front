@@ -10,7 +10,7 @@ import Legend from "../../components/Legend/Legend";
 import Chrono from './Chrono';
 import { color } from '@mui/system';
 
-const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin}) => {
+const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -69,7 +69,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
   let cantPedidos = useRef(data.current.length);
 
-
+ var idInterval = [];
   /**********************************************************************/
   
   class Prueba extends Component{
@@ -104,10 +104,13 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       mostrarTramos:true,
       segundos:0,
       minutos:0,
-      estadosCamion:[]
+      estadosCamion:[],
+      idTiempos:"",
+      idObtenerRutas:"",
+      terminoSimulacion:false
     };
 
-    async hallarFin(){
+     async hallarFin(){
       for(let i =0;i<this.state.moviXCamion.length;i++){
         if(this.state.moviXCamion[i].length!=0){
           await this.sleep(1500);
@@ -157,16 +160,48 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
 
-        if(data.current.length === 0) {
-         
-          console.log("FINISH");
+        if(data.current.length === 0 && this.state.terminoSimulacion==false) {
+
+          this.setState({terminoSimulacion:true});
+           console.log("FINISH");
           //Ahora si llego mi momento
-          await this.hallarFin();
-          setFechaFin(hora_ini);
-          setOpenResume(true);
-          setHistorico(historico.current);
-          return;
-        }  //Se depleto
+          //clearInterval(this.state.idObtenerRutas);
+          //clearInterval(this.state.idTiempos);
+          clearInterval(idInterval);
+          this.hallarFin()
+          .then(()=>{
+            // var obj = document.getElementById("idMapita");//elementId will be your html element id
+            // obj .remove();
+            setSegundosFin(this.state.segundos);
+            setMinutosFin(this.state.minutos);
+            setFechaFin(this.state.guardado);
+            setHistorico(historico.current);
+            setOpenResume(true)
+            //.then(await this.sleep(9999999999))
+            //var d = JSON.parse(JSON.stringify(historico.current))
+            console.log("Solo debo estar en la eternidad 1 vez");
+            return ;
+            }
+          )
+          // var a = JSON.parse(JSON.stringify(this.state.segundos));
+          // setSegundosFin(a);
+          // var b = JSON.parse(JSON.stringify(this.state.minutos));
+          // setMinutosFin(b);
+          //var c = new Date(JSON.parse(JSON.stringify(this.state.guardado)));
+          // setFechaFin(hora_ini);
+          // setHistorico(historico.current);
+          // setOpenResume(true)
+          // .then(await this.sleep(9999999999))
+          //var d = JSON.parse(JSON.stringify(historico.current))
+          // console.log("Solo debo estar en la eternidad 1 vez");
+          // return ;
+          //return;
+        } else if(data.current.length === 0) {
+          // clearInterval(this.state.idTiempos);
+          // clearInterval(idInterval);
+          // await this.sleep(9999999999);
+          return ;
+        }
         
         console.log(data);
         var arr = SimFunction.processParciales(processPedidos, this.state.estadosCamion, cantPedidos.current); //Procesamos la creacion de pedidos parciales en caso sea requerido.
@@ -174,7 +209,11 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
         const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos.current, hora_ini);
         console.log(pedidos); 
-        if(pedidos.length === 0) return;//Llego al colapso --
+        if(pedidos.length === 0) {
+          clearInterval(idInterval);
+          console.log("Llego al colapso");
+          return ;
+        }//Llego al colapso --
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //PETICION AL BACK
         console.log(hora_ini);
@@ -268,18 +307,24 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
                                 }
                                 this.setState({estadosCamion:data});
                                 this.setState({camiones:data});
-                                
+                                // setOpenResume(true);
+                                // var d = JSON.parse(JSON.stringify(historico.current));
+                                // setHistorico(d);
+                                ////
                                 this.ObtenerRutas();
-                                setInterval(() => {
+                                ////
+                                idInterval = setInterval(() => {
                                   this.ObtenerRutas();
                                 }, 60000);
+                                // this.setState({idObtenerRutas:b});
                                 // this.ObtenerMantenimientos();
                                 // this.MostrarReferencias();
 
                                 //Comenzar Timer una vez se halla iniciado con todo
-                                setInterval(() => {
+                                var auxii = setInterval(() => {
                                   this.currentTime()
                                 }, 1000);
+                                this.setState({idTiempos:auxii});
                             }
                           );
                   })     
@@ -379,7 +424,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
   render(){
     return (
-      <MapContainer center={position1} zoom={6} scrollWheelZoom={true} >
+      <MapContainer center={position1} zoom={6} scrollWheelZoom={true} id="idMapita">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -52,6 +52,8 @@ const SevenDays = () => {
 
   const[fechaActual,setFechaActual] = useState([]);
   const[fechaFin, setFechaFin] = useState([]);
+  const[minutosFin, setMinutosFin] = useState([]);
+  const [segundosFin, setSegundosFin] = useState([]); 
   //Return algoritmo -> rutas y pedidos faltantes.
   
   const [historicoProcess, setHistoricoProcess] = useState({cant: '', cur: '', paq: '', paqcur: ''});
@@ -72,7 +74,7 @@ const SevenDays = () => {
           </Grid>
           <Grid item xs = {12} sm = {12} align = "center" sx = {{backgroundColor: '#282c34'}}>
               {/* MAPA DE LA SIMULACION */}
-              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setProcessPedidos={setProcessPedidos} setFechaFin={setFechaFin}/>
+              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setProcessPedidos={setProcessPedidos} setFechaFin={setFechaFin} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
           </Grid>
           <Grid item xs = {12} sm = {12} align = "left" >
             {/* RESUMEN Y DETALLES */}
@@ -124,14 +126,14 @@ const SevenDays = () => {
           setOpenPopup={setOpenPopup}
           title="Inicio de la Simulación a 7 Dias"
           >
-          <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual}/>
+          <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
         </Popup>
         <Popup
           openPopup={openReusme}
           setOpenPopup={setOpenResume}
           title="Finalización de la Simulación"
           >
-          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin}/>
+          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin} minutosFin={minutosFin} segundosFin={segundosFin}/>
         </Popup>
       </div>
     </>
