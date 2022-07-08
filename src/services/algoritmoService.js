@@ -5,7 +5,7 @@ const url = 'http://inf226g8.inf.pucp.edu.pe:8000';
 //const url = 'http://inf226g8.inf.pucp.edu.pe:8000';
 
 const simSemanal = async (pedidos, camiones, hora_simulacion) => {
-  //console.log("Hola soy el inicio");
+  console.log("Hola soy el inicio:", pedidos, camiones, hora_simulacion);
   var aux;
   for(const d of pedidos){
     //console.log(d.fecha_registro.toString() + "===" + new Date(d.fecha_registro).toString());

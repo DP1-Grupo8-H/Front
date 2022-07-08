@@ -166,7 +166,7 @@ const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
   console.log(pedidos_final);
   console.log(hora_ini);
   if(pedidos_final.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
-    return [];
+    return null;
   return pedidos_final;
 }
 

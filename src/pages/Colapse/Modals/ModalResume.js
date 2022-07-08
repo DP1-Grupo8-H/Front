@@ -4,17 +4,19 @@ import { Typography, Button, Grid, TextField, CircularProgress, Box } from '@mui
 import DataExtractor from '../DataExtractor';
 import CustomizedInputs from "../../../components/utils/CustomizedInputs";
 import CiudadService from '../../../services/ciudadService.js'
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
-
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { format } from 'date-fns';
 
 import {useNavigate} from 'react-router-dom';
 
 
-export default function ModalResume({setOpenResume, historico, fechaActual, fechaFin}){
+export default function ModalResume({setOpenResume, historico, fechaActual, fechaFin,minutosFin,segundosFin}){
   const navigate = useNavigate(); //Para poder hacer uso de redux
   
+  //FALTA FILTRAR LOS RESULTADOS DEL HISTORICO --> SI NO SE ENVIARON TONCES NO SE VEN
+
   const openNav = (nav) => {
     console.log(historico);
     navigate('/sim/colapso/resumen', { state: {historico: historico} });
@@ -110,7 +112,7 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
           </Typography>
         </Grid>
         <Grid item xs = {1} sm = {1} align = "left" >
-          <CustomizedInputs value = {format(fechaActual, 'hh:mm:ss')} readOnly = "true"/>
+          <CustomizedInputs value = {format(fechaFin, 'hh:mm:ss')} readOnly = "true"/>
         </Grid>
       </Grid>
       <Grid container padding= "0px 0px 0px 0px" alignItems = "center">
@@ -144,13 +146,16 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
                       width: '20rem',
                       height: '10rem',borderColor: 'primary.main', borderRadius: '16px' }}>
           <Grid item xs = {12} sm = {12} align = "center" marginTop = {0}>
-            <ErrorOutlineIcon sx={{ fontSize: 120, color:'#e53e3e' }} />
+            <ErrorOutlineOutlinedIcon sx={{ fontSize: 120, color:'#e53e3e' }} />
           </Grid>
           <Grid item xs = {12} sm = {12} align = "center" marginTop = {0}>
           < Typography variant="body1_bold" mb={2} fontFamily = "Roboto" color ='#e53e3e' >
-                  El sistema colapso
+                  Colapso
           </Typography>
           </Grid>
+          < Typography variant="body1_bold" mb={2} fontFamily = "Roboto" color ='#e53e3e'>
+                  Tiempo de ejecución:  {minutosFin + "m " + segundosFin +"s"}
+          </Typography>
           </Box>
         </Grid>
         <Grid item xs = {12} sm = {12} align = "right" marginTop = {0}>

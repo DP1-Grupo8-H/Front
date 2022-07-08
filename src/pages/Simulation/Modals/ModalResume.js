@@ -112,15 +112,6 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
         <Grid item xs = {1} sm = {1} align = "left" >
           <CustomizedInputs value = {format(fechaFin, 'hh:mm:ss')} readOnly = "true"/>
         </Grid>
-        <Grid item xs = {5} sm = {5} align = "left"></Grid>
-        <Grid item xs = {1.5} sm = {1.5} align = "left">
-          < Typography variant="body1_bold" mb={2} fontFamily = "Roboto">
-              Tiempo de ejecución:
-          </Typography>
-        </Grid>
-        <Grid item xs = {1} sm = {1} align = "left" >
-          <CustomizedInputs value = {minutosFin + "m " + segundosFin +"s"} readOnly = "true"/>
-        </Grid>
       </Grid>
       <Grid container padding= "0px 0px 0px 0px" alignItems = "center">
         <Grid item xs = {5} sm = {5} align = "center" marginTop = {3}>
@@ -160,6 +151,9 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
                   Finalizado Correctamente
           </Typography>
           </Grid>
+          < Typography variant="body1_bold" mb={2} fontFamily = "Roboto" color ='#56AD5A'>
+                  Tiempo de ejecución:  {minutosFin + "m " + segundosFin +"s"}
+          </Typography>
           </Box>
         </Grid>
         <Grid item xs = {12} sm = {12} align = "right" marginTop = {0}>

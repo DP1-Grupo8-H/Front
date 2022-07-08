@@ -9,27 +9,61 @@ import Legend from "../../components/Legend/Legend";
 import { Box, Grid, Typography} from "@mui/material";
 
 const Colapse = () => {
-
   const [openPopup, setOpenPopup] = useState(true);
   const [openReusme, setOpenResume] = useState(false);
   //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
   const [historico, setHistorico] = useState([]);
+  //const [processPedidos, setProcessPedidos] = useState([]);
 
   const[fechaActual,setFechaActual] = useState([]);
   const[fechaFin, setFechaFin] = useState([]);
+  const[minutosFin, setMinutosFin] = useState([]);
+  const [segundosFin, setSegundosFin] = useState([]); 
   //Return algoritmo -> rutas y pedidos faltantes.
-  console.log(data);
-
+  
+  //const [historicoProcess, setHistoricoProcess] = useState({cant: '', cur: '', paq: '', paqcur: ''});
+  // useEffect(()=>{
+  //   const auxHist = retrievePaq(historico, processPedidos);
+  //   setHistoricoProcess(auxHist);
+  // }, [historico]);
+  //console.log("HISTORICO PROCESS - ", historicoProcess);
+  console.log(openPopup, data.length);
   return(
     <>
       {(!openPopup && data.length > 0) ? 
       <div className="App">
-        <header className="App-header">
-          {/*<Legend />*/}
-          <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin}/>
-
-        </header>
+        <Grid container padding= "2rem" alignItems = "center">
+          <Grid item xs = {12} sm = {12} align = "left" >
+            < Typography variant="h4" mb={2} color = "primary.contrastText">
+                Mapa de entregas para Simulación al Colapso
+            </Typography>
+          </Grid>
+          <Grid item xs = {12} sm = {12} align = "center" sx = {{backgroundColor: '#282c34'}}>
+              {/* MAPA DE LA SIMULACION */}
+              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
+          </Grid>
+          <Grid item xs = {12} sm = {12} align = "left" >
+            {/* RESUMEN Y DETALLES */}
+            <Grid container >
+              <Grid item xs = {4} sm = {4} align = "left" marginTop = "1rem" >
+                <Grid container >
+                  <Grid item xs = {12} sm = {12} align = "left" >
+                    {/* <Legend/> */}
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs = {0.5} sm = {0.5} align = "left" ></Grid>
+              <Grid item xs = {7.5} sm = {7.5} align = "left" marginTop = "1rem">
+                <Grid container >
+                  <Grid item xs = {12} sm = {12} align = "left" >
+                    {/* <Resume data = {historicoProcess}/> */}
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
       </div>
       :
       <Box
@@ -57,20 +91,24 @@ const Colapse = () => {
         <Popup
           openPopup={openPopup}
           setOpenPopup={setOpenPopup}
-          title="Inicio de la Simulación hasta el Colapso"
+          noClose={true}
+          title="Inicio de la Simulación al Colapso"
           >
-          <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual}/>
+          <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
         </Popup>
         <Popup
           openPopup={openReusme}
           setOpenPopup={setOpenResume}
+          noClose={true}
           title="Finalización de la Simulación"
           >
-          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin}/>
+          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin} minutosFin={minutosFin} segundosFin={segundosFin}/>
         </Popup>
       </div>
     </>
   )
+
+  //Return algoritmo -> rutas y pedidos faltantes.
 }
 
 

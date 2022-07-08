@@ -18,9 +18,6 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
   // Primero es el origen y luego el destino
 
-  //FIN DEL ALGORITMO
-
-
   const L = require('leaflet');
 
   const myIcon = L.icon({
@@ -50,6 +47,21 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     iconAnchor: [9, 10],
     popupAnchor: [2, -40]
   });
+
+  const [flagOut,setFlagOut] = useState(null);
+
+  useEffect(() => {
+    console.log("no re-renders");
+    if(flagOut !== null){
+            //Ahora si llego mi momento
+      setSegundosFin(flagOut.segundos);
+      setMinutosFin(flagOut.minutos);
+      setFechaFin(flagOut.guardado);
+      setHistorico(flagOut.historico);
+      setOpenResume(true);
+    }
+  }, [flagOut])
+  
 
 
  /**********************************************************************/
@@ -95,6 +107,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       referencias:[],
       creados:0,
       rutas:null,
+      flagfinish: false,
       moviXCamion:[],
       mantXCamion:[],
       faltantes:[],
@@ -107,18 +120,37 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       estadosCamion:[],
       idTiempos:"",
       idObtenerRutas:"",
-      terminoSimulacion:false
+      terminoSimulacion:false,
     };
 
-     async hallarFin(){
+    async hallarFin(){
       for(let i =0;i<this.state.moviXCamion.length;i++){
         if(this.state.moviXCamion[i].length!=0){
           await this.sleep(1500);
           i--;
         }
       }
-      console.log("Dejaron de moverse todos bien csmr XD");
+      console.log("Dejaron de moverse todos bien");
     }
+    componentDidUpdate(prevProps,prevState) {
+      if (this.state.flagfinish !== prevState.flagfinish) {
+        console.log("Do something");
+        if(this.state.flagfinish) {
+          console.log("FINISH");
+          this.hallarFin()
+          .then(() => {
+            console.log("ENTRAMOS");
+
+            setFlagOut({segundos: this.state.segundos, minutos: this.state.minutos, guardado:this.state.guardado, historico: historico.current});
+            //.then(await this.sleep(9999999999))
+            //var d = JSON.parse(JSON.stringify(historico.current))
+            console.log("Solo debo estar en la eternidad 1 vez");
+            return ;
+          });
+        }
+      }
+    }
+
     async ObtenerRutas(){
      //11am -> [+6 HORAS |- 5am]
      //console.log("Obtuve Rutas"); 
@@ -160,29 +192,14 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
 
-        if(data.current.length === 0 && this.state.terminoSimulacion==false) {
-
-          this.setState({terminoSimulacion:true});
-           console.log("FINISH");
-          //Ahora si llego mi momento
-          //clearInterval(this.state.idObtenerRutas);
-          //clearInterval(this.state.idTiempos);
+        if(data.current.length === 0 && processPedidos.length === 0) {
           clearInterval(idInterval);
-          this.hallarFin()
-          .then(()=>{
-            // var obj = document.getElementById("idMapita");//elementId will be your html element id
-            // obj .remove();
-            setSegundosFin(this.state.segundos);
-            setMinutosFin(this.state.minutos);
-            setFechaFin(this.state.guardado);
-            setHistorico(historico.current);
-            setOpenResume(true)
-            //.then(await this.sleep(9999999999))
-            //var d = JSON.parse(JSON.stringify(historico.current))
-            console.log("Solo debo estar en la eternidad 1 vez");
-            return ;
-            }
-          )
+          this.setState((state) => ({
+            flagfinish: !state.flagfinish
+          }))
+          return;
+          //SI YA SE ENTREGARON TODOS LOS PEDIDOS - this.state.terminoSimulacion 1->
+        }
           // var a = JSON.parse(JSON.stringify(this.state.segundos));
           // setSegundosFin(a);
           // var b = JSON.parse(JSON.stringify(this.state.minutos));
@@ -196,12 +213,12 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
           // console.log("Solo debo estar en la eternidad 1 vez");
           // return ;
           //return;
-        } else if(data.current.length === 0) {
-          // clearInterval(this.state.idTiempos);
-          // clearInterval(idInterval);
-          // await this.sleep(9999999999);
-          return ;
-        }
+        // } else if(data.current.length === 0) {
+        //   // clearInterval(this.state.idTiempos);
+        //   // clearInterval(idInterval);
+        //   // await this.sleep(9999999999);
+        //   return ;
+        // }
         
         console.log(data);
         var arr = SimFunction.processParciales(processPedidos, this.state.estadosCamion, cantPedidos.current); //Procesamos la creacion de pedidos parciales en caso sea requerido.
@@ -209,7 +226,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         //Priority pedidos debería sacar de esta lista a los pedidos que tienen pedidos parciales -- AL ORIGINAL YA QUE NO SE CONTEMPLA LA BASE
         const pedidos = SimFunction.priorityPedidos(processPedidos, missingPedidos.current, hora_ini);
         console.log(pedidos); 
-        if(pedidos.length === 0) {
+        if(pedidos === null) {
           clearInterval(idInterval);
           console.log("Llego al colapso");
           return ;
@@ -514,7 +531,9 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
   }
   }
   return(
-    <Prueba/>
+    <div>
+      {flagOut === null&&<Prueba/>}
+    </div>
   );
 }
 export default Mapa_Simulacion;

@@ -48,7 +48,7 @@ const SevenDays = () => {
   //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
   const [historico, setHistorico] = useState([]);
-  const [processPedidos, setProcessPedidos] = useState([]);
+  //const [processPedidos, setProcessPedidos] = useState([]);
 
   const[fechaActual,setFechaActual] = useState([]);
   const[fechaFin, setFechaFin] = useState([]);
@@ -56,12 +56,13 @@ const SevenDays = () => {
   const [segundosFin, setSegundosFin] = useState([]); 
   //Return algoritmo -> rutas y pedidos faltantes.
   
-  const [historicoProcess, setHistoricoProcess] = useState({cant: '', cur: '', paq: '', paqcur: ''});
+  //const [historicoProcess, setHistoricoProcess] = useState({cant: '', cur: '', paq: '', paqcur: ''});
   // useEffect(()=>{
   //   const auxHist = retrievePaq(historico, processPedidos);
   //   setHistoricoProcess(auxHist);
   // }, [historico]);
   //console.log("HISTORICO PROCESS - ", historicoProcess);
+  console.log(openPopup, data.length);
   return(
     <>
       {(!openPopup && data.length > 0) ? 
@@ -74,7 +75,7 @@ const SevenDays = () => {
           </Grid>
           <Grid item xs = {12} sm = {12} align = "center" sx = {{backgroundColor: '#282c34'}}>
               {/* MAPA DE LA SIMULACION */}
-              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setProcessPedidos={setProcessPedidos} setFechaFin={setFechaFin} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
+              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
           </Grid>
           <Grid item xs = {12} sm = {12} align = "left" >
             {/* RESUMEN Y DETALLES */}

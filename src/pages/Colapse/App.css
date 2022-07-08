@@ -15,15 +15,8 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 90%;
-  min-width: 77%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-  position: absolute;
+
+  position: relative;
 }
 
 .App-link {

@@ -15,6 +15,9 @@ import ResumenDetalleColapse from "./pages/Colapse/Modals/Resumen_Detalle.js";
 
 
 const App = () => {
+
+  
+
   const theme = newTheme();
   return (
   <ThemeProvider theme={theme}>

@@ -15,8 +15,8 @@ export default function Popup(props) {
       fullWidth
       sx={{
         minHeight: "400px",
+        zIndex: 999999,
         '& .MuiDialog-paper': {
-          
           // position: 'absolute',
           top: 5
         }

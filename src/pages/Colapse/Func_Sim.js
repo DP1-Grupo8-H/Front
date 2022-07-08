@@ -163,9 +163,12 @@ const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
   pedidos_final = pedidos_final.sort((a,b) => new Date(a.fecha_registro) - new Date(b.fecha_registro));
   pedidos_final = pedidos_final.concat(pedidos);
   //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
-  console.log(hora_ini);
-  if(pedidos_final.some(e => (e.fecha_entrega_max - hora_ini) <= 0))
-    return null;
+  for(let e of pedidos_final){
+    if(new Date(e.fecha_entrega_max) <= new Date(hora_ini)){
+      console.log(new Date(e.fecha_entrega_max) ,'<=', new Date(hora_ini) ,'=>', new Date(e.fecha_entrega_max) <= new Date(hora_ini))
+      return null;
+    }
+  };
   return pedidos_final;
 }
 
