@@ -25,6 +25,7 @@ function findGCD (arr, n)
 } 
 function promedio (camiones)
 {
+  let cant_B = 0;   let cant_C = 0;
   const results = camiones.filter(camion => {
     return (camion.estado === 1);
   });
@@ -32,9 +33,14 @@ function promedio (camiones)
 
   var sum = 0;
   for( var i = 0; i < results.length; i++ ){
+      if(results[i].tipo == 'B')  cant_B++;
+      if(results[i].tipo == 'C')  cant_C++;
       sum += parseInt( results[i].capacidad_maxima, 10 ); //don't forget to add the base
   }
   var avg = sum/results.length;
+  if(cant_B > 7)  avg = 40;
+  if(cant_C > 10) avg = 30;
+  console.log(avg);
   return avg;
 }
 
@@ -55,7 +61,7 @@ const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedi
   let numPed = cantPedidos;
   console.log(prom);
 
-  if(prom < PROM_CARG) prom = PROM_CARG;
+  if(prom > PROM_CARG) prom = PROM_CARG;
 
   for(let pedido of pedidos){
     //console.log(pedido);
@@ -165,7 +171,7 @@ const priorityPedidos = (processPedidos, missingPedidos, hora_ini) => {
   //SI PASA QUE (pedido.fecha_entrega_max - hora_ini) -> COLAPSA
   for(let e of pedidos_final){
     if(new Date(e.fecha_entrega_max) <= new Date(hora_ini)){
-      console.log(new Date(e.fecha_entrega_max) ,'<=', new Date(hora_ini) ,'=>', new Date(e.fecha_entrega_max) <= new Date(hora_ini))
+      console.log("COLPASO EN: ", e);
       return null;
     }
   };

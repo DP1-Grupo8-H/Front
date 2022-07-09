@@ -3,12 +3,14 @@ import { MapContainer, TileLayer, useMap,Marker,Popup, Polyline,Tooltip} from 'r
 import ReactLeafletDriftMarker  from "react-leaflet-drift-marker";
 import { Component } from 'react';
 import React,{useRef, useState, useEffect, useMemo} from 'react';
-import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
+import {HORA_ITER_COL, HORA_BATCH_COL} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
 import  SimFunction from './Func_Sim';
 import Legend from "../../components/Legend/Legend";
 import Chrono from './Chrono';
 import { color } from '@mui/system';
+
+import LZString from 'lz-string';
 
 const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin}) => {
   //USO DE PARÁMETROS
@@ -165,10 +167,10 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     async ObtenerRutas(){
      //11am -> [+6 HORAS |- 5am]
      //console.log("Obtuve Rutas"); 
-      timing.current = HORA_ITER;
+      timing.current = HORA_ITER_COL;
         //DEBE CAMBIAR -> A QUE TERMINE CUANDO LOS CAMIONES REGRESAN A SU ESTADO INICIAL
       //+5 Horas por el desfase de zona horaria  
-      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH);
+      hora_ini.setHours(hora_ini.getHours() + HORA_BATCH_COL);
       let processPedidos = SimFunction.processData(data.current, hora_ini);
       //hora_ini.setHours(hora_ini.getHours() +5);  //Cambiamos la hora de inicio para indicar que ya pasaron las 6 horas corerspondientes.
       //var diferencia = new Date(hora_ini.getTime()); //Diferencia de zona horaria
@@ -291,79 +293,68 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       //  setTimeout( this.ObtenerRutas
       // , timing.current);
   }
-  CargarData(){
-      fetch('http://inf226g8.inf.pucp.edu.pe:8000/ciudad/listar')
-      .then(response => response.json())
-      .then(data => 
-          {
-            this.setState({ciudades:data})
-            fetch('http://inf226g8.inf.pucp.edu.pe:8000/tramo/listar')
-            .then(response => response.json())
-            .then(data => 
-              {
-                console.log(data);
-                this.setState({tramos:data});
-                fetch('http://inf226g8.inf.pucp.edu.pe:8000/mantenimiento/listar')
-                .then(response => response.json())
-                .then(data => {
-                    //console.log("Los mantenimientos son: ")
-                    //console.log(data);
-                    var dat = data;
-                    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
-                            .then(response => response.json())
-                            .then(data => 
-                              {
-                                if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
-                                  this.state.mantXCamion= Array(data.length);
-                                  for(let i =0;i<data.length;i++){
-                                    this.state.mantXCamion[i] = [];
-                                  }
-                                }
-                                for(let i =0;i<dat.length;i++){
-                                  this.state.mantXCamion[dat[i].id_camion.id-1].push({
-                                    fecha:dat[i].fecha
-                                  });
-                                }
-                                //console.log(data);
-                                //Agregar atributo de tiempo y coordenadas actuales  
-                                for(let i = 0;i<data.length;i++){
-                                  data[i].lat = data[i].almacen.latitud;
-                                  data[i].log = data[i].almacen.longitud;
-                                  data[i].tiempo = 10;  
-                                  data[i].tiempollegada = new Date();
-                                  data[i].ciudadActual = data[i].almacen.id;
-                                  data[i].estado = 1;
-                                  this.funcionCiclica(i);  
-                                }
-                                this.setState({estadosCamion:data});
-                                this.setState({camiones:data});
-                                // setOpenResume(true);
-                                // var d = JSON.parse(JSON.stringify(historico.current));
-                                // setHistorico(d);
-                                ////
-                                this.ObtenerRutas();
-                                ////
-                                idInterval = setInterval(() => {
-                                  this.ObtenerRutas();
-                                }, 60000);
-                                // this.setState({idObtenerRutas:b});
-                                // this.ObtenerMantenimientos();
-                                // this.MostrarReferencias();
+ CargarData(){
+    let data = JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
+    console.log(data);
+    this.setState({ciudades:data})
 
-                                //Comenzar Timer una vez se halla iniciado con todo
-                                var auxii = setInterval(() => {
-                                  this.currentTime()
-                                }, 1000);
-                                this.setState({idTiempos:auxii});
-                            }
-                          );
-                  })     
-              }
-            );
-       }
-  );
+    data = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
+    console.log(data);
+    this.setState({tramos:data});
+
+    data = JSON.parse(LZString.decompress(window.localStorage.getItem("mantenimientos")))
+    //console.log("Los mantenimientos son: ")
+    //console.log(data);
+    var dat = data;
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    .then(response => response.json())
+    .then(data => 
+      {
+        if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
+          this.state.mantXCamion= Array(data.length);
+          for(let i =0;i<data.length;i++){
+            this.state.mantXCamion[i] = [];
+          }
+        }
+        for(let i =0;i<dat.length;i++){
+          this.state.mantXCamion[dat[i].id_camion.id-1].push({
+            fecha:dat[i].fecha
+          });
+        }
+        //console.log(data);
+        //Agregar atributo de tiempo y coordenadas actuales  
+        for(let i = 0;i<data.length;i++){
+          data[i].lat = data[i].almacen.latitud;
+          data[i].log = data[i].almacen.longitud;
+          data[i].tiempo = 10;  
+          data[i].tiempollegada = new Date();
+          data[i].ciudadActual = data[i].almacen.id;
+          data[i].estado = 1;
+          this.funcionCiclica(i);  
+        }
+        this.setState({estadosCamion:data});
+        this.setState({camiones:data});
+        // setOpenResume(true);
+        // var d = JSON.parse(JSON.stringify(historico.current));
+        // setHistorico(d);
+        ////
+        this.ObtenerRutas();
+        ////
+        idInterval = setInterval(() => {
+          this.ObtenerRutas();
+        }, 60000);
+        // this.setState({idObtenerRutas:b});
+        // this.ObtenerMantenimientos();
+        // this.MostrarReferencias();
+
+        //Comenzar Timer una vez se halla iniciado con todo
+        var auxii = setInterval(() => {
+          this.currentTime()
+        }, 1000);
+        this.setState({idTiempos:auxii});
+      }
+    );
   }
-
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
