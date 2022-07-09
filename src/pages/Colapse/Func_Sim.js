@@ -59,28 +59,49 @@ const processData = (data, batch_time) => { //PROCESAMOS LA DATA -> agarramos 6 
 const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedidos parciales de acuerdo a la lista de pedidos extraida.
   let prom = promedio(camiones);
   let numPed = cantPedidos;
-  console.log(prom);
 
   if(prom > PROM_CARG) prom = PROM_CARG;
-
+  prom = 30;
   for(let pedido of pedidos){
     //console.log(pedido);
+    // if(pedido.cantidad > prom){
+    //   let newPedidos = [];
+    //   //Evaluamos promedio
+    //   while(1){
+    //     const pedido1 = structuredClone(pedido);    pedido1.id_pedido = numPed+1;   pedido1.id_padre=pedido.id_pedido;      newPedidos.push(pedido1);//1 pedido
+    //     const pedido2 = structuredClone(pedido);    pedido2.id_pedido = numPed+2;   pedido2.id_padre=pedido.id_pedido;      newPedidos.push(pedido2);//2 pedido
+
+    //     //A toda la lista le reducimos la cantidad a la mitada 
+    //     newPedidos.forEach(p => p.cantidad = Math.trunc(pedido.cantidad/newPedidos.length)); //Se divide a la mitad de la iteracion actual
+    //     newPedidos.at(-1).cantidad += pedido.cantidad - (newPedidos.at(-1).cantidad * newPedidos.length);  //Al ultimo se le agregan los pedidos que no fueron ingresados - MEAN number.
+
+    //     numPed = numPed + 2;
+    //     if(newPedidos.at(-1).cantidad <= prom){
+    //       pedidos = pedidos.filter(d => {return d.id_pedido !== pedido.id_pedido;});
+    //       break; //Fin cuando ya se cumple la condicion inicial
+    //     } 
+    //   }
+    //   //Añadimos newPedidos con pedidos
+
     if(pedido.cantidad > prom){
       let newPedidos = [];
-      //Evaluamos promedio
+      let cantPedidos = pedido.cantidad;
       while(1){
-        const pedido1 = structuredClone(pedido);    pedido1.id_pedido = numPed+1;   pedido1.id_padre=pedido.id_pedido;      newPedidos.push(pedido1);//1 pedido
-        const pedido2 = structuredClone(pedido);    pedido2.id_pedido = numPed+2;   pedido2.id_padre=pedido.id_pedido;      newPedidos.push(pedido2);//2 pedido
+        const pedido1 = structuredClone(pedido);    pedido1.id_pedido = numPed+1;   pedido1.id_padre=pedido.id_pedido;
 
-        //A toda la lista le reducimos la cantidad a la mitada
-        newPedidos.forEach(p => p.cantidad = Math.trunc(pedido.cantidad/newPedidos.length)); //Se divide a la mitad de la iteracion actual
-        newPedidos.at(-1).cantidad += pedido.cantidad - (newPedidos.at(-1).cantidad * newPedidos.length);  //Al ultimo se le agregan los pedidos que no fueron ingresados - MEAN number.
-
-        numPed = numPed + 2;
-        if(newPedidos.at(-1).cantidad <= prom){
+        numPed++;
+        //Le reducimos la cantidad del pedido a un MOD del promedio
+        cantPedidos -= prom;
+        if(cantPedidos >= 0) {
+          pedido1.cantidad = prom;
+          newPedidos.push(pedido1);//1 pedido
+        }
+        else{
+          pedido1.cantidad = -cantPedidos;
+          newPedidos.push(pedido1);//1 pedido
           pedidos = pedidos.filter(d => {return d.id_pedido !== pedido.id_pedido;});
-          break; //Fin cuando ya se cumple la condicion inicial
-        } 
+          break;
+        }
       }
       //Añadimos newPedidos con pedidos
       pedidos = pedidos.concat(newPedidos);
