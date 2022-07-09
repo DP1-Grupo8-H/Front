@@ -10,6 +10,9 @@ import Legend from "../../components/Legend/Legend";
 import Chrono from './Chrono';
 import { color } from '@mui/system';
 
+import LZString from 'lz-string';
+
+
 const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
@@ -108,6 +111,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       creados:0,
       rutas:null,
       flagfinish: false,
+      flagcolapse: false,
       moviXCamion:[],
       mantXCamion:[],
       faltantes:[],
@@ -147,6 +151,16 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
             console.log("Solo debo estar en la eternidad 1 vez");
             return ;
           });
+        }
+      }
+      if (this.state.flagcolapse !== prevState.flagcolapse) {
+        console.log("Do something");
+        if(this.state.flagcolapse) {
+          console.log("COLAPSE");
+          this.hallarFin()
+          setFlagOut({segundos: this.state.segundos, minutos: this.state.minutos, guardado:this.state.guardado, historico: historico.current});
+          console.log("Solo debo estar en la eternidad 1 vez");
+          return ;
         }
       }
     }
@@ -192,7 +206,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
 
-        if(data.current.length === 0 && processPedidos.length === 0) {
+        if(data.current.length === 0 && processPedidos.length === 0 && missingPedidos.current === 0) {
           clearInterval(idInterval);
           this.setState((state) => ({
             flagfinish: !state.flagfinish
@@ -228,8 +242,10 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         console.log(pedidos); 
         if(pedidos === null) {
           clearInterval(idInterval);
-          console.log("Llego al colapso");
-          return ;
+          this.setState((state) => ({
+            flagcolapse: !state.flagcolapse
+          }))
+          return;
         }//Llego al colapso --
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //PETICION AL BACK
@@ -279,76 +295,66 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       // , timing.current);
   }
   CargarData(){
-      fetch('http://inf226g8.inf.pucp.edu.pe:8000/ciudad/listar')
-      .then(response => response.json())
-      .then(data => 
-          {
-            this.setState({ciudades:data})
-            fetch('http://inf226g8.inf.pucp.edu.pe:8000/tramo/listar')
-            .then(response => response.json())
-            .then(data => 
-              {
-                console.log(data);
-                this.setState({tramos:data});
-                fetch('http://inf226g8.inf.pucp.edu.pe:8000/mantenimiento/listar')
-                .then(response => response.json())
-                .then(data => {
-                    //console.log("Los mantenimientos son: ")
-                    //console.log(data);
-                    var dat = data;
-                    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
-                            .then(response => response.json())
-                            .then(data => 
-                              {
-                                if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
-                                  this.state.mantXCamion= Array(data.length);
-                                  for(let i =0;i<data.length;i++){
-                                    this.state.mantXCamion[i] = [];
-                                  }
-                                }
-                                for(let i =0;i<dat.length;i++){
-                                  this.state.mantXCamion[dat[i].id_camion.id-1].push({
-                                    fecha:dat[i].fecha
-                                  });
-                                }
-                                //console.log(data);
-                                //Agregar atributo de tiempo y coordenadas actuales  
-                                for(let i = 0;i<data.length;i++){
-                                  data[i].lat = data[i].almacen.latitud;
-                                  data[i].log = data[i].almacen.longitud;
-                                  data[i].tiempo = 10;  
-                                  data[i].tiempollegada = new Date();
-                                  data[i].ciudadActual = data[i].almacen.id;
-                                  data[i].estado = 1;
-                                  this.funcionCiclica(i);  
-                                }
-                                this.setState({estadosCamion:data});
-                                this.setState({camiones:data});
-                                // setOpenResume(true);
-                                // var d = JSON.parse(JSON.stringify(historico.current));
-                                // setHistorico(d);
-                                ////
-                                this.ObtenerRutas();
-                                ////
-                                idInterval = setInterval(() => {
-                                  this.ObtenerRutas();
-                                }, 60000);
-                                // this.setState({idObtenerRutas:b});
-                                // this.ObtenerMantenimientos();
-                                // this.MostrarReferencias();
+    let data = JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
+    console.log(data);
+    this.setState({ciudades:data})
 
-                                //Comenzar Timer una vez se halla iniciado con todo
-                                var auxii = setInterval(() => {
-                                  this.currentTime()
-                                }, 1000);
-                                this.setState({idTiempos:auxii});
-                            }
-                          );
-                  })     
-              }
-            );
-       }
-  );
+    data = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
+    console.log(data);
+    this.setState({tramos:data});
+
+    data = JSON.parse(LZString.decompress(window.localStorage.getItem("mantenimientos")))
+    //console.log("Los mantenimientos son: ")
+    //console.log(data);
+    var dat = data;
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    .then(response => response.json())
+    .then(data => 
+      {
+        if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
+          this.state.mantXCamion= Array(data.length);
+          for(let i =0;i<data.length;i++){
+            this.state.mantXCamion[i] = [];
+          }
+        }
+        for(let i =0;i<dat.length;i++){
+          this.state.mantXCamion[dat[i].id_camion.id-1].push({
+            fecha:dat[i].fecha
+          });
+        }
+        //console.log(data);
+        //Agregar atributo de tiempo y coordenadas actuales  
+        for(let i = 0;i<data.length;i++){
+          data[i].lat = data[i].almacen.latitud;
+          data[i].log = data[i].almacen.longitud;
+          data[i].tiempo = 10;  
+          data[i].tiempollegada = new Date();
+          data[i].ciudadActual = data[i].almacen.id;
+          data[i].estado = 1;
+          this.funcionCiclica(i);  
+        }
+        this.setState({estadosCamion:data});
+        this.setState({camiones:data});
+        // setOpenResume(true);
+        // var d = JSON.parse(JSON.stringify(historico.current));
+        // setHistorico(d);
+        ////
+        this.ObtenerRutas();
+        ////
+        idInterval = setInterval(() => {
+          this.ObtenerRutas();
+        }, 60000);
+        // this.setState({idObtenerRutas:b});
+        // this.ObtenerMantenimientos();
+        // this.MostrarReferencias();
+
+        //Comenzar Timer una vez se halla iniciado con todo
+        var auxii = setInterval(() => {
+          this.currentTime()
+        }, 1000);
+        this.setState({idTiempos:auxii});
+      }
+    );
   }
 
   sleep(ms) {

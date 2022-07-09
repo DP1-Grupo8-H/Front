@@ -13,10 +13,33 @@ import ResumenDetalle from "./pages/Simulation/Modals/Resumen_Detalle.js";
 import Colapse from "./pages/Colapse/Colapse.js";
 import ResumenDetalleColapse from "./pages/Colapse/Modals/Resumen_Detalle.js";
 
+import ciudadService from "./services/ciudadService.js";
+import tramoService from "./services/tramoService.js";
+import mantenimientoService from "./services/mantenimientoService.js";
+
+import LZString from 'lz-string';
+
+//NONE OF THOSE ARE GOING TO CHANGE -- BUT THEY HELP FOR A FAST DEVELOP
+
+async function cargarData(){
+  //Cargar data for
+  const ciudades = await ciudadService.getCiudades();
+  const tramos = await tramoService.getTramos();
+  const mantenimientos = await mantenimientoService.getMantenimientos();
+
+  localStorage.setItem("ciudades", LZString.compress(JSON.stringify(ciudades)));
+  localStorage.setItem("tramos", LZString.compress(JSON.stringify(tramos)));
+  localStorage.setItem("mantenimientos", LZString.compress(JSON.stringify(mantenimientos)));
+  if(ciudades.length && tramos.length && mantenimientos.length) localStorage.setItem("flag_done", JSON.stringify(true));
+}
 
 const App = () => {
 
-  
+  useState();
+  useEffect(() => {
+    let flag_done = window.localStorage.getItem("flag_done");
+    if(!flag_done)  cargarData();
+  }, [])
 
   const theme = newTheme();
   return (

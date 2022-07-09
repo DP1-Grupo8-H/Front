@@ -7,6 +7,9 @@ import CiudadService from '../../../services/ciudadService.js'
 
 import { format } from 'date-fns';
 
+import LZString from 'lz-string';
+
+
 export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
   const [myFile, setMyFile] = useState(null);
   const [simData, setSimData] = 
@@ -29,7 +32,8 @@ export default function EliminarCursos({setOpenPopup, setData,setFechaActual}){
     currentDate.setSeconds(0);
 
     let i = 0;
-    const ciudades = await CiudadService.getCiudades();
+    const ciudades = await JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
+    console.log(ciudades);
     let year = '',  month = '';
     let datasets = await Promise.all (allLines.map(async (lines) => {
       const line = lines.split(/[\\s,:= ]+/); //6 values in string

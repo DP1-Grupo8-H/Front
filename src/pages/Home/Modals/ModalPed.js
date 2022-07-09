@@ -9,6 +9,9 @@ import PedidoService from '../../../services/pedidoService.js'
 
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
+import LZString from 'lz-string';
+
+
 export default function ModalPed({setOpenPopup, setPedidos}){
   const [ped, setPed] = useState({codigo: '', cantidad: '', ciudad: ''});
   const [ciudades, setCiudades] = useState([]);
@@ -17,7 +20,7 @@ export default function ModalPed({setOpenPopup, setPedidos}){
   const [inputValue, setInputValue] = React.useState('');
 
   useEffect(() => {
-    CiudadService.getCiudades()
+    JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
     .then(ciud => {
       ciud.forEach(ciudad => {
         setCiudades(ciudades=>[...ciudades,{
