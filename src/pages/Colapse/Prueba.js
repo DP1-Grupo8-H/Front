@@ -179,7 +179,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -306,7 +306,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     //console.log("Los mantenimientos son: ")
     //console.log(data);
     var dat = data;
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    fetch('http://localhost:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
@@ -342,7 +342,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         ////
         idInterval = setInterval(() => {
           this.ObtenerRutas();
-        }, 60000);
+        }, 30000); //Llamar API cada 30 s
         // this.setState({idObtenerRutas:b});
         // this.ObtenerMantenimientos();
         // this.MostrarReferencias();
@@ -378,9 +378,9 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
           otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
           otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
           let min = nuevaCiudad.tiempo/(1000*60*60);
-          otro[idx].tiempo = 10*min*80; 
+          otro[idx].tiempo = 5*min*80; 
           this.state.camiones[idx] = otro[idx];
-          await this.sleep(10000*min);
+          await this.sleep(5000*min);
          }
          //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
          this.state.moviXCamion[idx] = [];
@@ -403,7 +403,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
           var espera  = final.getTime() - this.state.guardado.getTime();
           this.state.camiones[idx].estado = 2;
           console.log("Estoy en mantenimiento: " + idx);
-          await this.sleep(espera/(1000*60*60)*10000);
+          await this.sleep(espera/(1000*60*60)*5000);
           this.state.camiones[idx].estado = 1;
         }
       }
@@ -414,7 +414,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     }, 2000);
   }
   currentTime(){
-    this.state.guardado.setMinutes(this.state.guardado.getMinutes() + 6); 
+    this.state.guardado.setMinutes(this.state.guardado.getMinutes() + 12); 
     var diferencia = new Date(this.state.guardado.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
     var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     this.setState({tiempo:ahora});
