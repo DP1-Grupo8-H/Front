@@ -7,7 +7,6 @@ import {HORA_ITER_COL, HORA_BATCH_COL} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
 import  SimFunction from './Func_Sim';
 import Legend from "../../components/Legend/Legend";
-import Chrono from './Chrono';
 import { color } from '@mui/system';
 
 import LZString from 'lz-string';

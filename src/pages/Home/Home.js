@@ -200,7 +200,7 @@ const Home = () => {
     }
 
 
-  hallarPunto(b,a){
+  hallarPunto(a,b){
     var startLatMicroDeg = this.state.ciudades[a.id_ciudad.id-1].latitud;
     var startLonMicroDeg = this.state.ciudades[a.id_ciudad.id-1].longitud; 
     var endLatMicroDeg = this.state.ciudades[b.id_ciudad.id-1].latitud;
