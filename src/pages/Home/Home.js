@@ -200,14 +200,16 @@ const Home = () => {
     }
 
 
-  hallarPunto(a,b){
+  hallarPunto(b,a){
     var startLatMicroDeg = this.state.ciudades[a.id_ciudad.id-1].latitud;
     var startLonMicroDeg = this.state.ciudades[a.id_ciudad.id-1].longitud; 
     var endLatMicroDeg = this.state.ciudades[b.id_ciudad.id-1].latitud;
     var endLonMicroDeg =this.state.ciudades[b.id_ciudad.id-1].longitud;
+    console.log(a);
+    console.log(b);
     var ahora = new Date();
     var despues = new Date(b.fecha_llegada);
-    var t = ahora.getTime()/despues.getTime(); // How much of the distance to use, from 0 through 1
+    var t = 0; // How much of the distance to use, from 0 through 1
     var alatRad=this.toRadians(startLatMicroDeg/1000000);
     var alonRad=this.toRadians(startLonMicroDeg/1000000);
     var blatRad=this.toRadians(endLatMicroDeg/1000000);
@@ -258,7 +260,7 @@ const Home = () => {
         inicial =  new Date(movi[i].ruta_ciudad[0].fecha_llegada);
           for(let j=1;j<movi[i].ruta_ciudad.length;j++){
             final =  new Date(movi[i].ruta_ciudad[j].fecha_llegada);
-            var diff = (final.getTime() - inicial.getTime())/1000*80;
+            var diff = (final.getTime() - inicial.getTime())/1000*200;
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
@@ -303,7 +305,7 @@ const Home = () => {
                     // this.state.camiones[(movi[i].id_camion)-1] = otro[(movi[i].id_camion)-1];
                     var ahora = new Date();
                     var ultimo = new Date(movi[i].ruta_ciudad[k].fecha_llegada);
-                    var diff = (ultimo.getTime()-ahora.getTime())/1000*80;
+                    var diff = (ultimo.getTime()-ahora.getTime())/1000*200;
                     this.state.moviXCamion[(movi[i].id_camion)-1].push({
                       idCiudad: movi[i].ruta_ciudad[k].id_ciudad.id,
                       tiempo: diff,
@@ -317,7 +319,7 @@ const Home = () => {
           var aaa = new Date(movi[i].ruta_ciudad[idx].fecha_llegada); 
           for(let j=idx+1;j<movi[i].ruta_ciudad.length;j++){
             final =  new Date(movi[i].ruta_ciudad[j].fecha_llegada);
-            var diff = (final.getTime() - aaa.getTime())/1000*80;
+            var diff = (final.getTime() - aaa.getTime())/1000*200;
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
@@ -420,7 +422,7 @@ const Home = () => {
            ...this.state.camiones.slice(idx+1,this.state.camiones.length)
           ]
           this.setState({camiones:x});
-          await this.sleep(nuevaCiudad.tiempo);
+          await this.sleep(nuevaCiudad.tiempo*1000/200);
          }
          //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
          this.state.moviXCamion[idx] = [];

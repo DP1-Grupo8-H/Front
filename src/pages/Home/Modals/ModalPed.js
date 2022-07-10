@@ -20,15 +20,13 @@ export default function ModalPed({setOpenPopup, setPedidos}){
   const [inputValue, setInputValue] = React.useState('');
 
   useEffect(() => {
-    JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
-    .then(ciud => {
+    const ciud = JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
       ciud.forEach(ciudad => {
         setCiudades(ciudades=>[...ciudades,{
           'label': `${ciudad.ubigeo}    ${ciudad.departamento}, ${ciudad.ciudad}`,
           'ciudad': ciudad,
         }])
       })
-    })
   }, []);
 
   useEffect(()=>{
@@ -52,22 +50,28 @@ export default function ModalPed({setOpenPopup, setPedidos}){
             maxDate.setDate(maxDate.getDate() + 2);
             break;
     }
-    maxDate = format(maxDate, 'yyyy-MM-dd hh:mm:ss');
-    return maxDate;
+    //maxDate = format(maxDate, 'yyyy-MM-dd hh:mm:ss');
+    var aux = new Date(maxDate);
+    //aux.setHours(aux.getHours() - 5);
+    var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    return ahora;
   }
 
   function handleClick () {
     //Creamos el pedido
+    var aux = new Date();
+    //aux.setHours(aux.getHours() - 5);
+    var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     const newPed = {
         "id_padre": 0,
         "codigo": ped.codigo,
-        "fecha_registro": format(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+        "fecha_registro": ahora,
         "fecha_entrega_max": hallarfechaEntrMax(new Date(), ped.ciudad),
         "fecha_entrega": null,
         "cliente": 1,
         "cantidad": ped.cantidad,
         "ciudad": ped.ciudad,
-        "almacen": null,
+        "almacen": ped.ciudad,
         "ruta": null,
         "estado": 1
     }
