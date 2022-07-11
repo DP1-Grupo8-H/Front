@@ -294,22 +294,23 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       // , timing.current);
   }
  CargarData(){
-    let data = JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
-    console.log(data);
-    this.setState({ciudades:data})
+    let datos = JSON.parse(LZString.decompress(window.localStorage.getItem("ciudades")))
+    console.log(datos);
+    this.setState({ciudades:datos})
 
-    data = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
-    console.log(data);
-    this.setState({tramos:data});
+    datos = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
+    console.log(datos);
+    this.setState({tramos:datos});
 
-    data = JSON.parse(LZString.decompress(window.localStorage.getItem("mantenimientos")))
+    datos = JSON.parse(LZString.decompress(window.localStorage.getItem("mantenimientos")))
     //console.log("Los mantenimientos son: ")
     //console.log(data);
-    var dat = data;
+    var dat = datos;
     fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
+        console.log(data);
         if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
           this.state.mantXCamion= Array(data.length);
           for(let i =0;i<data.length;i++){
