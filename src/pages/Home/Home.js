@@ -111,21 +111,21 @@ const Home = () => {
 
    CargarData(){
     //CARGAR CUANDO INICIA EL MAPA POR PRIMERA VEZ
-      fetch('http://localhost:8000/ciudad/listar')
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/ciudad/listar')
       .then(response => response.json())
       .then(data => 
         {
           this.setState({ciudades:data})
-          fetch('http://localhost:8000/tramo/listar')
+          fetch('http://inf226g8.inf.pucp.edu.pe:8000/tramo/listar')
           .then(response => response.json())
           .then(data => 
             {
               this.setState({tramos:data});
-              fetch('http://localhost:8000/camion/listar')
+              fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
               .then(response => response.json())
               .then(dat => 
                 {
-                  fetch('http://localhost:8000/mantenimiento/listar')
+                  fetch('http://inf226g8.inf.pucp.edu.pe:8000/mantenimiento/listar')
                     .then(response => response.json())
                     .then(data => 
                       {
@@ -146,7 +146,7 @@ const Home = () => {
                         aux.setHours(aux.getHours() - 5);
                         var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                         console.log(ahora); 
-                        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+                        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
                             .then(response => response.json())
                             .then(data => 
                               {
@@ -169,7 +169,7 @@ const Home = () => {
                                 aux.setHours(aux.getHours() - 5);
                                 var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                                 //console.log(ahora); 
-                                fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
+                                fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
                                 .then(response => response.json())
                                 .then(data => 
                                   {
@@ -363,14 +363,14 @@ const Home = () => {
     aux.setHours(aux.getHours() - 5);
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     console.log(ahora);
-    fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
       .then(response => response.json())
       .then(data => 
         {
         console.log(data);
         this.llenarMovimientos(data.movimientos);
         console.log(this.state.moviXCamion);
-        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
