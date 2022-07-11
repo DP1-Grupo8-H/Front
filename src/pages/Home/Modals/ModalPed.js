@@ -130,7 +130,7 @@ export default function ModalPed({setOpenPopup, setPedidos}){
             sx = {{zIndex : 9999}}
             id="controllable-states-demo"
             options={ciudades}
-            renderInput={(params) => <TextField {...params} label="Controllable" />}
+            renderInput={(params) => <TextField {...params} label="Seleccionar oficina" />}
             disablePortal
             hover={true}
           />

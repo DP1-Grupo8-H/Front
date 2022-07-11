@@ -205,7 +205,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
         data.current = data.current.filter(d => {return !processPedidos.includes(d);});  //Removemos los pedidos procesados -> asegura iteraciones
 
-        if(data.current.length === 0 && processPedidos.length === 0 && missingPedidos.current === 0) {
+        if(data.current.length === 0 && processPedidos.length === 0 && missingPedidos.current.length === 0) {
           clearInterval(idInterval);
           this.setState((state) => ({
             flagfinish: !state.flagfinish

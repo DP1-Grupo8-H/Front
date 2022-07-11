@@ -11,7 +11,7 @@ import Logo from '../../archives/Logo.svg';
 import useStyles from './styles';
 import {useNavigate} from 'react-router-dom';
 
-const pages = ['Mapa', 'Mantenimiento', 'Simulaciones', 'Reportes'];
+const pages = ['Mapa', 'Simulaciones'];
 const p_simulation = ['A 7 días', 'Colapso'];
 
 
