@@ -48,6 +48,10 @@ const Home = () => {
     setOpenDetail(true);
   }
 
+  const handleMandarPedidos = e => {
+    /* CODIGO DE DANIEL PARA MANDAR PEDIDOS*/
+  }
+
   return(
     <>
         <div>
@@ -70,7 +74,7 @@ const Home = () => {
                 <LegendMapa/>
               </Grid>
               <Grid item xs = {8} sm = {8} align = "left" >
-                {/* <ResumeMapa/> */}
+                <ResumeMapa/>
               </Grid>
               <Grid item xs = {4} sm = {4} align = "left" >
                 <Box sx={{  bgcolor: 'secondary_white.main',
@@ -81,7 +85,21 @@ const Home = () => {
                         width: 'auto',
                         height: '14rem',borderColor: 'primary.contrastText', borderRadius: '16px ' }}>
                     <Grid container alignItems = "center">
-                      <Grid item xs = {12} sm = {12} align = "left" marginTop = "2rem">
+                      <Grid item xs = {12} sm = {12} align = "left" marginTop = "0.3rem">
+                        <Button variant = "contained" color = "primary" size = "small" type = "submit" fullWidth onClick = {handleMandarPedidos}>
+                          <Grid container alignItems = "center">
+                            <Grid item xs = {4} sm = {4} align = "left" marginTop = "0rem">
+                              <BallotIcon color = "secondary_white" sx = {{paddingLeft: "0rem", 'vertical-align':'-0.7rem'}} />
+                            </Grid>
+                            <Grid item xs = {8} sm = {8} align = "left" marginTop = "0rem">
+                            <Typography variant = "button_min" color = "secondary_white.main" > 
+                                Lanzar Pedidos 
+                            </Typography>
+                            </Grid>
+                          </Grid> 
+                        </Button>
+                      </Grid>
+                      <Grid item xs = {12} sm = {12} align = "left" marginTop = "0.5rem">
                         <Button variant = "contained" color = "secondary_white" size = "small" type = "submit" fullWidth onClick = {() => setOpenListaPed(true)}>
                           <Grid container alignItems = "center">
                             <Grid item xs = {4} sm = {4} align = "left" marginTop = "0rem">
@@ -169,7 +187,7 @@ const Home = () => {
           <Popup
           openPopup={openDetail}
           setOpenPopup={setOpenDetail}
-          title={`DETALE DEL PEDIDO #${pedDetail.pedido.id_pedido}`}
+          title={`DETALE DEL PEDIDO #${(!pedDetail ? '-': pedDetail.pedido.id_pedido)}`}
           size="md"
           >
           <ModalDetalle setOpenDetail = {setOpenDetail} pedDetail = {pedDetail}/>

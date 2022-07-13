@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 
-const url = 'http://inf226g8.inf.pucp.edu.pe:8000';
-//const url = 'http://inf226g8.inf.pucp.edu.pe:8000';
+const url = 'http://localhost:8000';
+//const url = 'http://localhost:8000';
 
 const getPedidos = async () => {
   try{

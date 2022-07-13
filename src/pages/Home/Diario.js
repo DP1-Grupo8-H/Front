@@ -186,7 +186,7 @@ const Diario = React.memo(({historico, setHistorico}) => {
     datos = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
     console.log(datos);
     this.setState({tramos:datos})
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    fetch('http://localhost:8000/camion/listar')
     .then(response => response.json())
     .then(dat => 
       {
@@ -208,7 +208,7 @@ const Diario = React.memo(({historico, setHistorico}) => {
         aux.setHours(aux.getHours() - 5);
         var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
         console.log(ahora); 
-        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
             .then(response => response.json())
             .then(data => 
               {
@@ -231,7 +231,7 @@ const Diario = React.memo(({historico, setHistorico}) => {
                 aux.setHours(aux.getHours() - 5);
                 var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                 //console.log(ahora); 
-                fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+                fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
                 .then(response => response.json())
                 .then(data => 
                   {
@@ -422,14 +422,14 @@ const Diario = React.memo(({historico, setHistorico}) => {
     aux.setHours(aux.getHours() - 5);
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     console.log(ahora);
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+    fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
       .then(response => response.json())
       .then(data => 
         {
         console.log(data);
         this.llenarMovimientos(data.movimientos);
         console.log(this.state.moviXCamion);
-        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
