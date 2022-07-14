@@ -117,6 +117,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       cami:"",
       tiempo: "",
       guardado: new Date(fechaActual.getTime()+6*1000*60*60),
+      cronometro:new Date(fechaActual.getTime()+5*1000*60*60),
       mostrarTramos:true,
       segundos:0,
       minutos:0,
@@ -342,18 +343,16 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         ////
         idInterval = setInterval(() => {
           this.ObtenerRutas();
-        }, 50000);
+        }, 60000);
         // this.setState({idObtenerRutas:b});
         // this.ObtenerMantenimientos();
         // this.MostrarReferencias();
 
         //Comenzar Timer una vez se halla iniciado con todo
-        setTimeout(() => {
-          var auxii = setInterval(() => {
-            this.currentTime()
-          }, 1000);
-          this.setState({idTiempos:auxii});
-        }, 10000);
+        var auxii = setInterval(() => {
+          this.currentTime()
+        }, 1000);
+        this.setState({idTiempos:auxii});
       }
     );
   }
@@ -417,8 +416,9 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     }, 2000);
   }
   currentTime(){
+    this.state.cronometro.setMinutes(this.state.cronometro.getMinutes() + 6);
     this.state.guardado.setMinutes(this.state.guardado.getMinutes() + 6); 
-    var diferencia = new Date(this.state.guardado.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
+    var diferencia = new Date(this.state.cronometro.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
     var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     this.setState({tiempo:ahora});
     if(this.state.segundos==59){

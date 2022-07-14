@@ -116,6 +116,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       cami:"",
       tiempo: "",
       guardado: new Date(fechaActual.getTime()+6*1000*60*60),
+      cronometro:new Date(fechaActual.getTime()+4*1000*60*60),
       mostrarTramos:true,
       segundos:0,
       minutos:0,
@@ -178,7 +179,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -305,7 +306,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     //console.log("Los mantenimientos son: ")
     //console.log(data);
     var dat = datos;
-    fetch('http://localhost:8000/camion/listar')
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
@@ -346,7 +347,6 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         // this.setState({idObtenerRutas:b});
         // this.ObtenerMantenimientos();
         // this.MostrarReferencias();
-
         //Comenzar Timer una vez se halla iniciado con todo
         var auxii = setInterval(() => {
           this.currentTime()
@@ -414,8 +414,9 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     }, 2000);
   }
   currentTime(){
+    this.state.cronometro.setMinutes(this.state.cronometro.getMinutes() + 12); 
     this.state.guardado.setMinutes(this.state.guardado.getMinutes() + 12); 
-    var diferencia = new Date(this.state.guardado.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
+    var diferencia = new Date(this.state.cronometro.getTime() -5* 60 * 60 * 1000); //Diferencia de zona horaria
     var ahora = diferencia.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     this.setState({tiempo:ahora});
     if(this.state.segundos==59){
