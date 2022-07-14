@@ -5,46 +5,90 @@ import { Component } from 'react';
 import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
+import pedidoService from '../../services/pedidoService';
 import { color } from '@mui/system';
 import { Box, Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
 import BallotIcon from '@mui/icons-material/Ballot';
 import LZString from 'lz-string';
 
-const addRoutes = (historico, planes, ciudades) => {
-  //VAMOS A AGREGAR LAS RUTAS QUE CORRESPONDENO -> INICIANDOLAS AQUI MISMO
 
-  //VAMOS A ARREGLAR LAS RUTAS EN LOS PLANES QUE CORRESPONDEN
-  for(let plan of planes){
-    let allRoute = [];
-    //plan.rutas.pop(); //Quitamos el ultimo de todos
-    for(let ruta of plan.rutas){
-      const newRoutes = [];
-      if(ruta.pedido == null)  continue;
-      ruta.ruta_ciudad.forEach(r => {
-        newRoutes.push(
-          {
-            'fecha_llegada':r.fecha_llegada,
-            'id_ciudad':r.id_ciudad,
-            'ciudad': ciudades[r.id_ciudad.id-1],
-            'orden': r.orden,
-          }
-        )
-      })
-      //newRoutes.shift();
-      allRoute = allRoute.concat(newRoutes); //Hacemos que vaya creciendo la ruta
-        if(ruta.pedido.id_padre > 0){
-          if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_padre)){
+
+const Diario = React.memo(({historico, setHistorico,ref}) => {
+
+  const addRoutes = async (historico, planes, ciudades) => {
+    //VAMOS A AGREGAR LAS RUTAS QUE CORRESPONDENO -> INICIANDOLAS AQUI MISMO
+    for(let plan of planes){
+      for(let ruta of plan.rutas){
+        if(ruta.pedido === null)  continue;
+        if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_pedido)){
+          if(ruta.pedido.id_padre === 0){
             historico.push(
             {
               'pedido': ruta.pedido,
               'plan_transporte': [],
             });  //AGREGAMOS LOS QUE NO ESTÁN
           }
-          //ES UN PEDIDO PARCIAL QUE SE DEBE AGREGAR AL ARREGLO DEL PEDIDO PRINCIPAL
-          historico[historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_padre)].plan_transporte.push({
+        }
+      }
+    }
+
+    //VAMOS A ARREGLAR LAS RUTAS EN LOS PLANES QUE CORRESPONDEN
+    let cant = 0;
+    for(let plan of planes){
+      let allRoute = [];
+      //plan.rutas.pop(); //Quitamos el ultimo de todos
+      for(let ruta of plan.rutas){
+        cant++;
+        const newRoutes = [];
+        if(ruta.pedido == null)  continue;
+        ruta.ruta_ciudad.forEach(r => {
+          newRoutes.push(
+            {
+              'fecha_llegada':r.fecha_llegada,
+              'id_ciudad':r.id_ciudad,
+              'ciudad': ciudades[r.id_ciudad.id-1],
+              'orden': r.orden,
+            }
+          )
+        })
+        //newRoutes.shift();
+        allRoute = allRoute.concat(newRoutes); //Hacemos que vaya creciendo la ruta
+
+          if(ruta.pedido.id_padre > 0){
+            //ES UN PEDIDO PARCIAL QUE SE DEBE AGREGAR AL ARREGLO DEL PEDIDO PRINCIPAL
+            if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_padre)){
+              //Debemos llamar al pedido del
+              const newPed = await pedidoService.getPedido(ruta.pedido.id_padre)
+                historico.push(
+                {
+                  'pedido': newPed,
+                  'plan_transporte': [],
+                });  //AGREGAMOS LOS QUE NO ESTÁN
+            }
+            historico[historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_padre)].plan_transporte.push({
+              'id_plan_transporte': plan.id_plan_transporte,
+              'id_ruta': ruta.id_ruta,
+              'id_hijo': ruta.pedido.id_pedido,
+              'cantidad': ruta.pedido.cantidad,
+              'hora_llegada': allRoute.at(-1).fecha_llegada,
+              'hora_salida': allRoute[0].fecha_llegada,
+              'camion': plan.camion,
+              'plan_transporte': allRoute,
+            });
+          }
+        else{
+            if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_pedido)){
+              historico.push(
+              {
+                'pedido': ruta.pedido,
+                'plan_transporte': [],
+              });  //AGREGAMOS LOS QUE NO ESTÁN
+            }
+          //ES UN PEDIDO ATENDIDO COMPLETAMENTE
+          historico[historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_pedido)].plan_transporte.push({
             'id_plan_transporte': plan.id_plan_transporte,
             'id_ruta': ruta.id_ruta,
-            'id_hijo': ruta.pedido.id_pedido,
+            'id_hijo': 0,
             'cantidad': ruta.pedido.cantidad,
             'hora_llegada': allRoute.at(-1).fecha_llegada,
             'hora_salida': allRoute[0].fecha_llegada,
@@ -52,36 +96,16 @@ const addRoutes = (historico, planes, ciudades) => {
             'plan_transporte': allRoute,
           });
         }
-      else{
-          if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_pedido)){
-            historico.push(
-            {
-              'pedido': ruta.pedido,
-              'plan_transporte': [],
-            });  //AGREGAMOS LOS QUE NO ESTÁN
-          }
-        //ES UN PEDIDO ATENDIDO COMPLETAMENTE
-        historico[historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_pedido)].plan_transporte.push({
-          'id_plan_transporte': plan.id_plan_transporte,
-          'id_ruta': ruta.id_ruta,
-          'id_hijo': 0,
-          'cantidad': ruta.pedido.cantidad,
-          'hora_llegada': allRoute.at(-1).fecha_llegada,
-          'hora_salida': allRoute[0].fecha_llegada,
-          'camion': plan.camion,
-          'plan_transporte': allRoute,
-        });
       }
+
+
     }
+
+    //PROBLEMA: "QUE NO SEA DEL PEDIDO 1 Y LUEGO SIGUE EL PEDIDO 2 - SINO EL PEDIDO50" - Voy a tener un arreglo de pedidos con las rutas para atender el pedido.
+    
+    return historico;
   }
 
-  //PROBLEMA: "QUE NO SEA DEL PEDIDO 1 Y LUEGO SIGUE EL PEDIDO 2 - SINO EL PEDIDO50" - Voy a tener un arreglo de pedidos con las rutas para atender el pedido.
-  
-  return historico;
-}
-
-
-const Diario = React.memo(({historico, setHistorico,ref}) => {
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
   // Primero es el origen y luego el destino
@@ -193,14 +217,28 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
     });
    }
 
-  componentDidUpdate(prevProps,prevState) {
+  componentDidUpdate (prevProps,prevState) {
     if (this.state.rutas !== prevState.rutas) {
-      console.log("Rutas distintas");
-      const auxhistorico = addRoutes (historico, this.state.rutas.planes, this.state.ciudades)
-      setHistorico(auxhistorico);
+      console.log(this.state.rutas);
+      addRoutes (historico, this.state.rutas.planes, this.state.ciudades)
+      .then(auxhistorico => 
+        {
+          console.log(auxhistorico);
+          setHistorico(auxhistorico);
+        }
+      );
+    }
+    if(this.state.camiones !== prevState.camiones){
+      //vamos a hallar los camiones en curso y en mantenimiento
+      let ruta = 0;  let mant = 0;
+      for(let camion of this.state.camiones){
+        if(camion.estado === 0) ruta++;
+        if(camion.estado === 2) mant++;
+      }
+
     }
   }
-
+  
    CargarData(){
     //CARGAR CUANDO INICIA EL MAPA POR PRIMERA VEZ
 
@@ -231,6 +269,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
         var aux = new Date();
         aux.setHours(aux.getHours() - 5);
         var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        let blq = 0;
         console.log(ahora); 
         fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
             .then(response => response.json())
@@ -244,7 +283,9 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
                 }
                 for(let i = 0;i<data.length;i++){
                   auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
+                  blq++;
                 }
+
                 this.setState({tramos:auxi});
                 for(let i = 0;i<dat.length;i++){
                   dat[i].lat = dat[i].almacen.latitud;
@@ -446,6 +487,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
     aux.setHours(aux.getHours() - 5);
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     console.log(ahora);
+    let blq = 0;
     fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
       .then(response => response.json())
       .then(data => 
@@ -464,11 +506,13 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
               }
               for(let i = 0;i<data.length;i++){
                  auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
+                 blq++;
+                }
+                this.setState({tramos:auxi});
               }
-              this.setState({tramos:auxi});
-            }
-        );
-      });
+              );
+
+          });
   }
 
 

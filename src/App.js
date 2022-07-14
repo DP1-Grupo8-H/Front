@@ -56,9 +56,9 @@ const App = () => {
         >
         <Routes >
           {/* Redireccionamiento - se ven solo si estamos en este PATH */}
-          <Route path="/" exact element={<Navigate to = '/home' />} />
+          <Route path="/" exact element={<Navigate to = '/diario/mapa' />} />
           {/* Redireccionamiento a Home - general */}
-          <Route path="/home" exact element = {< Home />} />
+          <Route path="/diario/mapa" exact element = {< Home />} />
           {/* Redireccionamiento a mant -- mantenimientos*/}
           <Route path="/mant" exact element = {< Home />} />
           {/* Redireccionamiento a simulations 7 dias*/}
