@@ -6,7 +6,8 @@ import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
 import { color } from '@mui/system';
-
+import { Box, Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
+import BallotIcon from '@mui/icons-material/Ballot';
 import LZString from 'lz-string';
 
 const addRoutes = (historico, planes, ciudades) => {
@@ -18,7 +19,7 @@ const addRoutes = (historico, planes, ciudades) => {
     //plan.rutas.pop(); //Quitamos el ultimo de todos
     for(let ruta of plan.rutas){
       const newRoutes = [];
-      if(ruta.pedido.id_pedido == 0)  continue;
+      if(ruta.pedido == null)  continue;
       ruta.ruta_ciudad.forEach(r => {
         newRoutes.push(
           {
@@ -80,7 +81,7 @@ const addRoutes = (historico, planes, ciudades) => {
 }
 
 
-const Diario = React.memo(({historico, setHistorico}) => {
+const Diario = React.memo(({historico, setHistorico,ref}) => {
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
   // Primero es el origen y luego el destino
@@ -135,6 +136,7 @@ const Diario = React.memo(({historico, setHistorico}) => {
       this.llenarMovimientosInicial = this.llenarMovimientosInicial.bind(this);
       // this.ObtenerRutas = this.ObtenerRutas.bind(this);
       this.CargarData = this.CargarData.bind(this);
+      this.forzarPedidos = this.forzarPedidos.bind(this);
       // this.currentTime = this.currentTime.bind(this);
       // this.funcionCiclica = this.funcionCiclica.bind(this);
       // this.sleep = this.sleep.bind(this);
@@ -168,6 +170,28 @@ const Diario = React.memo(({historico, setHistorico}) => {
       idObtenerRutas:"",
       terminoSimulacion:false,
     };
+
+
+
+   forzarPedidos(){
+    fetch('http://localhost:8000/forzar/diario')
+    .then(() => 
+      {
+      //console.log(data);
+      var aux = new Date();
+      aux.setHours(aux.getHours() - 5);
+      var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+      fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
+          .then(response => response.json())
+          .then(data => 
+            {
+            console.log(data);
+            this.setState({rutas:data});
+            this.llenarMovimientos(data.movimientos);
+            //console.log(this.state.moviXCamion);
+          });
+    });
+   }
 
   componentDidUpdate(prevProps,prevState) {
     if (this.state.rutas !== prevState.rutas) {
@@ -264,11 +288,11 @@ const Diario = React.memo(({historico, setHistorico}) => {
     var startLonMicroDeg = this.state.ciudades[a.id_ciudad.id-1].longitud; 
     var endLatMicroDeg = this.state.ciudades[b.id_ciudad.id-1].latitud;
     var endLonMicroDeg =this.state.ciudades[b.id_ciudad.id-1].longitud;
-    console.log(a);
-    console.log(b);
+    //console.log(a);
+    //console.log(b);
     var ahora = new Date();
     var despues = new Date(b.fecha_llegada);
-    var t = 0; // How much of the distance to use, from 0 through 1
+    var t = ahora.getTime()/despues.getTime(); // How much of the distance to use, from 0 through 1
     var alatRad=this.toRadians(startLatMicroDeg/1000000);
     var alonRad=this.toRadians(startLonMicroDeg/1000000);
     var blatRad=this.toRadians(endLatMicroDeg/1000000);
@@ -550,9 +574,20 @@ const Diario = React.memo(({historico, setHistorico}) => {
   
         </div> */}
   
-        {/* <div style={{position:'absolute',zIndex:9999,float:'left',bottom:0,width:"500px"}}>
-           <Legend/>
-        </div> */}
+        <div style={{position:'relative',zIndex:9999,float:'right',marginTop:'30px',marginRight:'15px'}}>
+          <Button variant = "contained" color = "primary" size = "small" type = "submit" fullWidth onClick={()=>this.forzarPedidos()}>
+            <Grid container alignItems = "right">
+              <Grid item xs = {4} sm = {4} align = "left" marginTop = "0rem">
+                <BallotIcon color = "secondary_white" sx = {{paddingLeft: "0rem", 'vertical-align':'-0.7rem'}} />
+              </Grid>
+              <Grid item xs = {8} sm = {8} align = "left" marginTop = "0rem">
+              <Typography variant = "button_min" color = "secondary_white.main" > 
+                  Lanzar Pedidos 
+              </Typography>
+              </Grid>
+            </Grid> 
+          </Button>
+        </div>
         {(
           this.state.ciudades?.map((ciudad)=>(
               ciudad.tipo==1 ? (

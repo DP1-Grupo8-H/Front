@@ -53,6 +53,7 @@ const Home = () => {
     /* CODIGO DE DANIEL PARA MANDAR PEDIDOS*/
   }
 
+
   return(
     <>
         <div>
@@ -65,7 +66,7 @@ const Home = () => {
 
           <Grid item xs = {7.5} sm = {7.5} align = "center" sx = {{marginTop:"-1.5rem"}}>
             {/* MAPA DE LA SIMULACION */}
-            <Diario historico={historico} setHistorico = {setHistorico}/>
+            <Diario historico={historico} setHistorico = {setHistorico} />
           </Grid>
           
           <Grid item xs = {4.5} sm = {4.5} align = "left" >
@@ -86,7 +87,7 @@ const Home = () => {
                         width: 'auto',
                         height: '14rem',borderColor: 'primary.contrastText', borderRadius: '16px ' }}>
                     <Grid container alignItems = "center">
-                      <Grid item xs = {12} sm = {12} align = "left" marginTop = "0.3rem">
+                      {/* <Grid item xs = {12} sm = {12} align = "left" marginTop = "0.3rem">
                         <Button variant = "contained" color = "primary" size = "small" type = "submit" fullWidth onClick = {handleMandarPedidos}>
                           <Grid container alignItems = "center">
                             <Grid item xs = {4} sm = {4} align = "left" marginTop = "0rem">
@@ -99,7 +100,7 @@ const Home = () => {
                             </Grid>
                           </Grid> 
                         </Button>
-                      </Grid>
+                      </Grid> */}
                       <Grid item xs = {12} sm = {12} align = "left" marginTop = "0.5rem">
                         <Button variant = "contained" color = "secondary_white" size = "small" type = "submit" fullWidth onClick = {() => setOpenListaPed(true)}>
                           <Grid container alignItems = "center">
