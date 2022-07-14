@@ -90,7 +90,7 @@ export default function ModalListaPed({setOpenPopup, setPedidos}){
           "cliente": 1,
           "cantidad": parseInt(line[1]),
           "ciudad": ciudad,
-          "almacen": null,
+          "almacen": ciudad,
           "ruta": null,
           "estado": 1
       }
@@ -138,7 +138,7 @@ export default function ModalListaPed({setOpenPopup, setPedidos}){
         const respNewPed = await PedidoService.insertPedido(newPed)
         setPedidos(pedidos => [...pedidos, respNewPed]);
         
-        const newPedidos = await isOverCharged(newPed);
+        const newPedidos = await isOverCharged(respNewPed);
 
         for(let newParcial of newPedidos){
           const respPed = await PedidoService.insertPedido(newParcial)

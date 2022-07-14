@@ -96,7 +96,7 @@ export default function ModalPed({setOpenPopup, setPedidos}){
         "cliente": 1,
         "cantidad": ped.cantidad,
         "ciudad": ped.ciudad,
-        "almacen": null,
+        "almacen": ped.ciudad,
         "ruta": null,
         "estado": 1
     }
@@ -107,7 +107,7 @@ export default function ModalPed({setOpenPopup, setPedidos}){
       const respNewPed = await PedidoService.insertPedido(newPed)
       setPedidos(pedidos => [...pedidos, respNewPed]);
       
-      const newPedidos = await isOverCharged(newPed);
+      const newPedidos = await isOverCharged(respNewPed);
       for(let newParcial of newPedidos){
         const respPed = await PedidoService.insertPedido(newParcial)
         if(respPed) {
