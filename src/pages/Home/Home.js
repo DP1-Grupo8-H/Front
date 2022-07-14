@@ -32,17 +32,18 @@ const Home = () => {
   useEffect(() => {
     for(let pedido of pedidos){
       if(!historico.some(ped =>  ped.pedido.id_pedido === pedido.id_pedido)){
-        historico.push(
-        {
-          'pedido': pedido,
-          'plan_transporte': [],
-        });  //AGREGAMOS LOS QUE NO ESTÁN
+        if(pedido.id_padre === 0){
+          historico.push(
+          {
+            'pedido': pedido,
+            'plan_transporte': [],
+          });  //AGREGAMOS LOS QUE NO ESTÁN
+        }
       }
     }
   }, [pedidos])
   
   console.log(historico);
-
   const handleDetail = (plan) => {
     setPedDetail(plan);
     setOpenDetail(true);

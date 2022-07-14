@@ -26,7 +26,7 @@ const getActualPedidos = async (date) => {
 
 const insertPedido = async (object) => {
   try{
-    console.log(object);
+
     const request = await axios.post(`${url}/pedido/insertar/`, object);
 
     return request.data;  

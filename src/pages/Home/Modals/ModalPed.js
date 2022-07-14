@@ -11,6 +11,31 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
 import LZString from 'lz-string';
 
+function isOverCharged (pedido) {
+  //Funcion para evaluar si un pedido está sobrecargado de estos mismos.
+
+  //console.log(pedido);
+  let newPedidos = [];
+  if(pedido.cantidad > 30){
+    let cantPedidos = pedido.cantidad;
+    while(1){
+      let pedido1 = structuredClone(pedido);    pedido1.id_padre=pedido.id_pedido;     pedido1.estado = 1;
+      //Le reducimos la cantidad del pedido a un MOD del promedio
+      cantPedidos -= 30;
+      if(cantPedidos >= 0) {
+        pedido1.cantidad = 30;
+        newPedidos.push(pedido1);//1 pedido
+      }
+      else{
+        pedido1.cantidad = -cantPedidos;
+        newPedidos.push(pedido1);//1 pedido
+        break;
+      }
+    }
+  }
+
+  return newPedidos;
+}
 
 export default function ModalPed({setOpenPopup, setPedidos}){
   const [ped, setPed] = useState({codigo: '', cantidad: '', ciudad: ''});
@@ -57,12 +82,12 @@ export default function ModalPed({setOpenPopup, setPedidos}){
     return ahora;
   }
 
-  function handleClick () {
+  const handleClick = async e => {
     //Creamos el pedido
     var aux = new Date();
     //aux.setHours(aux.getHours() - 5);
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-    const newPed = {
+    let newPed = {
         "id_padre": 0,
         "codigo": ped.codigo,
         "fecha_registro": ahora,
@@ -71,19 +96,40 @@ export default function ModalPed({setOpenPopup, setPedidos}){
         "cliente": 1,
         "cantidad": ped.cantidad,
         "ciudad": ped.ciudad,
-        "almacen": ped.ciudad,
+        "almacen": null,
         "ruta": null,
         "estado": 1
     }
-
-    PedidoService.insertPedido(newPed)
-    .then(respPed => {
-      //SE ENVIA AL BACK -> EL NUEVO PEDIDO RETORNA CON SU ID -> LUEGO EVALUAR SI LA CANTIDAD SOBREPASA DE LOS CAMIONES PARA HACER PEDIDOS PARCIALES -> ESTADO DEL PEDIDO ORIGINAL = 3 - ID=1 -- DE LOS PARCIALES ESTADO = 1 ID_PADRE = 
+    //EVALUAMOS SI EL PEDIDO EXCEDE LA CANTIDAD
+    let flag = 0;
+    if(newPed.cantidad > 30){  //HAY PARCIALES
+      newPed = { ...newPed,  estado: 3 };
+      const respNewPed = await PedidoService.insertPedido(newPed)
+      setPedidos(pedidos => [...pedidos, respNewPed]);
+      
+      const newPedidos = await isOverCharged(newPed);
+      for(let newParcial of newPedidos){
+        const respPed = await PedidoService.insertPedido(newParcial)
+        if(respPed) {
+          setPedidos(pedidos => [...pedidos, respPed]);
+        }
+        else{
+          flag = 1;
+          break;
+        }
+      }
+    }
+    else{ //NO HAY PARCIALES
+      const respPed = await PedidoService.insertPedido(newPed)
       if(respPed) {
         setPedidos(pedidos => [...pedidos, respPed]);
-        setOpenPopup(false);
       }
-    });
+      else{
+        flag = 1;
+      }
+    }
+
+    setOpenPopup(false);
   }
 
   return(
