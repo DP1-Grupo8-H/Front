@@ -14,6 +14,16 @@ const getPedidos = async () => {
   }
 }
 
+const getPedido = async (id) => {
+  try{
+    const request = await axios.get(`${url}/pedido/listar/${id}`);
+
+    return request.data;  
+  }catch(exception){
+    console.error(exception);
+  }
+}
+
 const getActualPedidos = async (date) => {
   try{
     const request = await axios.get(`${url}/pedido/listarActual/${date}`);
@@ -35,4 +45,4 @@ const insertPedido = async (object) => {
   }
 }
 
-export default { getPedidos,getActualPedidos,insertPedido }
+export default { getPedidos,getPedido, getActualPedidos,insertPedido }

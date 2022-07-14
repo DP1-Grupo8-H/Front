@@ -23,7 +23,7 @@ export default function ResumeMapa({data}){
           <Grid container padding= "0.5rem" alignItems = "center">
             <Grid item xs = {9} sm = {9} align = "left">
               < Typography variant="body2_bold" mb={2} fontFamily = "Roboto">
-                  Cantidad de pedidos entregados:
+                  Cantidad de Rutas Generadas:
               </Typography>
             </Grid>
             <Grid item xs = {2} sm = {2} align = "right" >
@@ -31,27 +31,27 @@ export default function ResumeMapa({data}){
             </Grid>
             <Grid item xs = {9} sm = {9} align = "left">
               < Typography variant="body2_bold" mb={2} fontFamily = "Roboto">
-                  Cantidad de pedidos en curso:
+                  Cantidad de Tramos Bloqueados:
               </Typography>
             </Grid>
             <Grid item xs = {2} sm = {2} align = "right" >
-              <CustomizedInputs value = {data ? data.cur : '-'} readOnly = "true"/>
+              <CustomizedInputs value = {data ? data.blq : '-'} readOnly = "true"/>
             </Grid>
             <Grid item xs = {9} sm = {9} align = "left">
               < Typography variant="body2_bold" mb={2} fontFamily = "Roboto">
-                  Cantidad de paquetes entregados:
+                  Cantidad de Camiones en ruta:
               </Typography>
             </Grid>
             <Grid item xs = {2} sm = {2} align = "right" >
-              <CustomizedInputs value = {data ? data.paq : '-'} readOnly = "true"/>
+              <CustomizedInputs value = {data ? data.ruta : '-'} readOnly = "true"/>
             </Grid>
             <Grid item xs = {9} sm = {9} align = "left">
               < Typography variant="body2_bold" mb={2} fontFamily = "Roboto">
-                  Cantidad de paquetes en curso:
+                  Camiones en mantenimiento:
               </Typography>
             </Grid>
             <Grid item xs = {2} sm = {2} align = "right" >
-              <CustomizedInputs value = {data ? data.paqcur : '-'} readOnly = "true"/>
+              <CustomizedInputs value = {data ? data.mant : '-'} readOnly = "true"/>
             </Grid>
           </Grid>
       </Grid>

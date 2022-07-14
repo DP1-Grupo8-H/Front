@@ -28,6 +28,7 @@ const Home = () => {
   const [openDetail, setOpenDetail] = useState(false);
   const [pedDetail, setPedDetail] = useState(null);
   const [pedidos, setPedidos] = useState([]);
+  const [data, setData] = useState({cant: '', blq: '', ruta: '', mant:''});
 
   useEffect(() => {
     for(let pedido of pedidos){
@@ -44,6 +45,7 @@ const Home = () => {
   }, [pedidos])
   
   console.log(historico);
+  console.log(pedidos);
   const handleDetail = (plan) => {
     setPedDetail(plan);
     setOpenDetail(true);
@@ -75,13 +77,13 @@ const Home = () => {
               <Grid item xs = {12} sm = {12} align = "left" >
                 <LegendMapa/>
               </Grid>
-              <Grid item xs = {8} sm = {8} align = "left" >
-                <ResumeMapa/>
-              </Grid>
-              <Grid item xs = {4} sm = {4} align = "left" >
+              {/* <Grid item xs = {8} sm = {8} align = "left" >
+                <ResumeMapa data = {data}/>
+              </Grid> */}
+              <Grid item xs = {12} sm = {12} align = "left" >
                 <Box sx={{  bgcolor: 'secondary_white.main',
                         m: 1,
-                        margin: '0rem 0rem 1rem 1rem',
+                        margin: '0rem 0rem 1rem 0rem',
                         backgroundColor: 'neutral',
                         border: 1.5,
                         width: 'auto',
@@ -101,7 +103,7 @@ const Home = () => {
                           </Grid> 
                         </Button>
                       </Grid> */}
-                      <Grid item xs = {12} sm = {12} align = "left" marginTop = "0.5rem">
+                      <Grid item xs = {12} sm = {12} align = "left" marginTop = "4.5rem">
                         <Button variant = "contained" color = "secondary_white" size = "small" type = "submit" fullWidth onClick = {() => setOpenListaPed(true)}>
                           <Grid container alignItems = "center">
                             <Grid item xs = {4} sm = {4} align = "left" marginTop = "0rem">
