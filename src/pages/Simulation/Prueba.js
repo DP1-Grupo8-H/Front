@@ -179,7 +179,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -306,7 +306,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     //console.log("Los mantenimientos son: ")
     //console.log(data);
     var dat = data;
-    fetch('http://localhost:8000/camion/listar')
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
@@ -342,16 +342,18 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         ////
         idInterval = setInterval(() => {
           this.ObtenerRutas();
-        }, 60000);
+        }, 50000);
         // this.setState({idObtenerRutas:b});
         // this.ObtenerMantenimientos();
         // this.MostrarReferencias();
 
         //Comenzar Timer una vez se halla iniciado con todo
-        var auxii = setInterval(() => {
-          this.currentTime()
-        }, 1000);
-        this.setState({idTiempos:auxii});
+        setTimeout(() => {
+          var auxii = setInterval(() => {
+            this.currentTime()
+          }, 1000);
+          this.setState({idTiempos:auxii});
+        }, 10000);
       }
     );
   }
