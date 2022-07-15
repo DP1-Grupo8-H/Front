@@ -170,7 +170,7 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
           });
         }  
         else{
-          const pedPadre = await ruta.pedido.id_padre > 0 ? await pedidoService.getPedido(ruta.pedido.id_padre) : ruta.pedido;
+          const pedPadre = await ruta.pedido.id_padre > 0 ? await pedidoService.getPedido(ruta.pedido.id_padre) : null;
           //ES UN PEDIDO ATENDIDO COMPLETAMENTE
           historico[index].plan_transporte.push({
             'id_plan_transporte': plan.id_plan_transporte,
