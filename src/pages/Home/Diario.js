@@ -6,6 +6,7 @@ import React,{useRef, useState, useEffect, useMemo} from 'react';
 import {HORA_ITER, HORA_BATCH} from '../../constants/Sim_Params';
 import algoritmoService from '../../services/algoritmoService';
 import pedidoService from '../../services/pedidoService';
+import camionService from '../../services/camionService';
 import { color } from '@mui/system';
 import { Box, Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
 import BallotIcon from '@mui/icons-material/Ballot';
@@ -13,9 +14,9 @@ import LZString from 'lz-string';
 
 
 
-const Diario = React.memo(({historico, setHistorico,ref}) => {
+const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCamiones}) => {
 
-  const addRoutes = async (historico, planes, ciudades) => {
+  const addRoutes = async (historico, planes, ciudades, movimientos) => {
     //VAMOS A AGREGAR LAS RUTAS QUE CORRESPONDENO -> INICIANDOLAS AQUI MISMO
     for(let plan of planes){
       for(let ruta of plan.rutas){
@@ -24,7 +25,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
           if(ruta.pedido.id_padre === 0){
             historico.push(
             {
-              'pedido': ruta.pedido,
+              'pedido': {...ruta.pedido, cantidad: 0},
               'plan_transporte': [],
             });  //AGREGAMOS LOS QUE NO ESTÁN
           }
@@ -61,11 +62,12 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
               const newPed = await pedidoService.getPedido(ruta.pedido.id_padre)
                 historico.push(
                 {
-                  'pedido': newPed,
+                  'pedido': {...newPed, cantidad: 0},
                   'plan_transporte': [],
                 });  //AGREGAMOS LOS QUE NO ESTÁN
             }
-            historico[historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_padre)].plan_transporte.push({
+            const index = historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_padre);
+            historico[index].plan_transporte.push({
               'id_plan_transporte': plan.id_plan_transporte,
               'id_ruta': ruta.id_ruta,
               'id_hijo': ruta.pedido.id_pedido,
@@ -75,17 +77,23 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
               'camion': plan.camion,
               'plan_transporte': allRoute,
             });
+            //Ahora cambiamos el estado del pedido
+            const camion_alm = await movimientos.find(camion => camion.id_camion === plan.camion.id);
+            const almacen = await ciudades[camion_alm.ruta_ciudad[0].id_ciudad.id-1];
+            historico[index].pedido.cantidad += ruta.pedido.cantidad;
+            historico[index].pedido.almacen = almacen;
           }
         else{
-            if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_pedido)){
-              historico.push(
-              {
-                'pedido': ruta.pedido,
-                'plan_transporte': [],
-              });  //AGREGAMOS LOS QUE NO ESTÁN
-            }
+          if(!historico.some(ped =>  ped.pedido.id_pedido === ruta.pedido.id_pedido)){
+            historico.push(
+            {
+              'pedido': {...ruta.pedido, cantidad: 0},
+              'plan_transporte': [],
+            });  //AGREGAMOS LOS QUE NO ESTÁN
+          }
+          const index = historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_pedido);
           //ES UN PEDIDO ATENDIDO COMPLETAMENTE
-          historico[historico.findIndex(ped => ped.pedido.id_pedido === ruta.pedido.id_pedido)].plan_transporte.push({
+          historico[index].plan_transporte.push({
             'id_plan_transporte': plan.id_plan_transporte,
             'id_ruta': ruta.id_ruta,
             'id_hijo': 0,
@@ -95,6 +103,12 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
             'camion': plan.camion,
             'plan_transporte': allRoute,
           });
+          //Ahora cambiamos el estado del pedido
+          const camion_alm = await movimientos.find(camion => camion.id_camion === plan.camion.id);
+          const almacen = await ciudades[camion_alm.ruta_ciudad[0].id_ciudad.id-1];
+          historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
+          historico[index].pedido.cantidad += ruta.pedido.cantidad;
+          historico[index].pedido.almacen = almacen;
         }
       }
 
@@ -102,6 +116,78 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
     }
 
     //PROBLEMA: "QUE NO SEA DEL PEDIDO 1 Y LUEGO SIGUE EL PEDIDO 2 - SINO EL PEDIDO50" - Voy a tener un arreglo de pedidos con las rutas para atender el pedido.
+    
+    return historico;
+  }
+  const addCamiones = async (historico, planes, ciudades, movimientos) => {
+    const camiones = await camionService.getCamiones();
+    console.log(camiones);
+    //VAMOS A AGREGAR LAS RUTAS QUE CORRESPONDENO -> INICIANDOLAS AQUI MISMO
+    for(let camion of camiones){
+      if(!historico.some(cam =>  cam.camion.id === camion.id)){
+        historico.push(
+        {
+          'camion': camion,
+          'plan_transporte': [],
+        });  //AGREGAMOS LOS QUE NO ESTÁN
+      }
+      else{
+        break;//Se asume que todo están ingresados -- a la primera
+      }
+    }
+    console.log(historico);
+    for(let plan of planes){
+      let allRoute = [];  //Este acumulara las rutas totales -- pero para el cmaion y no para el pedido que se va sumando
+      //plan.rutas.pop(); //Quitamos el ultimo de todos
+      for(let ruta of plan.rutas){
+        const newRoutes = [];
+        ruta.ruta_ciudad.forEach(r => {
+          newRoutes.push(
+            {
+              'fecha_llegada':r.fecha_llegada,
+              'id_ciudad':r.id_ciudad,
+              'ciudad': ciudades[r.id_ciudad.id-1],
+              'orden': r.orden,
+            }
+          )
+        })
+        //newRoutes.shift();
+        allRoute = newRoutes; //Hacemos que vaya creciendo la ruta -- Este en resume
+
+        //Agregamos el pedido en el item -> plan_transporte para separarlo por pedido como tal
+        let index = await historico.findIndex(camion => camion.camion.id === plan.camion.id);
+        //Buscamos el pedido padre
+        if(ruta.pedido == null){
+          historico[index].plan_transporte.push({
+          'id_plan_transporte': plan.id_plan_transporte,
+          'id_ruta': ruta.id_ruta,
+          'cantidad': 0,
+          'hora_llegada': allRoute.at(-1).fecha_llegada,
+          'hora_salida': allRoute[0].fecha_llegada,
+          'pedido': null,
+          'pedido_padre': null,
+          'plan_transporte': allRoute,
+          });
+        }  
+        else{
+          const pedPadre = await ruta.pedido.id_padre > 0 ? await pedidoService.getPedido(ruta.pedido.id_padre) : null;
+          //ES UN PEDIDO ATENDIDO COMPLETAMENTE
+          historico[index].plan_transporte.push({
+            'id_plan_transporte': plan.id_plan_transporte,
+            'id_ruta': ruta.id_ruta,
+            'cantidad': ruta.pedido.cantidad,
+            'hora_llegada': allRoute.at(-1).fecha_llegada,
+            'hora_salida': allRoute[0].fecha_llegada,
+            'pedido': ruta.pedido,
+            'pedido_padre': pedPadre,
+            'plan_transporte': allRoute,
+          });
+        }
+        historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
+        historico[index].camion.num_paquetes += ruta.pedido ? ruta.pedido.cantidad : 0;
+        historico[index].camion.estado = 1;
+      }
+    }
     
     return historico;
   }
@@ -232,15 +318,22 @@ const myIcon3 = L.icon({
           });
     });
    }
-
   componentDidUpdate (prevProps,prevState) {
     if (this.state.rutas !== prevState.rutas) {
       console.log(this.state.rutas);
-      addRoutes (historico, this.state.rutas.planes, this.state.ciudades)
+      addRoutes (historico, this.state.rutas.planes, this.state.ciudades, this.state.rutas.movimientos)
       .then(auxhistorico => 
         {
           console.log(auxhistorico);
           setHistorico(auxhistorico);
+        }
+      );
+      //AHORA HAREMOS LA FUNCIONALIDAD PARA LOS CAMIONES
+      addCamiones (histCamiones, this.state.rutas.planes, this.state.ciudades, this.state.rutas.movimientos)
+      .then(auxcamiones => 
+        {
+          console.log(auxcamiones);
+          setHistCamiones(auxcamiones);
         }
       );
     }
@@ -683,11 +776,11 @@ const myIcon3 = L.icon({
   
         </div> */}
   
-        <div style={{position:'relative',zIndex:9999,float:'right',marginTop:'30px',marginRight:'15px'}}>
+        <div style={{position:'relative',zIndex:9999,float:'right',marginTop:'10px',marginRight:'15px'}}>
           <Button variant = "contained" color = "primary" size = "small" type = "submit" fullWidth onClick={()=>this.forzarPedidos()}>
             <Grid container alignItems = "right">
               <Grid item xs = {4} sm = {4} align = "left" marginTop = "0rem">
-                <BallotIcon color = "secondary_white" sx = {{paddingLeft: "0rem", 'vertical-align':'-0.7rem'}} />
+                <BallotIcon color = "secondary_white" sx = {{paddingLeft: "0rem", 'vertical-align':'-1rem'}} />
               </Grid>
               <Grid item xs = {8} sm = {8} align = "left" marginTop = "0rem">
               <Typography variant = "button_min" color = "secondary_white.main" > 
