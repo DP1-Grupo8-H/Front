@@ -37,14 +37,14 @@ function TabPanel(props) {
 
   function renderSwitch (param) {
     switch (param) {
-      case 0:
+      case 1:
         return(
         <Typography variant = "b2" color = "#3A9C3E" > 
             Disponible
         </Typography>
         );
         break;
-      case 1:
+      case 0:
         return(
         <Typography variant = "b2" color = "#822E81" > 
             En ruta

@@ -300,14 +300,14 @@ const myIcon3 = L.icon({
 
 
    forzarPedidos(){
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/forzar/diario')
+    fetch('http://localhost:8000/forzar/diario')
     .then(() => 
       {
       //console.log(data);
       var aux = new Date();
       aux.setHours(aux.getHours() - 5);
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-      fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+      fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -366,7 +366,7 @@ const myIcon3 = L.icon({
     Mapita[cadena] = datos[i].id_tramo;
    }
    //console.log(Mapita);
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    fetch('http://localhost:8000/camion/listar')
     .then(response => response.json())
     .then(dat => 
       {
@@ -389,7 +389,7 @@ const myIcon3 = L.icon({
         var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
         let blq = 0;
         console.log(ahora); 
-        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://localhost:8000/bloqueo/listarDiario/' + ahora)
             .then(response => response.json())
             .then(data => 
               {
@@ -410,11 +410,12 @@ const myIcon3 = L.icon({
                   dat[i].log = dat[i].almacen.longitud;
                   dat[i].tiempo = 10;  
                 }
+                this.setState({camiones:dat});
                 var aux = new Date();
                 aux.setHours(aux.getHours() - 5);
                 var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                 //console.log(ahora); 
-                fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+                fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
                 .then(response => response.json())
                 .then(data => 
                   {
@@ -495,18 +496,19 @@ const myIcon3 = L.icon({
     if(movi!=null){
       let inicial,final;
       for(let i =0;i<movi.length;i++){
-        if(this.state.moviXCamion[i].length!=0){
+        if(this.state.moviXCamion[movi[i].id_camion-1].length!=0){
           console.log("Inconsistencia, no modificar");
           continue;
         }
         inicial =  new Date(movi[i].ruta_ciudad[0].fecha_llegada);
           for(let j=1;j<movi[i].ruta_ciudad.length;j++){
             final =  new Date(movi[i].ruta_ciudad[j].fecha_llegada);
-            var diff = (final.getTime() - inicial.getTime())/1000*200;
+            var diff = (final.getTime() - inicial.getTime())/1000*800;
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
-              inicial:movi[i].ruta_ciudad[0].fecha_llegada
+              inicial:movi[i].ruta_ciudad[0].fecha_llegada,
+              ant:movi[i].ruta_ciudad[j-1].id_ciudad.id
           });
           inicial = final;
         }
@@ -540,10 +542,10 @@ const myIcon3 = L.icon({
                 //Movernos a mitad de trayecto
                 if(k!=0){
                   // -10.07490562230709, -74.1204059187355
-                    let valores = this.hallarPunto(movi[i].ruta_ciudad[k-1],movi[i].ruta_ciudad[k]);
+                    //let valores = this.hallarPunto(movi[i].ruta_ciudad[k-1],movi[i].ruta_ciudad[k]);
                     otro[(movi[i].id_camion)-1].lat = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].latitud;
                     otro[(movi[i].id_camion)-1].log = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].longitud;
-                    otro[(movi[i].id_camion)-1].tiempo = 10;
+                    otro[(movi[i].id_camion)-1].tiempo = 1;
                     // this.state.camiones[(movi[i].id_camion)-1] = otro[(movi[i].id_camion)-1];
                     var ahora = new Date();
                     var ultimo = new Date(movi[i].ruta_ciudad[k].fecha_llegada);
@@ -608,14 +610,14 @@ const myIcon3 = L.icon({
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     console.log(ahora);
     let blq = 0;
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+    fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
       .then(response => response.json())
       .then(data => 
         {
         console.log(data);
         this.llenarMovimientos(data.movimientos);
         console.log(this.state.moviXCamion);
-        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -646,74 +648,74 @@ const myIcon3 = L.icon({
    var otro = JSON.parse(JSON.stringify(this.state.camiones));
    //console.log(this.state.camiones);
    //console.log(this.state.moviXCamion);
-   if(this.state.moviXCamion.length!=0){
-      if(this.state.moviXCamion[idx].length!=0){
-         //console.log(this.state.moviXCamion[idx]);
-         var inicio = new Date(this.state.moviXCamion[idx][0].inicial);
-         while(Date.now()<=inicio){ //Esperar que sea la hora correcta
-           await this.sleep(1000);
-         }
-         //otro[idx].estado = 0;
-         //this.setState({estadosCamion:otro});
-         var anterior = "";
-         for (let i =0;i<this.state.moviXCamion[idx].length;i++){
-          var nuevaCiudad = this.state.moviXCamion[idx][i];
-          //Verificamos si nosotros hacemos el lag
-          //console.log(nuevaCiudad);
-           otro[idx].tiempo = nuevaCiudad.tiempo;
-           otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
-           otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
-          //this.state.camiones[idx] = otro[idx];
-          //El tramo es 
-          //console.log("El tramo donde me muevo es");
-          var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
-          // console.log(cadena);
-          // console.log(Mapita[cadena]);
-          if(i==0){
-            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
-            auxi[Mapita[cadena]-1].bloqueado = 2;
-            const y = [
-              ...this.state.tramos.slice(0,Mapita[cadena]-1),
-              auxi[Mapita[cadena]-1],   
-              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
-            ]
-            this.setState({tramos:y});
-            anterior = Mapita[cadena]-1;
-          }
-          else{
-           //Quitar antiguo
-           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
-            auxi[anterior].bloqueado = 0;
-            var z = [
-              ...this.state.tramos.slice(0,anterior),
-              auxi[anterior],   
-              ...this.state.tramos.slice(anterior+1,this.state.tramos.length)
-            ]
-            this.setState({tramos:z});
-            anterior = Mapita[cadena]-1;
-            //////////Nuevo 
-            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
-            auxi[Mapita[cadena]-1].bloqueado = 2;
-            var y = [
-              ...this.state.tramos.slice(0,Mapita[cadena]-1),
-              auxi[Mapita[cadena]-1],   
-              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
-            ]
-            this.setState({tramos:y});
-          }
-          const x = [
-           ...this.state.camiones.slice(0,idx),
-           otro[idx],   
-           ...this.state.camiones.slice(idx+1,this.state.camiones.length)
-          ]
-          this.setState({camiones:x});
-          await this.sleep(nuevaCiudad.tiempo*1000/200);
-         }
-         //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
-         this.state.moviXCamion[idx] = [];
-         //this.state.camiones[idx].estado = 1;
-      }
-    }
+  //  if(this.state.moviXCamion.length!=0){
+  //     if(this.state.moviXCamion[idx].length!=0){
+  //        //console.log(this.state.moviXCamion[idx]);
+  //        var inicio = new Date(this.state.moviXCamion[idx][0].inicial);
+  //        while(Date.now()<=inicio){ //Esperar que sea la hora correcta
+  //          await this.sleep(1000);
+  //        }
+  //        //otro[idx].estado = 0;
+  //        //this.setState({estadosCamion:otro});
+  //        var anterior = "";
+  //        for (let i =0;i<this.state.moviXCamion[idx].length;i++){
+  //         var nuevaCiudad = this.state.moviXCamion[idx][i];
+  //         //Verificamos si nosotros hacemos el lag
+  //         //console.log(nuevaCiudad);
+  //          otro[idx].tiempo = nuevaCiudad.tiempo;
+  //          otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+  //          otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+  //         //this.state.camiones[idx] = otro[idx];
+  //         //El tramo es 
+  //         //console.log("El tramo donde me muevo es");
+  //         var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
+  //         // console.log(cadena);
+  //         // console.log(Mapita[cadena]);
+  //         if(i==0){
+  //           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+  //           auxi[Mapita[cadena]-1].bloqueado = 2;
+  //           const y = [
+  //             ...this.state.tramos.slice(0,Mapita[cadena]-1),
+  //             auxi[Mapita[cadena]-1],   
+  //             ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+  //           ]
+  //           this.setState({tramos:y});
+  //           anterior = Mapita[cadena]-1;
+  //         }
+  //         else{
+  //          //Quitar antiguo
+  //          var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+  //           auxi[anterior].bloqueado = 0;
+  //           var z = [
+  //             ...this.state.tramos.slice(0,anterior),
+  //             auxi[anterior],   
+  //             ...this.state.tramos.slice(anterior+1,this.state.tramos.length)
+  //           ]
+  //           this.setState({tramos:z});
+  //           anterior = Mapita[cadena]-1;
+  //           //////////Nuevo 
+  //           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+  //           auxi[Mapita[cadena]-1].bloqueado = 2;
+  //           var y = [
+  //             ...this.state.tramos.slice(0,Mapita[cadena]-1),
+  //             auxi[Mapita[cadena]-1],   
+  //             ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+  //           ]
+  //           this.setState({tramos:y});
+  //         }
+  //         const x = [
+  //          ...this.state.camiones.slice(0,idx),
+  //          otro[idx],   
+  //          ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+  //         ]
+  //         this.setState({camiones:x});
+  //         await this.sleep(nuevaCiudad.tiempo*1000/800);
+  //        }
+  //        //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
+  //        this.state.moviXCamion[idx] = [];
+  //        //this.state.camiones[idx].estado = 1;
+  //     }
+  //   }
    //Revisar mantenimiento
    //console.log(this.state.mantXCamion[idx]);
    //await this.sleep(10000);
@@ -729,8 +731,17 @@ const myIcon3 = L.icon({
         var ahora = new Date();
         if(ahora>=inicio && ahora<=final){
           var espera  = final.getTime() - ahora.getTime();
-          this.state.camiones[idx].estado = 2;
+          //this.state.camiones[idx].estado = 2;
           console.log("Estoy en mantenimiento: " + idx);
+          //Arreglar setstate
+          var auxi = JSON.parse(JSON.stringify(this.state.camiones));
+          auxi[idx].estado = 2;
+          var x = [
+            ...this.state.camiones.slice(0,idx),
+            auxi[idx],   
+            ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+           ];
+           this.setState({camiones:x});
           await this.sleep(espera/(1000*60*60)*10000);
           this.state.camiones[idx].estado = 1;
         }
