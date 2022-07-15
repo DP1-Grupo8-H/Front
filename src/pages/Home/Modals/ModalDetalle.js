@@ -76,6 +76,9 @@ function TabPanel(props) {
             );
           })}
           </Grid>
+          <Grid item xs = {12} sm = {12} align = "center" >
+            <Divider>Cantidad Entregada: {plan.cantidad}</Divider>
+          </Grid>
           </Grid>
         </Box>
       )}
@@ -161,6 +164,9 @@ export default function ModalDetalle({setOpenDetail, pedDetail}){
               <Typography variant="h6" color="textSecondary" component="p">Plan(es) de Transporte:</Typography>
             </Grid>
             <Grid item xs = {4} sm = {4} align = "left">
+              <Typography variant="body1_bold" color="textSecondary" component="p">Almacen: {pedDetail.pedido.almacen.id !== pedDetail.pedido.ciudad.id ? pedDetail.pedido.almacen.ciudad : '-'}
+                  <StoreOutlinedIcon color = "secondary_white.darker" sx = {{paddingLeft: "1rem", 'vertical-align':'-0.2rem'}} />
+              </Typography>
             </Grid>
             <Grid item xs = {4} sm = {4} align = "right">
               <Typography variant="body1_bold" color="textSecondary" component="p">Oficina: {pedDetail.pedido.ciudad.ciudad}
@@ -206,7 +212,7 @@ export default function ModalDetalle({setOpenDetail, pedDetail}){
             <Typography display="inline" color = "primary" variant="body1">{`Entrega: ${findFecha_entrega(pedDetail.plan_transporte)}`}</Typography>
           </Grid>
           <Grid item xs = {6} sm = {6} align = "right">
-            <Typography display="inline" color = "primary" variant="body1">{`Cantidad: ${pedDetail.pedido.cantidad}`}</Typography>
+            <Typography display="inline" color = "primary" variant="body1">{`Cantidad: ${(pedDetail.plan_transporte.length > 0 ? pedDetail.pedido.cantidad : 0)} de ${pedDetail.pedido.cantidad}`}</Typography>
           </Grid>
         </Grid>
       </CardContent>
