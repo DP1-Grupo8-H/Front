@@ -108,7 +108,8 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
 
   const position1 = [-9.880358501459673, -74.46566630628085];
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
-  // Primero es el origen y luego el destino
+  const TramosColor = { color: 'black' ,weight:2,opacity:1};
+  // Primero es el origen y luego el destino 
 
   const [flagOut,setFlagOut] = useState(null);
 
@@ -117,9 +118,23 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
   const myIcon = L.icon({
       iconUrl:  require('../../archives/circle-16.png'),
       iconSize: [14, 14],
-      iconAnchor: [9, 10],
+      iconAnchor: [10, 10],
       popupAnchor: [2, -40]
   });
+  
+  const myIcon2 = L.icon({
+    iconUrl:  require('../../archives/green-circle-16.png'),
+    iconSize: [14, 14],
+    iconAnchor: [10, 10],
+    popupAnchor: [2, -40]
+});
+  
+const myIcon3 = L.icon({
+  iconUrl:  require('../../archives/blue-circle-16.png'),
+  iconSize: [14, 14],
+  iconAnchor: [10, 10],
+  popupAnchor: [2, -40]
+});
 
   const IconMantenimiento = L.icon({
     iconUrl:  require('../../archives/red-circle-32.png'),
@@ -141,7 +156,8 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
     iconAnchor: [9, 10],
     popupAnchor: [2, -40]
   });
-
+  
+  var Mapita = [];
   // useEffect(() => {
   //   console.log("no re-renders");
   //   if(flagOut !== null){
@@ -198,14 +214,14 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
 
 
    forzarPedidos(){
-    fetch('http://localhost:8000/forzar/diario')
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/forzar/diario')
     .then(() => 
       {
       //console.log(data);
       var aux = new Date();
       aux.setHours(aux.getHours() - 5);
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-      fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -247,8 +263,17 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
     this.setState({ciudades:datos}) 
     datos = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
     console.log(datos);
-    this.setState({tramos:datos})
-    fetch('http://localhost:8000/camion/listar')
+    this.setState({tramos:datos});
+    //Crear Diccionario Global de tramos
+    var ini,fin;
+    for(let i =0;i<datos.length;i++){
+     ini = datos[i].ciudad_destino.id;
+     fin = datos[i].ciudad_origen.id;
+     var cadena = ini + "+" + fin;
+    Mapita[cadena] = datos[i].id_tramo;
+   }
+   //console.log(Mapita);
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
     .then(response => response.json())
     .then(dat => 
       {
@@ -271,7 +296,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
         var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
         let blq = 0;
         console.log(ahora); 
-        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
             .then(response => response.json())
             .then(data => 
               {
@@ -296,7 +321,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
                 aux.setHours(aux.getHours() - 5);
                 var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                 //console.log(ahora); 
-                fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
+                fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
                 .then(response => response.json())
                 .then(data => 
                   {
@@ -423,8 +448,8 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
                 if(k!=0){
                   // -10.07490562230709, -74.1204059187355
                     let valores = this.hallarPunto(movi[i].ruta_ciudad[k-1],movi[i].ruta_ciudad[k]);
-                    otro[(movi[i].id_camion)-1].lat = valores.lat;
-                    otro[(movi[i].id_camion)-1].log = valores.log;
+                    otro[(movi[i].id_camion)-1].lat = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].latitud;
+                    otro[(movi[i].id_camion)-1].log = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].longitud;
                     otro[(movi[i].id_camion)-1].tiempo = 10;
                     // this.state.camiones[(movi[i].id_camion)-1] = otro[(movi[i].id_camion)-1];
                     var ahora = new Date();
@@ -433,7 +458,8 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
                     this.state.moviXCamion[(movi[i].id_camion)-1].push({
                       idCiudad: movi[i].ruta_ciudad[k].id_ciudad.id,
                       tiempo: diff,
-                      inicial:movi[i].ruta_ciudad[0].fecha_llegada
+                      inicial:movi[i].ruta_ciudad[0].fecha_llegada,
+                      ant:movi[i].ruta_ciudad[k-1].id_ciudad.id
                   });
                }
               break;
@@ -447,7 +473,8 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
-              inicial:movi[i].ruta_ciudad[0].fecha_llegada
+              inicial:movi[i].ruta_ciudad[0].fecha_llegada,
+              ant:movi[i].ruta_ciudad[j-1].id_ciudad.id
           });
           inicial  = final;
         }
@@ -488,14 +515,14 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     console.log(ahora);
     let blq = 0;
-    fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
       .then(response => response.json())
       .then(data => 
         {
         console.log(data);
         this.llenarMovimientos(data.movimientos);
         console.log(this.state.moviXCamion);
-        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -535,6 +562,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
          }
          //otro[idx].estado = 0;
          //this.setState({estadosCamion:otro});
+         var anterior = "";
          for (let i =0;i<this.state.moviXCamion[idx].length;i++){
           var nuevaCiudad = this.state.moviXCamion[idx][i];
           //Verificamos si nosotros hacemos el lag
@@ -543,6 +571,43 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
            otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
            otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
           //this.state.camiones[idx] = otro[idx];
+          //El tramo es 
+          //console.log("El tramo donde me muevo es");
+          var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
+          // console.log(cadena);
+          // console.log(Mapita[cadena]);
+          if(i==0){
+            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[Mapita[cadena]-1].bloqueado = 2;
+            const y = [
+              ...this.state.tramos.slice(0,Mapita[cadena]-1),
+              auxi[Mapita[cadena]-1],   
+              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:y});
+            anterior = Mapita[cadena]-1;
+          }
+          else{
+           //Quitar antiguo
+           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[anterior].bloqueado = 0;
+            var z = [
+              ...this.state.tramos.slice(0,anterior),
+              auxi[anterior],   
+              ...this.state.tramos.slice(anterior+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:z});
+            anterior = Mapita[cadena]-1;
+            //////////Nuevo 
+            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[Mapita[cadena]-1].bloqueado = 2;
+            var y = [
+              ...this.state.tramos.slice(0,Mapita[cadena]-1),
+              auxi[Mapita[cadena]-1],   
+              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:y});
+          }
           const x = [
            ...this.state.camiones.slice(0,idx),
            otro[idx],   
@@ -637,12 +702,16 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
               ciudad.tipo==1 ? (
               <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}>
                 <Tooltip>
-                  {ciudad.ciudad}
+                  {ciudad.ciudad} 
+                  <br />
+                  {'Id:' + ciudad.id}
                 </Tooltip>
                 </Marker>):
               (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen} >
                 <Tooltip>
                   {ciudad.ciudad}
+                  <br />
+                  {'Id:' + ciudad.id}
                 </Tooltip>
                 </Marker>)
           ))
@@ -653,7 +722,13 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
           this.state.tramos ?.map((tramo)=>(
             tramo.bloqueado == 1 && this.state.mostrarTramos == true ? (
             <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
-              ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>)      
+              ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(
+              tramo.bloqueado == 2 && this.state.mostrarTramos == true ?   
+              (
+              <Polyline pathOptions={TramosColor} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
+              ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>) 
+              
+              )
           ))
         )
         }
@@ -672,6 +747,7 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
                   {"Placa: " + camion.placa}
                 </Tooltip>
                 </ReactLeafletDriftMarker>):(
+              camion.almacen.id==135 ? (
               <ReactLeafletDriftMarker  icon={myIcon}
               position={[camion.lat,camion.log]}
               duration={camion.tiempo}
@@ -682,10 +758,31 @@ const Diario = React.memo(({historico, setHistorico,ref}) => {
                 {"Placa: " + camion.placa}
               </Tooltip>
               </ReactLeafletDriftMarker>
-                ) 
-            )
+                ) :( camion.almacen.id==123 ? (
+                  <ReactLeafletDriftMarker  icon={myIcon2}
+                  position={[camion.lat,camion.log]}
+                  duration={camion.tiempo}
+                  keepAtCenter={false}>
+                  <Tooltip>
+                    {"Id: " + camion.id}
+                    <br></br>
+                    {"Placa: " + camion.placa}
+                  </Tooltip>
+                  </ReactLeafletDriftMarker>
+                    ) :( camion.almacen.id==35 ? (
+                      <ReactLeafletDriftMarker  icon={myIcon3}
+                      position={[camion.lat,camion.log]}
+                      duration={camion.tiempo}
+                      keepAtCenter={false}>
+                      <Tooltip>
+                        {"Id: " + camion.id}
+                        <br></br>
+                        {"Placa: " + camion.placa}
+                      </Tooltip>
+                      </ReactLeafletDriftMarker>
+                        ) :(<></>))))
           )
-        )
+        ))
         }
   
       </MapContainer>

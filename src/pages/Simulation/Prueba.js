@@ -482,11 +482,15 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
             <Marker position={[ciudad.latitud,ciudad.longitud]} icon={myOficina}>
               <Tooltip>
                 {ciudad.ciudad}
+                <br />
+              {'Id:' + ciudad.id}
               </Tooltip>
               </Marker>):
             (<Marker position={[ciudad.latitud,ciudad.longitud]} icon={myAlmacen} >
               <Tooltip>
                 {ciudad.ciudad}
+                <br />
+                {'Id:' + ciudad.id}
               </Tooltip>
               </Marker>)
         ))
