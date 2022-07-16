@@ -769,12 +769,14 @@ const myIcon3 = L.icon({
           var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
           ccc.push({id:idx});
           this.setState({arrMantenimientos:ccc});
+          console.log("Los mantenimiento cargados son: ")
+          console.log(this.state.arrMantenimientos);
           await this.sleep(espera/(1000*60*60)*10000);
           //Bajarnos el idx del arrMantenimientos
           var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
           for(let j = 0;j<ccc.length;j++){
             if(ccc[j].id==idx){
-              const index = array.indexOf(j);
+              const index = ccc.indexOf(j);
               if (index > -1) { // only splice array when item is found
                 ccc.splice(index, 1); // 2nd parameter means remove one item only
               }
