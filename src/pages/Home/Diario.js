@@ -193,6 +193,9 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
   }
 
   const position1 = [-9.880358501459673, -74.46566630628085];
+  const position2 = [-12.045957676769577, -77.0305492374421];
+  const zoom1 = 6;
+  const zoom2 = 16;
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
   const TramosColor = { color: 'black' ,weight:2,opacity:1};
   // Primero es el origen y luego el destino 
@@ -295,12 +298,14 @@ const myIcon3 = L.icon({
       idTiempos:"",
       idObtenerRutas:"",
       terminoSimulacion:false,
-      arrMantenimientos:[]
+      arrMantenimientos:[],
+      opciones:{position:position1,zoom:zoom1}
     };
 
 
 
    forzarPedidos(){
+    //this.setState({})
     fetch('http://localhost:8000/forzar/diario')
     .then(() => 
       {
@@ -408,13 +413,13 @@ const myIcon3 = L.icon({
                 }
 
                 this.setState({tramos:auxi});
-                for(let i = 0;i<guardar.length;i++){
-                  // dat[i].lat = dat[i].almacen.latitud;
-                  // dat[i].log = dat[i].almacen.longitud;
-                  // dat[i].tiempo = 10;  
-                  this.funcionCiclica(i);
-                }
-                console.log(guardar);
+                // for(let i = 0;i<guardar.length;i++){
+                //   // dat[i].lat = dat[i].almacen.latitud;
+                //   // dat[i].log = dat[i].almacen.longitud;
+                //   // dat[i].tiempo = 10;  
+                //   this.funcionCiclica(i);
+                // }
+                // console.log(guardar);
                 //this.setState({camiones:guardar});
                 console.log(this.state.camiones);
                 var aux = new Date();
@@ -549,14 +554,22 @@ const myIcon3 = L.icon({
                 if(k!=0){
                   // -10.07490562230709, -74.1204059187355
                     //let valores = this.hallarPunto(movi[i].ruta_ciudad[k-1],movi[i].ruta_ciudad[k]);
-                    otro[(movi[i].id_camion)-1].lat = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].latitud;
-                    otro[(movi[i].id_camion)-1].log = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].longitud;
-                    otro[(movi[i].id_camion)-1].tiempo = 500;
-                    otro[(movi[i].id_camion)-1].listo = 1;
+                    // otro[(movi[i].id_camion)-1].lat = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].latitud;
+                    // otro[(movi[i].id_camion)-1].log = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].longitud;
+                    // otro[(movi[i].id_camion)-1].tiempo = 100;
+                    // otro[(movi[i].id_camion)-1].listo = 1;
                     // this.state.camiones[(movi[i].id_camion)-1] = otro[(movi[i].id_camion)-1];
                     var ahora = new Date();
                     var ultimo = new Date(movi[i].ruta_ciudad[k].fecha_llegada);
                     var diff = (ultimo.getTime()-ahora.getTime());
+                    ///////
+                    this.state.moviXCamion[(movi[i].id_camion)-1].push({
+                      idCiudad: movi[i].ruta_ciudad[k-1].id_ciudad.id,
+                      tiempo: 10,
+                      inicial:movi[i].ruta_ciudad[0].fecha_llegada,
+                      ant:movi[i].ruta_ciudad[k-1].id_ciudad.id
+                  });
+                    ///////////////
                     this.state.moviXCamion[(movi[i].id_camion)-1].push({
                       idCiudad: movi[i].ruta_ciudad[k].id_ciudad.id,
                       tiempo: diff,
@@ -588,15 +601,15 @@ const myIcon3 = L.icon({
         else{
           otro[i].lat = otro[i].almacen.latitud;
           otro[i].log = otro[i].almacen.longitud;
-          otro[i].tiempo = 500;  
+          otro[i].tiempo = 10;  
         }
       }
       this.setState({camiones:otro});
       //console.log(this.state.moviXCamion);
       movi = null;
-      // for(let i=0;i<this.state.moviXCamion.length;i++){
-      //   this.funcionCiclica(i);   //Movemos todos los camiones
-      // }
+      for(let i=0;i<this.state.moviXCamion.length;i++){
+        this.funcionCiclica(i);   //Movemos todos los camiones
+      }
       //Cargar funcion que se levante en cada hora del dia
       var ahora = new Date();
       var fechaDeLanzamiento = ahora;
@@ -690,7 +703,7 @@ const myIcon3 = L.icon({
           var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
           // console.log(cadena);
           // console.log(Mapita[cadena]);
-          if(i==0){
+          if(i==1){
             var auxi = JSON.parse(JSON.stringify(this.state.tramos));
             auxi[Mapita[cadena]-1].bloqueado = 2;
             const y = [
@@ -701,7 +714,7 @@ const myIcon3 = L.icon({
             this.setState({tramos:y});
             anterior = Mapita[cadena]-1;
           }
-          else{
+          else if(i>1){
            //Quitar antiguo
            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
             auxi[anterior].bloqueado = 0;
@@ -723,7 +736,7 @@ const myIcon3 = L.icon({
             this.setState({tramos:y});
           }
 
-          if(i==0) await this.sleep(6000);
+          //if(i==0) await this.sleep(6000);
           otro[idx].tiempo = nuevaCiudad.tiempo;
           otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
           otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
@@ -819,7 +832,7 @@ const myIcon3 = L.icon({
   
   render(){
     return (
-      <MapContainer center={position1} zoom={6} scrollWheelZoom={true} id="idMapita">
+      <MapContainer center={this.state.opciones.position} zoom={this.state.opciones.zoom} scrollWheelZoom={true} id="idMapita">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
