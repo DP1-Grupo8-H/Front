@@ -54,7 +54,7 @@ function TabPanel(props) {
       default:
         return(
         <Typography variant = "b2" color = "#F44336" > 
-            En mantenimiento
+            Mantenimiento
         </Typography>
         );
         break;
