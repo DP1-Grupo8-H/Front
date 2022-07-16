@@ -185,7 +185,7 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
         }
         historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
         historico[index].camion.num_paquetes += ruta.pedido ? ruta.pedido.cantidad : 0;
-        historico[index].camion.estado = 1;
+        historico[index].camion.estado = 0;
       }
     }
     
@@ -343,14 +343,14 @@ const myIcon3 = L.icon({
         }
       );
     }
-    if(this.state.camiones !== prevState.camiones){
+    if(this.state.arrMantenimientos !== prevState.arrMantenimientos){
       //vamos a hallar los camiones en curso y en mantenimiento
-      let ruta = 0;  let mant = 0;
-      for(let camion of this.state.camiones){
-        if(camion.estado === 0) ruta++;
-        if(camion.estado === 2) mant++;
-      }
-
+      const auxcamiones = histCamiones;
+      this.state.camiones.forEach(camion => {
+        if(camion.estado === 2)
+          auxcamiones[camion.id-1].camion.estado = 2;
+      })
+      setHistCamiones(auxcamiones);
     }
   }
   

@@ -44,7 +44,7 @@ function TabPanel(props) {
             <Grid item xs = {4} sm = {4} align = "left" >
                   < Typography variant="body1_bold" mb={2} color = "primary" fontFamily = "Roboto">
                       <LocalShippingIcon color = "secondary_white.darker" fontSize = "large" sx = {{paddingRight: "1rem", 'vertical-align':'-0.7rem'}} />
-                      {plan.camion.placa} - Tipo: {plan.camion.tipo}
+                      #{plan.camion.id} - Placa:{plan.camion.placa}
                   </Typography>
             </Grid>
             <Grid item xs = {4} sm = {4} align = "right" >

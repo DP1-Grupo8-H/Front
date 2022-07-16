@@ -16,7 +16,7 @@ function isOverCharged (pedido) {
 
   //console.log(pedido);
   let newPedidos = [];
-  if(pedido.cantidad > 30){
+  if(pedido.cantidad > 90){
     let cantPedidos = pedido.cantidad;
     while(1){
       let pedido1 = structuredClone(pedido);    pedido1.id_padre=pedido.id_pedido;     pedido1.estado = 1;       pedido1.id_pedido = undefined;

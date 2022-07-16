@@ -29,7 +29,7 @@ function TabPanel(props) {
   }
 
   const handleClickCamion = (camion) => {
-    if(camion.camion.estado === 1){
+    if(camion.camion.estado === 0){
       setPedCamion(camion);
       setOpenCamion(true);
     }
@@ -54,7 +54,7 @@ function TabPanel(props) {
       default:
         return(
         <Typography variant = "b2" color = "#F44336" > 
-            En mantenimiento
+            Mantenimiento
         </Typography>
         );
         break;
@@ -136,7 +136,7 @@ function TabPanel(props) {
                     </Typography>
                     </Grid>
                     {
-                      camion.camion.estado === 1 &&
+                      camion.camion.estado === 0 &&
                       <Grid item xs = {1} sm = {1} align = "right" marginTop = "0rem">
                         <ArrowForwardIcon color = "primary" sx = {{paddingLeft: "0rem", 'vertical-align':'-1rem'}} />
                       </Grid>

@@ -23,7 +23,7 @@ const Navbar = () => {
     //Navegamos a una URl
     switch(nav.textContent){
       case 'Mapa':
-        navigate('/home');
+        navigate('/diario/mapa');
         break;
       case 'A 7 días':
         navigate('/sim/7_dias');
