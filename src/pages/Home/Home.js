@@ -80,7 +80,7 @@ function TabPanel(props) {
                   width: 'auto',
                   overflowY: "scroll",
                   scrollbarColor: "#FFF6E7 #FFFFFF",
-                  height: '30rem',borderColor: '#AFAFAF', borderRadius: '6px ' }}>
+                  height: '28rem',borderColor: '#AFAFAF', borderRadius: '6px ' }}>
             <Grid container alignItems = "center">
             {historico.length > 0 ?
               historico.map((plan) => {
@@ -119,7 +119,7 @@ function TabPanel(props) {
                   width: 'auto',
                   overflowY: "scroll",
                   scrollbarColor: "#FFF6E7 #FFFFFF",
-                  height: '30rem',borderColor: '#AFAFAF', borderRadius: '6px ' }}>
+                  height: '28rem',borderColor: '#AFAFAF', borderRadius: '6px ' }}>
             <Grid container alignItems = "center">
             {histCamiones.length > 0 ?
               histCamiones.map((camion) => {
@@ -220,7 +220,7 @@ const Home = () => {
     }
   }, [pedidos])
   
-  console.log(histCamiones);
+  console.log(historico);
 
 
 

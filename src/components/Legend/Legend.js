@@ -34,7 +34,7 @@ export default function Legend(){
       <Grid item className = 'content' 
           md = '12' xs = '12'
           align = 'left' >
-          <img src={require('../../archives/Leyenda.PNG')} alt = 'Legend' width="100%" height = '120rem' />
+          <img src={require('../../archives/Leyenda.PNG')} alt = 'Legend' width="100%" height = '150rem' />
       </Grid>
     </Grid>
   );

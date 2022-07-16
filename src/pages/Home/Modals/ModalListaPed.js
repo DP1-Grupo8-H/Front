@@ -133,6 +133,7 @@ export default function ModalListaPed({setOpenPopup, setPedidos}){
     let flag = 0;
     for(let newPed of data.data){
       //EVALUAMOS SI EL PEDIDO EXCEDE LA CANTIDAD
+      console.log(newPed);
       if(newPed.cantidad > 30){  //HAY PARCIALES
         newPed = { ...newPed,  estado: 3 };
         const respNewPed = await PedidoService.insertPedido(newPed)

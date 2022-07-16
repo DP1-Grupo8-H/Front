@@ -127,7 +127,7 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
       if(!historico.some(cam =>  cam.camion.id === camion.id)){
         historico.push(
         {
-          'camion': camion,
+          'camion': {...camion, estado:camion.estado === 0 ? 1 : camion.estado },
           'plan_transporte': [],
         });  //AGREGAMOS LOS QUE NO ESTÁN
       }
@@ -362,12 +362,18 @@ const myIconSeleccionado = L.icon({
     }
     if(this.state.arrMantenimientos !== prevState.arrMantenimientos){
       //vamos a hallar los camiones en curso y en mantenimiento
-      // const auxcamiones = histCamiones;
-      // this.state.camiones.forEach(camion => {
-      //   if(camion.estado === 2)
-      //     auxcamiones[camion.id-1].camion.estado = 2;
-      // })
-      // setHistCamiones(auxcamiones);
+      if(histCamiones !== null){
+        const auxcamiones = histCamiones;
+        if(histCamiones.length > 0){
+          this.state.camiones.forEach(camion => {
+            if(camion.estado === 2)
+              auxcamiones[camion.id-1].camion.estado = 2;
+            else
+              auxcamiones[camion.id-1].camion.estado = camion.estado;
+          })
+          setHistCamiones(auxcamiones);
+        }
+      }
     }
   }
   
@@ -407,6 +413,7 @@ const myIconSeleccionado = L.icon({
             fecha:data[i].fecha
           });
         }
+
         //console.log("Los mantenimientos son: ")
         //console.log( this.state.mantXCamion);
         var aux = new Date();
