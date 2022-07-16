@@ -295,6 +295,7 @@ const myIcon3 = L.icon({
       idTiempos:"",
       idObtenerRutas:"",
       terminoSimulacion:false,
+      arrMantenimientos:[]
     };
 
 
@@ -368,6 +369,8 @@ const myIcon3 = L.icon({
     .then(response => response.json())
     .then(dat => 
       {
+        var guardar = dat;
+        console.log(guardar);
         const data = JSON.parse(LZString.decompress(window.localStorage.getItem("mantenimientos")))
         if(this.state.mantXCamion.length==0) { //Primera vez que se genera los movimientos
           this.state.mantXCamion= Array(dat.length);
@@ -403,12 +406,15 @@ const myIcon3 = L.icon({
                 }
 
                 this.setState({tramos:auxi});
-                for(let i = 0;i<dat.length;i++){
-                  dat[i].lat = dat[i].almacen.latitud;
-                  dat[i].log = dat[i].almacen.longitud;
-                  dat[i].tiempo = 10;  
+                for(let i = 0;i<guardar.length;i++){
+                  // dat[i].lat = dat[i].almacen.latitud;
+                  // dat[i].log = dat[i].almacen.longitud;
+                  // dat[i].tiempo = 10;  
+                  this.funcionCiclica(i);
                 }
-                this.setState({camiones:dat});
+                console.log(guardar);
+                //this.setState({camiones:guardar});
+                console.log(this.state.camiones);
                 var aux = new Date();
                 aux.setHours(aux.getHours() - 5);
                 var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -419,7 +425,7 @@ const myIcon3 = L.icon({
                   {
                   console.log(data);
                  this.setState({rutas:data});
-                  this.llenarMovimientosInicial(data.movimientos,dat);
+                  this.llenarMovimientosInicial(data.movimientos,guardar);
                   console.log(this.state.moviXCamion);
                 });
               }
@@ -427,69 +433,69 @@ const myIcon3 = L.icon({
     }
     );
   }
-  toRadians (degrees){
-    if (degrees < 0) {
-      degrees += 360;/*from w  w  w .  java2 s.c o m*/
-    }
-    return degrees / 180 * Math.PI;
-  }
+  // toRadians (degrees){
+  //   if (degrees < 0) {
+  //     degrees += 360;/*from w  w  w .  java2 s.c o m*/
+  //   }
+  //   return degrees / 180 * Math.PI;
+  // }
 
-    toDegrees(radians)
-    {
-      var pi = Math.PI;
-      return radians * (180/pi);
-    }
+  //   toDegrees(radians)
+  //   {
+  //     var pi = Math.PI;
+  //     return radians * (180/pi);
+  //   }
 
 
-  hallarPunto(a,b){
-    var startLatMicroDeg = this.state.ciudades[a.id_ciudad.id-1].latitud;
-    var startLonMicroDeg = this.state.ciudades[a.id_ciudad.id-1].longitud; 
-    var endLatMicroDeg = this.state.ciudades[b.id_ciudad.id-1].latitud;
-    var endLonMicroDeg =this.state.ciudades[b.id_ciudad.id-1].longitud;
-    //console.log(a);
-    //console.log(b);
-    var ahora = new Date();
-    var despues = new Date(b.fecha_llegada);
-    var t = ahora.getTime()/despues.getTime(); // How much of the distance to use, from 0 through 1
-    var alatRad=this.toRadians(startLatMicroDeg/1000000);
-    var alonRad=this.toRadians(startLonMicroDeg/1000000);
-    var blatRad=this.toRadians(endLatMicroDeg/1000000);
-    var blonRad=this.toRadians(endLonMicroDeg/1000000);
-    // Calculate distance in longitude
-    var dlon=blonRad-alonRad;
-    // Calculate common variables
-    var alatRadSin=Math.sin(alatRad);
-    var blatRadSin=Math.sin(blatRad);
-    var alatRadCos=Math.cos(alatRad);
-    var blatRadCos=Math.cos(blatRad);
-    var dlonCos=Math.cos(dlon);
-    // Find distance from A to B
-    var distance=Math.acos(alatRadSin*blatRadSin +
-                              alatRadCos*blatRadCos *
-                              dlonCos);
-    // Find bearing from A to B
-    var bearing=Math.atan2(
-        Math.sin(dlon) * blatRadCos,
-        alatRadCos*blatRadSin -
-        alatRadSin*blatRadCos*dlonCos);
-    // Find new point
-    var angularDistance=distance*t;
-    var angDistSin=Math.sin(angularDistance);
-    var angDistCos=Math.cos(angularDistance);
-    var xlatRad = Math.asin( alatRadSin*angDistCos +
-                                alatRadCos*angDistSin*Math.cos(bearing) );
-    var xlonRad = alonRad + Math.atan2(
-        Math.sin(bearing)*angDistSin*alatRadCos,
-        angDistCos-alatRadSin*Math.sin(xlatRad));
-    // Convert radians to microdegrees
-    var xlat=this.toDegrees(xlatRad)*1000000;
-    var xlon=this.toDegrees(xlonRad)*1000000;
-    if(xlat>90000000)xlat=90000000;
-    if(xlat<-90000000)xlat=-90000000;
-    while(xlon>180000000)xlon-=360000000;
-    while(xlon<=-180000000)xlon+=360000000;
-    return {lat:xlat,log:xlon};
-  }
+  // hallarPunto(a,b){
+  //   var startLatMicroDeg = this.state.ciudades[a.id_ciudad.id-1].latitud;
+  //   var startLonMicroDeg = this.state.ciudades[a.id_ciudad.id-1].longitud; 
+  //   var endLatMicroDeg = this.state.ciudades[b.id_ciudad.id-1].latitud;
+  //   var endLonMicroDeg =this.state.ciudades[b.id_ciudad.id-1].longitud;
+  //   //console.log(a);
+  //   //console.log(b);
+  //   var ahora = new Date();
+  //   var despues = new Date(b.fecha_llegada);
+  //   var t = ahora.getTime()/despues.getTime(); // How much of the distance to use, from 0 through 1
+  //   var alatRad=this.toRadians(startLatMicroDeg/1000000);
+  //   var alonRad=this.toRadians(startLonMicroDeg/1000000);
+  //   var blatRad=this.toRadians(endLatMicroDeg/1000000);
+  //   var blonRad=this.toRadians(endLonMicroDeg/1000000);
+  //   // Calculate distance in longitude
+  //   var dlon=blonRad-alonRad;
+  //   // Calculate common variables
+  //   var alatRadSin=Math.sin(alatRad);
+  //   var blatRadSin=Math.sin(blatRad);
+  //   var alatRadCos=Math.cos(alatRad);
+  //   var blatRadCos=Math.cos(blatRad);
+  //   var dlonCos=Math.cos(dlon);
+  //   // Find distance from A to B
+  //   var distance=Math.acos(alatRadSin*blatRadSin +
+  //                             alatRadCos*blatRadCos *
+  //                             dlonCos);
+  //   // Find bearing from A to B
+  //   var bearing=Math.atan2(
+  //       Math.sin(dlon) * blatRadCos,
+  //       alatRadCos*blatRadSin -
+  //       alatRadSin*blatRadCos*dlonCos);
+  //   // Find new point
+  //   var angularDistance=distance*t;
+  //   var angDistSin=Math.sin(angularDistance);
+  //   var angDistCos=Math.cos(angularDistance);
+  //   var xlatRad = Math.asin( alatRadSin*angDistCos +
+  //                               alatRadCos*angDistSin*Math.cos(bearing) );
+  //   var xlonRad = alonRad + Math.atan2(
+  //       Math.sin(bearing)*angDistSin*alatRadCos,
+  //       angDistCos-alatRadSin*Math.sin(xlatRad));
+  //   // Convert radians to microdegrees
+  //   var xlat=this.toDegrees(xlatRad)*1000000;
+  //   var xlon=this.toDegrees(xlonRad)*1000000;
+  //   if(xlat>90000000)xlat=90000000;
+  //   if(xlat<-90000000)xlat=-90000000;
+  //   while(xlon>180000000)xlon-=360000000;
+  //   while(xlon<=-180000000)xlon+=360000000;
+  //   return {lat:xlat,log:xlon};
+  // }
   llenarMovimientos(movi){
     if(movi!=null){
       let inicial,final;
@@ -501,7 +507,7 @@ const myIcon3 = L.icon({
         inicial =  new Date(movi[i].ruta_ciudad[0].fecha_llegada);
           for(let j=1;j<movi[i].ruta_ciudad.length;j++){
             final =  new Date(movi[i].ruta_ciudad[j].fecha_llegada);
-            var diff = (final.getTime() - inicial.getTime())/1000*800;
+            var diff = (final.getTime() - inicial.getTime());
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
@@ -543,26 +549,27 @@ const myIcon3 = L.icon({
                     //let valores = this.hallarPunto(movi[i].ruta_ciudad[k-1],movi[i].ruta_ciudad[k]);
                     otro[(movi[i].id_camion)-1].lat = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].latitud;
                     otro[(movi[i].id_camion)-1].log = this.state.ciudades[movi[i].ruta_ciudad[k-1].id_ciudad.id-1].longitud;
-                    otro[(movi[i].id_camion)-1].tiempo = 1;
+                    otro[(movi[i].id_camion)-1].tiempo = 500;
+                    otro[(movi[i].id_camion)-1].listo = 1;
                     // this.state.camiones[(movi[i].id_camion)-1] = otro[(movi[i].id_camion)-1];
                     var ahora = new Date();
                     var ultimo = new Date(movi[i].ruta_ciudad[k].fecha_llegada);
-                    var diff = (ultimo.getTime()-ahora.getTime())/1000*200;
+                    var diff = (ultimo.getTime()-ahora.getTime());
                     this.state.moviXCamion[(movi[i].id_camion)-1].push({
                       idCiudad: movi[i].ruta_ciudad[k].id_ciudad.id,
                       tiempo: diff,
                       inicial:movi[i].ruta_ciudad[0].fecha_llegada,
                       ant:movi[i].ruta_ciudad[k-1].id_ciudad.id
                   });
-               }
-              break;
+                  break;
+                }
             }   
           }
 
           var aaa = new Date(movi[i].ruta_ciudad[idx].fecha_llegada); 
           for(let j=idx+1;j<movi[i].ruta_ciudad.length;j++){
             final =  new Date(movi[i].ruta_ciudad[j].fecha_llegada);
-            var diff = (final.getTime() - aaa.getTime())/1000*200;
+            var diff = (final.getTime() - aaa.getTime());
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
@@ -572,12 +579,22 @@ const myIcon3 = L.icon({
           inicial  = final;
         }
       }
+      //console.log("Aqui llenamos los iniciales de los camiones");
+      //console.log(otro);
+      for(let i = 0;i<otro.length;i++){
+        if(otro[i].listo == 1 ) continue;
+        else{
+          otro[i].lat = otro[i].almacen.latitud;
+          otro[i].log = otro[i].almacen.longitud;
+          otro[i].tiempo = 500;  
+        }
+      }
       this.setState({camiones:otro});
       //console.log(this.state.moviXCamion);
       movi = null;
-      for(let i=0;i<this.state.moviXCamion.length;i++){
-        this.funcionCiclica(i);   //Movemos todos los camiones
-      }
+      // for(let i=0;i<this.state.moviXCamion.length;i++){
+      //   this.funcionCiclica(i);   //Movemos todos los camiones
+      // }
       //Cargar funcion que se levante en cada hora del dia
       var ahora = new Date();
       var fechaDeLanzamiento = ahora;
@@ -622,10 +639,10 @@ const myIcon3 = L.icon({
               //console.log(data);
               var auxi = JSON.parse(JSON.stringify(this.state.tramos));
               for(let i = 0;i<auxi.length;i++){
-                auxi[i].bloqueado = 0;
+                if(auxi[i].bloqueado!=2) auxi[i].bloqueado = 0;
               }
               for(let i = 0;i<data.length;i++){
-                 auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
+                if(auxi[(data[i].id_tramo.id_tramo)-1].bloqueado!=2) auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
                  blq++;
                 }
                 this.setState({tramos:auxi});
@@ -646,74 +663,81 @@ const myIcon3 = L.icon({
    var otro = JSON.parse(JSON.stringify(this.state.camiones));
    //console.log(this.state.camiones);
    //console.log(this.state.moviXCamion);
-  //  if(this.state.moviXCamion.length!=0){
-  //     if(this.state.moviXCamion[idx].length!=0){
-  //        //console.log(this.state.moviXCamion[idx]);
-  //        var inicio = new Date(this.state.moviXCamion[idx][0].inicial);
-  //        while(Date.now()<=inicio){ //Esperar que sea la hora correcta
-  //          await this.sleep(1000);
-  //        }
-  //        //otro[idx].estado = 0;
-  //        //this.setState({estadosCamion:otro});
-  //        var anterior = "";
-  //        for (let i =0;i<this.state.moviXCamion[idx].length;i++){
-  //         var nuevaCiudad = this.state.moviXCamion[idx][i];
-  //         //Verificamos si nosotros hacemos el lag
-  //         //console.log(nuevaCiudad);
-  //          otro[idx].tiempo = nuevaCiudad.tiempo;
-  //          otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
-  //          otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
-  //         //this.state.camiones[idx] = otro[idx];
-  //         //El tramo es 
-  //         //console.log("El tramo donde me muevo es");
-  //         var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
-  //         // console.log(cadena);
-  //         // console.log(Mapita[cadena]);
-  //         if(i==0){
-  //           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
-  //           auxi[Mapita[cadena]-1].bloqueado = 2;
-  //           const y = [
-  //             ...this.state.tramos.slice(0,Mapita[cadena]-1),
-  //             auxi[Mapita[cadena]-1],   
-  //             ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
-  //           ]
-  //           this.setState({tramos:y});
-  //           anterior = Mapita[cadena]-1;
-  //         }
-  //         else{
-  //          //Quitar antiguo
-  //          var auxi = JSON.parse(JSON.stringify(this.state.tramos));
-  //           auxi[anterior].bloqueado = 0;
-  //           var z = [
-  //             ...this.state.tramos.slice(0,anterior),
-  //             auxi[anterior],   
-  //             ...this.state.tramos.slice(anterior+1,this.state.tramos.length)
-  //           ]
-  //           this.setState({tramos:z});
-  //           anterior = Mapita[cadena]-1;
-  //           //////////Nuevo 
-  //           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
-  //           auxi[Mapita[cadena]-1].bloqueado = 2;
-  //           var y = [
-  //             ...this.state.tramos.slice(0,Mapita[cadena]-1),
-  //             auxi[Mapita[cadena]-1],   
-  //             ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
-  //           ]
-  //           this.setState({tramos:y});
-  //         }
-  //         const x = [
-  //          ...this.state.camiones.slice(0,idx),
-  //          otro[idx],   
-  //          ...this.state.camiones.slice(idx+1,this.state.camiones.length)
-  //         ]
-  //         this.setState({camiones:x});
-  //         await this.sleep(nuevaCiudad.tiempo*1000/800);
-  //        }
-  //        //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
-  //        this.state.moviXCamion[idx] = [];
-  //        //this.state.camiones[idx].estado = 1;
-  //     }
-  //   }
+   if(this.state.moviXCamion.length!=0){
+      if(this.state.moviXCamion[idx].length!=0){
+         //console.log(this.state.moviXCamion[idx]);
+         var inicio = new Date(this.state.moviXCamion[idx][0].inicial);
+         while(Date.now()<=inicio){ //Esperar que sea la hora correcta
+           await this.sleep(1000);
+         }
+         //otro[idx].estado = 0;
+         //this.setState({estadosCamion:otro});
+         var anterior = "";
+         for (let i =0;i<this.state.moviXCamion[idx].length;i++){
+          var nuevaCiudad = this.state.moviXCamion[idx][i];
+          //Verificamos si nosotros hacemos el lag
+          //console.log(nuevaCiudad);
+          //  console.log("Soy el : " + idx); 
+          //  console.log("Me estoy moviendo a ");
+          //  console.log(otro[idx].lat);
+          //  console.log(otro[idx].log);
+          // console.log(otro[idx].tiempo);
+          //this.state.camiones[idx] = otro[idx];
+          //El tramo es 
+          //console.log("El tramo donde me muevo es");
+          var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
+          // console.log(cadena);
+          // console.log(Mapita[cadena]);
+          if(i==0){
+            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[Mapita[cadena]-1].bloqueado = 2;
+            const y = [
+              ...this.state.tramos.slice(0,Mapita[cadena]-1),
+              auxi[Mapita[cadena]-1],   
+              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:y});
+            anterior = Mapita[cadena]-1;
+          }
+          else{
+           //Quitar antiguo
+           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[anterior].bloqueado = 0;
+            var z = [
+              ...this.state.tramos.slice(0,anterior),
+              auxi[anterior],   
+              ...this.state.tramos.slice(anterior+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:z});
+            anterior = Mapita[cadena]-1;
+            //////////Nuevo 
+            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[Mapita[cadena]-1].bloqueado = 2;
+            var y = [
+              ...this.state.tramos.slice(0,Mapita[cadena]-1),
+              auxi[Mapita[cadena]-1],   
+              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:y});
+          }
+
+          if(i==0) await this.sleep(6000);
+          otro[idx].tiempo = nuevaCiudad.tiempo;
+          otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+          otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+          const x = [
+           ...this.state.camiones.slice(0,idx),
+           otro[idx],   
+           ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+          ]
+          this.setState({camiones:x});
+          await this.sleep(nuevaCiudad.tiempo);
+         }
+         //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
+         this.state.moviXCamion[idx] = [];
+         //this.state.camiones[idx].estado = 1;
+      }
+    }
    //Revisar mantenimiento
    //console.log(this.state.mantXCamion[idx]);
    //await this.sleep(10000);
@@ -739,9 +763,30 @@ const myIcon3 = L.icon({
             auxi[idx],   
             ...this.state.camiones.slice(idx+1,this.state.camiones.length)
            ];
-           this.setState({camiones:x});
+          this.setState({camiones:x});
+          var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
+          ccc.push({id:idx});
+          this.setState({arrMantenimientos:ccc});
           await this.sleep(espera/(1000*60*60)*10000);
-          this.state.camiones[idx].estado = 1;
+          //Bajarnos el idx del arrMantenimientos
+          var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
+          for(let j = 0;j<ccc.length;j++){
+            if(ccc[j].id==idx){
+              const index = array.indexOf(j);
+              if (index > -1) { // only splice array when item is found
+                ccc.splice(index, 1); // 2nd parameter means remove one item only
+              }
+              break;
+            }
+          }
+          this.setState({arrMantenimientos:ccc});
+          auxi[idx].estado = 1;
+          var x = [
+            ...this.state.camiones.slice(0,idx),
+            auxi[idx],   
+            ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+           ];
+          this.setState({camiones:x})
         }
       }
    }
