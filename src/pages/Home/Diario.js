@@ -8,7 +8,7 @@ import algoritmoService from '../../services/algoritmoService';
 import pedidoService from '../../services/pedidoService';
 import camionService from '../../services/camionService';
 import { color } from '@mui/system';
-import { Box, Typography, Button, Grid, TextField, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Grid, TextField, CircularProgress, Autocomplete } from '@mui/material';
 import BallotIcon from '@mui/icons-material/Ballot';
 import LZString from 'lz-string';
 
@@ -227,6 +227,14 @@ const myIcon3 = L.icon({
   popupAnchor: [2, -40]
 });
 
+const myIconSeleccionado = L.icon({
+  iconUrl:  require('../../archives/orange-circle-16.png'),
+  iconSize: [18, 18],
+  iconAnchor: [9, 10],
+  popupAnchor: [2, -40]
+});
+
+
   const IconMantenimiento = L.icon({
     iconUrl:  require('../../archives/red-circle-32.png'),
     iconSize: [18, 18],
@@ -260,7 +268,10 @@ const myIcon3 = L.icon({
   //     setOpenResume(true);
   //   }
   // }, [flagOut])
-    
+  // const top100Films = [
+  //   { label: 'The Godfather', id: 1 },
+  //   { label: 'Pulp Fiction', id: 2 },
+  // ];
   class Diario extends Component{
     constructor(props){
       super(props);
@@ -301,7 +312,9 @@ const myIcon3 = L.icon({
       idObtenerRutas:"",
       terminoSimulacion:false,
       arrMantenimientos:[],
-      opciones:{position:position1,zoom:zoom1}
+      opciones:{position:position1,zoom:zoom1},
+      labelCamiones:[],
+      anterior:[]
     };
 
 
@@ -617,6 +630,15 @@ const myIcon3 = L.icon({
         }
       }
       this.setState({camiones:otro});
+      var bbb=[];
+      for(let z = 0;z<this.state.camiones.length;z++){
+        bbb.push({
+         label:"Camion "+(z+1).toString(),
+         id:z
+        });
+      }
+      this.setState({labelCamiones:bbb});
+      console.log(this.state.labelCamiones);
       //console.log(this.state.moviXCamion);
       movi = null;
       for(let i=0;i<this.state.moviXCamion.length;i++){
@@ -782,6 +804,7 @@ const myIcon3 = L.icon({
           var espera  = final.getTime() - ahora.getTime();
           //this.state.camiones[idx].estado = 2;
           console.log("Estoy en mantenimiento: " + idx);
+
           //Arreglar setstate
           var auxi = JSON.parse(JSON.stringify(this.state.camiones));
           auxi[idx].estado = 2;
@@ -840,8 +863,61 @@ const myIcon3 = L.icon({
   componentDidMount(){
     this.CargarData();
   }
-
   
+
+
+  camionSeleccionado(camion){
+    var existeAnterior = false;
+    var aux;
+    if(this.state.anterior.length!=0){
+      console.log(this.state.anterior);
+      var ss = this.state.anterior[0];
+      aux = JSON.parse(JSON.stringify(this.state.camiones));
+      aux[ss.id].estado = ss.estadoAntiguo;
+      var x = [
+        ...this.state.camiones.slice(0,ss.id),
+        aux[ss.id],   
+        ...this.state.camiones.slice(ss.id+1,this.state.camiones.length)
+       ];
+      this.setState({camiones:x});
+      this.setState({anterior:[]});
+      existeAnterior = true;
+     //  this.setState({anterior:camion}); 
+    }
+   if(camion==null){}
+   else if(existeAnterior==true){
+    // if(existeAnterior==true) var au = aux;
+    //    else var au = JSON.parse(JSON.stringify(this.state.camiones));
+    var estado = this.state.camiones[camion.id].estado;
+    this.state.camiones[camion.id].estado = 4;
+    // var z = [
+    //   ...this.state.camiones.slice(0,camion.id),
+    //   au[camion.id],   
+    //   ...this.state.camiones.slice(camion.id+1,this.state.camiones.length)
+    //  ];
+    // this.setState({camiones:z});
+    camion.estadoAntiguo = estado;
+    var sd = [];
+    sd.push(camion);
+    this.setState({anterior:sd});
+   }
+   else{
+    if(existeAnterior==true) var au = aux;
+       else var au = JSON.parse(JSON.stringify(this.state.camiones));
+    var estado = this.state.camiones[camion.id].estado;
+    au[camion.id].estado = 4;
+    var z = [
+      ...this.state.camiones.slice(0,camion.id),
+      au[camion.id],   
+      ...this.state.camiones.slice(camion.id+1,this.state.camiones.length)
+     ];
+    this.setState({camiones:z});
+    camion.estadoAntiguo = estado;
+    var sd = [];
+    sd.push(camion);
+    this.setState({anterior:sd});
+   }
+  }
   render(){
     return (
       // <MapContainer center={this.state.opciones.position} zoom={this.state.opciones.zoom} scrollWheelZoom={true} id="idMapita">
@@ -877,6 +953,22 @@ const myIcon3 = L.icon({
             </Grid> 
           </Button>
         </div>
+        { this.state.labelCamiones.length!=0 ? 
+        (<div style={{position:'relative',zIndex:9999,float:'right',marginTop:'10px',marginRight:'15px'}}>
+          <Autocomplete  style={{backgroundColor:"inherit"}} 
+              id="combo-box-demo"
+              options={this.state.labelCamiones}
+              sx={{ width: 200 }} 
+              onChange={(event,newValue) => {
+                console.log(newValue);
+                this.camionSeleccionado(newValue);
+              }}      
+              renderInput={({ inputProps, ...rest }) =>    <TextField
+              {...rest}
+              inputProps={{ ...inputProps, readOnly: true }} label="Camiones"/>}
+            />
+        </div>):(<></>)
+        }
         {(
           this.state.ciudades?.map((ciudad)=>(
               ciudad.tipo==1 ? (
@@ -916,7 +1008,18 @@ const myIcon3 = L.icon({
       {
         (
           this.state.camiones?.map((camion)=>(
-            camion.estado == 2 ? (
+            camion.estado == 4 ? (
+              <ReactLeafletDriftMarker  icon={myIconSeleccionado}
+                  position={[camion.lat,camion.log]}
+                  duration={camion.tiempo}
+                  keepAtCenter={false}>
+                  <Tooltip>
+                    {"Id: " + camion.id}
+                    <br></br>
+                    {"Placa: " + camion.placa}
+                  </Tooltip>
+                  </ReactLeafletDriftMarker>)
+            :(camion.estado == 2 ? (
             <ReactLeafletDriftMarker  icon={IconMantenimiento}
                 position={[camion.lat,camion.log]}
                 duration={camion.tiempo}
@@ -960,7 +1063,7 @@ const myIcon3 = L.icon({
                         {"Placa: " + camion.placa}
                       </Tooltip>
                       </ReactLeafletDriftMarker>
-                        ) :(<></>))))
+                        ) :(<></>)))))
           )
         ))
         }
