@@ -295,6 +295,7 @@ const myIcon3 = L.icon({
       idTiempos:"",
       idObtenerRutas:"",
       terminoSimulacion:false,
+      arrMantenimientos:[]
     };
 
 
@@ -640,10 +641,10 @@ const myIcon3 = L.icon({
               //console.log(data);
               var auxi = JSON.parse(JSON.stringify(this.state.tramos));
               for(let i = 0;i<auxi.length;i++){
-                auxi[i].bloqueado = 0;
+                if(auxi[i].bloqueado!=2) auxi[i].bloqueado = 0;
               }
               for(let i = 0;i<data.length;i++){
-                 auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
+                if(auxi[(data[i].id_tramo.id_tramo)-1].bloqueado!=2) auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
                  blq++;
                 }
                 this.setState({tramos:auxi});
@@ -765,7 +766,22 @@ const myIcon3 = L.icon({
             ...this.state.camiones.slice(idx+1,this.state.camiones.length)
            ];
           this.setState({camiones:x});
+          var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
+          ccc.push({id:idx});
+          this.setState({arrMantenimientos:ccc});
           await this.sleep(espera/(1000*60*60)*10000);
+          //Bajarnos el idx del arrMantenimientos
+          var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
+          for(let j = 0;j<ccc.length;j++){
+            if(ccc[j].id==idx){
+              const index = array.indexOf(j);
+              if (index > -1) { // only splice array when item is found
+                ccc.splice(index, 1); // 2nd parameter means remove one item only
+              }
+              break;
+            }
+          }
+          this.setState({arrMantenimientos:ccc});
           auxi[idx].estado = 1;
           var x = [
             ...this.state.camiones.slice(0,idx),
