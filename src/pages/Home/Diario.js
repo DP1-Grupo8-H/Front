@@ -192,9 +192,11 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
     return historico;
   }
 
-  const position1 = [-9.880358501459673, -74.46566630628085];
+  //const position1 = [-9.880358501459673, -74.46566630628085];
+  const position1 = [-12.045957676769577, -77.0305492374421];
   const position2 = [-12.045957676769577, -77.0305492374421];
-  const zoom1 = 6;
+  //const zoom1 = 6;
+  const zoom1 = 17;
   const zoom2 = 16;
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
   const TramosColor = { color: 'black' ,weight:2,opacity:1};
@@ -305,10 +307,12 @@ const myIcon3 = L.icon({
 
 
    forzarPedidos(){
-    //this.setState({})
+    var xd = {position:position2,zoom:zoom2}
+    this.setState({opciones:xd});
     fetch('http://localhost:8000/forzar/diario')
     .then(() => 
       {
+      console.log("Se forzo los pedidos");
       //console.log(data);
       var aux = new Date();
       aux.setHours(aux.getHours() - 5);
@@ -345,12 +349,12 @@ const myIcon3 = L.icon({
     }
     if(this.state.arrMantenimientos !== prevState.arrMantenimientos){
       //vamos a hallar los camiones en curso y en mantenimiento
-      const auxcamiones = histCamiones;
-      this.state.camiones.forEach(camion => {
-        if(camion.estado === 2)
-          auxcamiones[camion.id-1].camion.estado = 2;
-      })
-      setHistCamiones(auxcamiones);
+      // const auxcamiones = histCamiones;
+      // this.state.camiones.forEach(camion => {
+      //   if(camion.estado === 2)
+      //     auxcamiones[camion.id-1].camion.estado = 2;
+      // })
+      // setHistCamiones(auxcamiones);
     }
   }
   
@@ -541,6 +545,14 @@ const myIcon3 = L.icon({
       let idx;
       var otro = JSON.parse(JSON.stringify(camiones));
       for(let i =0;i<movi.length;i++){
+        if(i==0){
+          var xd = {position:position1,zoom:zoom1}
+          this.setState({opciones:xd});
+          var map = document.getElementById("idMapita").center;
+          // // console.log(document.getElementById("idMapita").center);
+          // this.state.opciones.position = position2;
+          //map.setView(new L.LatLng(40.737, -73.923), 8);
+        }
           for(let k = 0;k<movi[i].ruta_ciudad.length;k++){
             let fecha = new Date(movi[i].ruta_ciudad[k].fecha_llegada);
             if( fecha >= Date.now()){
@@ -832,7 +844,11 @@ const myIcon3 = L.icon({
   
   render(){
     return (
-      <MapContainer center={this.state.opciones.position} zoom={this.state.opciones.zoom} scrollWheelZoom={true} id="idMapita">
+      // <MapContainer center={this.state.opciones.position} zoom={this.state.opciones.zoom} scrollWheelZoom={true} id="idMapita">
+      <MapContainer
+     key={JSON.stringify(this.state.opciones)}
+     center={this.state.opciones.position}
+     zoom={this.state.opciones.zoom} scrollWheelZoom={true} id="idMapita">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
