@@ -4,45 +4,11 @@ import Popup from '../../components/utils/Popup';
 import ModalSimulation from './Modals/ModalSimulation';
 import ModalResume from './Modals/ModalResume';
 
-import { Box, Grid, Typography} from "@mui/material";
-
 import './App.css';
 import Legend from "../../components/Legend/Legend";
-import Resume from "../../components/Resume/Resume";
+import { Box, Grid, Typography} from "@mui/material";
 
-const convertMath = (number) => {
-  if(Math.trunc(number/1000) > 0){
-    if(Math.trunc(number/1000000) > 0){
-      number = (Math.round(number/1000000)).toFixed(2).toString().concat('M');
-    }
-    else{
-      number = (Math.round(number/1000)).toFixed(2).toString().concat('K');
-    }
-  }
-  else{
-    number = number.toString().concat('');
-  }
-}
-
-const retrievePaq = (historico, processPedidos) => {
-  let data = {cant : 0, cur : 0, paq : 0, paqcur : 0};
-  for(let ped of historico){
-    if(ped.plan_transporte.length > 0)  data.cant++;
-    for(let plan of ped.plan_transporte){
-      data.paq+=plan.cantidad;
-    }
-  }
-  data.cant = convertMath(data.cant);
-  data.cur = convertMath(data.cur);
-  data.paq = convertMath(data.paq);
-  data.paqcur = convertMath(data.paqcur);
-
-  return data;
-}
-
-
-const SevenDays = () => {
-
+const Colapse = () => {
   const [openPopup, setOpenPopup] = useState(true);
   const [openReusme, setOpenResume] = useState(false);
   //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
@@ -70,7 +36,7 @@ const SevenDays = () => {
         <Grid container padding= "2rem" alignItems = "center">
           <Grid item xs = {12} sm = {12} align = "left" >
             < Typography variant="h4" mb={2} color = "primary.contrastText">
-                Mapa de entregas para Simulación 7 días
+                Mapa de entregas para Simulación al Colapso
             </Typography>
           </Grid>
           <Grid item xs = {12} sm = {12} align = "center" sx = {{backgroundColor: '#282c34'}}>
@@ -126,7 +92,7 @@ const SevenDays = () => {
           openPopup={openPopup}
           setOpenPopup={setOpenPopup}
           noClose={true}
-          title="Inicio de la Simulación a 7 Dias"
+          title="Inicio de la Simulación al Colapso"
           >
           <ModalSimulation setOpenPopup = {setOpenPopup} setData = {setData} setFechaActual={setFechaActual} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin}/>
         </Popup>
@@ -141,7 +107,9 @@ const SevenDays = () => {
       </div>
     </>
   )
+
+  //Return algoritmo -> rutas y pedidos faltantes.
 }
 
 
-export default SevenDays;
+export default Colapse;

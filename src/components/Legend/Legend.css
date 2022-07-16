@@ -1,0 +1,55 @@
+.collapsible{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 2rem;
+}
+.collapsible .toggle{
+  position: relative;
+  top: 0px;
+  background: #000000;
+  border: unset;
+  cursor : pointer;
+  font:unset;
+  height: 2rem;
+  border-radius: 0px;
+}
+
+.collapsible .content{
+  position: relative;
+  border: 1px solid #AFAFAF;
+  height: 0px;
+  overflow: hidden;
+  transition: height ease 0.3s;
+}
+
+.collapsible .content .show {
+  height: 500px;
+}
+.noncollapsible{
+  position: relative;
+  width: stretch;
+
+}
+.noncollapsible .toggle{
+  position: relative;
+  top: 0px;
+  background: #000000;
+  border: unset;
+  font:unset;
+  height: 2rem;
+  border-radius: 0px;
+}
+
+.noncollapsible .content{
+  position: relative;
+  border: 2px solid #AFAFAF;
+  border-radius: 0px 0px 10px 10px;
+  height: 8rem;
+  overflow: hidden;
+}
+
+.noncollapsible .content .show {
+  height: 500px;
+}

@@ -11,7 +11,7 @@ import Logo from '../../archives/Logo.svg';
 import useStyles from './styles';
 import {useNavigate} from 'react-router-dom';
 
-const pages = ['Mapa', 'Mantenimiento', 'Simulaciones', 'Reportes'];
+const pages = ['Mapa', 'Simulaciones'];
 const p_simulation = ['A 7 días', 'Colapso'];
 
 
@@ -23,7 +23,7 @@ const Navbar = () => {
     //Navegamos a una URl
     switch(nav.textContent){
       case 'Mapa':
-        navigate('/home');
+        navigate('/diario/mapa');
         break;
       case 'A 7 días':
         navigate('/sim/7_dias');
@@ -42,8 +42,6 @@ const Navbar = () => {
   }
 
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-
-  console.log("Data: anchoElUser - ", " anchorElUser", anchorElUser)
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);

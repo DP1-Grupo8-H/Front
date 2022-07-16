@@ -1,6 +1,7 @@
 //Archivo donde conectaremos nuestro React app to index.html
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'typeface-roboto';
  
 //-------Aqui vamos a inicializar REDUX-------//
 // import { Provider } from 'react-redux';
