@@ -338,12 +338,14 @@ const myIcon3 = L.icon({
         }
       );
     }
-    if(this.state.camiones.estado !== prevState.camiones.estado){
+    if(this.state.arrMantenimientos !== prevState.arrMantenimientos){
       //vamos a hallar los camiones en curso y en mantenimiento
+      const auxcamiones = histCamiones;
       this.state.camiones.forEach(camion => {
-        if()
+        if(camion.estado === 2)
+          auxcamiones[camion.id-1].camion.estado = 2;
       })
-
+      setHistCamiones(auxcamiones);
     }
   }
   
