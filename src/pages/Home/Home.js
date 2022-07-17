@@ -103,7 +103,7 @@ function TabPanel(props) {
               );
               })
               :<>
-              {pedidos.length === 0 || !pedidos && <Grid item xs = {12} sm = {12} align = "center" marginTop = "16rem">
+              {(pedidos.length !== 0 || pedidos !== null) && <Grid item xs = {12} sm = {12} align = "center" marginTop = "16rem">
                 <CircularProgress />
                 </Grid>}
               </>

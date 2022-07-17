@@ -72,10 +72,10 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
               'id_ruta': ruta.id_ruta,
               'id_hijo': ruta.pedido.id_pedido,
               'cantidad': ruta.pedido.cantidad,
-              'hora_llegada': allRoute.at(-1).fecha_llegada,
-              'hora_salida': allRoute[0].fecha_llegada,
+              'hora_llegada': allRoute.length > 0 ? allRoute.at(-1).fecha_llegada : historico[index].plan_transporte.at(-1).hora_llegada,
+              'hora_salida': allRoute.length > 0 ? allRoute[0].fecha_llegada : historico[index].plan_transporte.at(-1).hora_salida,
               'camion': plan.camion,
-              'plan_transporte': allRoute,
+              'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
             });
             //Ahora cambiamos el estado del pedido
             const camion_alm = await movimientos.find(camion => camion.id_camion === plan.camion.id);
@@ -98,10 +98,10 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
             'id_ruta': ruta.id_ruta,
             'id_hijo': 0,
             'cantidad': ruta.pedido.cantidad,
-            'hora_llegada': allRoute.at(-1).fecha_llegada,
-            'hora_salida': allRoute[0].fecha_llegada,
+            'hora_llegada': allRoute.length > 0 ? allRoute.at(-1).fecha_llegada : historico[index].plan_transporte.at(-1).hora_llegada,
+            'hora_salida': allRoute.length > 0 ? allRoute[0].fecha_llegada : historico[index].plan_transporte.at(-1).hora_salida,
             'camion': plan.camion,
-            'plan_transporte': allRoute,
+            'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
           });
           //Ahora cambiamos el estado del pedido
           const camion_alm = await movimientos.find(camion => camion.id_camion === plan.camion.id);
@@ -162,11 +162,11 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
           'id_plan_transporte': plan.id_plan_transporte,
           'id_ruta': ruta.id_ruta,
           'cantidad': 0,
-          'hora_llegada': allRoute.at(-1).fecha_llegada,
-          'hora_salida': allRoute[0].fecha_llegada,
+          'hora_llegada': allRoute.length > 0 ? allRoute.at(-1).fecha_llegada : historico[index].plan_transporte.at(-1).hora_llegada,
+          'hora_salida': allRoute.length > 0 ? allRoute[0].fecha_llegada : historico[index].plan_transporte.at(-1).hora_salida,
           'pedido': null,
           'pedido_padre': null,
-          'plan_transporte': allRoute,
+          'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
           });
         }  
         else{
@@ -176,11 +176,11 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
             'id_plan_transporte': plan.id_plan_transporte,
             'id_ruta': ruta.id_ruta,
             'cantidad': ruta.pedido.cantidad,
-            'hora_llegada': allRoute.at(-1).fecha_llegada,
-            'hora_salida': allRoute[0].fecha_llegada,
+            'hora_llegada': allRoute.length > 0 ? allRoute.at(-1).fecha_llegada : historico[index].plan_transporte.at(-1).hora_llegada,
+            'hora_salida': allRoute.length > 0 ? allRoute[0].fecha_llegada : historico[index].plan_transporte.at(-1).hora_salida,
             'pedido': ruta.pedido,
             'pedido_padre': pedPadre,
-            'plan_transporte': allRoute,
+            'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
           });
         }
         historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
