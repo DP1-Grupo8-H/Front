@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import MapaSimulacion from './Prueba';
 import Popup from '../../components/utils/Popup';
 import ModalSimulation from './Modals/ModalSimulation';
@@ -56,7 +56,7 @@ const SevenDays = () => {
   //Data --> Pedidos pre-cargados || puede incluir en este la traída de ciudades, tramos y camiones.
   const [data, setData] = useState([]);
   const [historico, setHistorico] = useState([]);
-  const [histCamiones, setHistCamiones] = useState([]);
+  const [histCamiones, setHistCamiones] = useState([])
   //const [processPedidos, setProcessPedidos] = useState([]);
   useEffect(() => {
     const auxhistCamiones = [];
@@ -124,6 +124,13 @@ const SevenDays = () => {
     }
   }
 
+  const classedMapaSimulacion = React.useMemo(() => {
+    console.log("UNNNN");
+    return(
+      <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin} histCamiones = {histCamiones} setHistCamiones = {setHistCamiones}/>
+    );
+  },[data, fechaActual])
+
   console.log(openPopup, data.length);
   return(
     <>
@@ -137,7 +144,7 @@ const SevenDays = () => {
           </Grid>
           <Grid item xs = {8} sm = {8} align = "left" margin = "0rem -4rem 0rem 0rem" >
               {/* MAPA DE LA SIMULACION */}
-              <MapaSimulacion datos = {data} fechaActual={fechaActual} setOpenResume ={setOpenResume} setHistorico ={setHistorico} setFechaFin={setFechaFin} setMinutosFin={setMinutosFin} setSegundosFin = {setSegundosFin} histCamiones = {histCamiones} setHistCamiones = {setHistCamiones}/>
+              {classedMapaSimulacion}
           </Grid>
           <Grid item xs = {4} sm = {4} align = "left" >
             {/* RESUMEN Y DETALLES */}

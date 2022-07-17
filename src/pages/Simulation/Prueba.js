@@ -13,6 +13,7 @@ import LZString from 'lz-string';
 
 
 const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones}) => {
+  console.log(datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones);
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -251,8 +252,9 @@ const myIconSeleccionado = L.icon({
         addCamiones (histCamiones, this.state.rutas.planes, this.state.ciudades, this.state.rutas.movimientos)
         .then(auxcamiones => 
           {
-            console.log(auxcamiones);
-            setHistCamiones(auxcamiones);
+            const toCopy = auxcamiones.slice(0);
+            setHistCamiones(toCopy);
+            console.log(histCamiones);
           }
         );
       }
@@ -288,7 +290,7 @@ const myIconSeleccionado = L.icon({
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -422,7 +424,7 @@ const myIconSeleccionado = L.icon({
     //console.log("Los mantenimientos son: ")
     //console.log(data);
     var dat = data;
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    fetch('http://localhost:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
@@ -829,5 +831,8 @@ const myIconSeleccionado = L.icon({
       {flagOut === null&&<Prueba/>}
     </div>
   );
+
 }
+
+
 export default Mapa_Simulacion;
