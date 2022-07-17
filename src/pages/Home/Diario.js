@@ -320,8 +320,10 @@ const myIconSeleccionado = L.icon({
 
 
    forzarPedidos(){
-    var xd = {position:position2,zoom:zoom2}
-    this.setState({opciones:xd});
+    if(this.state.opciones.zoom!=position2 && this.state.moviXCamion.length==0){
+      var xd = {position:position2,zoom:zoom2}
+      this.setState({opciones:xd});
+    }
     fetch('http://inf226g8.inf.pucp.edu.pe:8000/forzar/diario')
     .then(() => 
       {
@@ -343,6 +345,7 @@ const myIconSeleccionado = L.icon({
    }
   componentDidUpdate (prevProps,prevState) {
     if (this.state.rutas !== prevState.rutas) {
+      console.log("CAMBIARON LAS RUTAS GAAAAA");
       console.log(this.state.rutas);
       addRoutes (historico, this.state.rutas.planes, this.state.ciudades, this.state.rutas.movimientos)
       .then(auxhistorico => 
@@ -458,7 +461,7 @@ const myIconSeleccionado = L.icon({
                 .then(data => 
                   {
                   console.log(data);
-                 this.setState({rutas:data});
+                  this.setState({rutas:data});
                   this.llenarMovimientosInicial(data.movimientos,guardar);
                   console.log(this.state.moviXCamion);
                 });
@@ -541,7 +544,7 @@ const myIconSeleccionado = L.icon({
         inicial =  new Date(movi[i].ruta_ciudad[0].fecha_llegada);
           for(let j=1;j<movi[i].ruta_ciudad.length;j++){
             final =  new Date(movi[i].ruta_ciudad[j].fecha_llegada);
-            var diff = (final.getTime() - inicial.getTime());
+            var diff = (final.getTime() - inicial.getTime())/1000*300;
             this.state.moviXCamion[(movi[i].id_camion)-1].push({
               idCiudad: movi[i].ruta_ciudad[j].id_ciudad.id,
               tiempo: diff,
@@ -596,7 +599,7 @@ const myIconSeleccionado = L.icon({
                     // this.state.camiones[(movi[i].id_camion)-1] = otro[(movi[i].id_camion)-1];
                     var ahora = new Date();
                     var ultimo = new Date(movi[i].ruta_ciudad[k].fecha_llegada);
-                    var diff = (ultimo.getTime()-ahora.getTime());
+                    var diff = (ultimo.getTime()-ahora.getTime())/1000*300;
                     ///////
                   //   this.state.moviXCamion[(movi[i].id_camion)-1].push({
                   //     idCiudad: movi[i].ruta_ciudad[k-1].id_ciudad.id,
@@ -790,7 +793,7 @@ const myIconSeleccionado = L.icon({
            ...this.state.camiones.slice(idx+1,this.state.camiones.length)
           ]
           this.setState({camiones:x});
-          await this.sleep(nuevaCiudad.tiempo);
+          await this.sleep(nuevaCiudad.tiempo*1000/300);
          }
          //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
          this.state.moviXCamion[idx] = [];
