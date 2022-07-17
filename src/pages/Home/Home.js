@@ -21,7 +21,8 @@ import LZString from 'lz-string';
 import ModalDetalle from "./Modals/ModalDetalle";
 
 function TabPanel(props) {
-  const { children, value, index, historico, setPedDetail, setOpenDetail, histCamiones, setPedCamion,setOpenCamion,...other } = props;
+  const { children, value, index, historico, setPedDetail, setOpenDetail, histCamiones, setPedCamion,setOpenCamion, pedidos, ...other } = props;
+  console.log(pedidos);
 
   const handleDetail = (plan) => {
     setPedDetail(plan);
@@ -101,10 +102,11 @@ function TabPanel(props) {
               </Grid>
               );
               })
-              :
-              <Grid item xs = {12} sm = {12} align = "center" marginTop = "16rem">
+              :<>
+              {pedidos.length === 0 || !pedidos && <Grid item xs = {12} sm = {12} align = "center" marginTop = "16rem">
                 <CircularProgress />
-              </Grid>
+                </Grid>}
+              </>
             }
             </Grid>
           </Box>
@@ -205,7 +207,7 @@ const Home = () => {
   const [pedDetail, setPedDetail] = useState(null);
   const [pedidos, setPedidos] = useState([]);
   const [data, setData] = useState({cant: '', blq: '', ruta: '', mant:''});
-
+  console.log(pedidos);
   useEffect(() => {
     for(let pedido of pedidos){
       if(!historico.some(ped =>  ped.pedido.id_pedido === pedido.id_pedido)){
@@ -314,7 +316,7 @@ const Home = () => {
                   <Tab label="Pedidos" {...a11yProps(0)} />
                   <Tab label="Camiones" {...a11yProps(1)} />
                 </Tabs>
-                <TabPanel value={value} index={0} historico = {historico} setPedDetail = {setPedDetail} setOpenDetail = {setOpenDetail}>
+                <TabPanel value={value} index={0} historico = {historico} setPedDetail = {setPedDetail} setOpenDetail = {setOpenDetail} pedidos= {pedidos}>
                   Item One
                 </TabPanel>
                 <TabPanel value={value} index={1} histCamiones = {histCamiones} setPedCamion = {setPedCamion} setOpenCamion = {setOpenCamion}>
