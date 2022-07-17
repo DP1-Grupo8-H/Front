@@ -8,7 +8,7 @@ import algoritmoService from '../../services/algoritmoService';
 import  SimFunction from './Func_Sim';
 import Legend from "../../components/Legend/Legend";
 import { color } from '@mui/system';
-
+import { Box, Typography, Button, Grid, TextField, CircularProgress, Autocomplete } from '@mui/material';
 import LZString from 'lz-string';
 
 
@@ -17,8 +17,10 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
-  const position1 = [-9.880358501459673, -74.46566630628085];
+  //const position1 = [-9.880358501459673, -74.46566630628085];
+  const position1 = [-12.045957676769577, -77.0305492374421];
   const limeOptions = { color: 'red' ,weight:1,opacity:1};
+  const TramosColor = { color: 'black' ,weight:2,opacity:1};
   // Primero es el origen y luego el destino
 
   const L = require('leaflet');
@@ -29,6 +31,28 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       iconAnchor: [9, 10],
       popupAnchor: [2, -40]
   });
+  
+  const myIcon2 = L.icon({
+    iconUrl:  require('../../archives/green-circle-16.png'),
+    iconSize: [14, 14],
+    iconAnchor: [10, 10],
+    popupAnchor: [2, -40]
+});
+  
+const myIcon3 = L.icon({
+  iconUrl:  require('../../archives/blue-circle-16.png'),
+  iconSize: [14, 14],
+  iconAnchor: [10, 10],
+  popupAnchor: [2, -40]
+});
+
+const myIconSeleccionado = L.icon({
+  iconUrl:  require('../../archives/orange-circle-32.png'),
+  iconSize: [18, 18],
+  iconAnchor: [9, 10],
+  popupAnchor: [2, -40]
+});
+
 
   const IconMantenimiento = L.icon({
     iconUrl:  require('../../archives/red-circle-32.png'),
@@ -140,6 +164,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
   let cantPedidos = useRef(data.current.length);
 
  var idInterval = [];
+
+ var Mapita = [];
   /**********************************************************************/
   
   class Prueba extends Component{
@@ -173,7 +199,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       cami:"",
       tiempo: "",
       guardado: new Date(fechaActual.getTime()+6*1000*60*60),
-      cronometro:new Date(fechaActual.getTime()+5*1000*60*60),
+      cronometro:new Date(fechaActual.getTime()+6*1000*60*60),
       mostrarTramos:true,
       segundos:0,
       minutos:0,
@@ -181,6 +207,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       idTiempos:"",
       idObtenerRutas:"",
       terminoSimulacion:false,
+      labelCamiones:[],
+      anterior:[]
     };
 
     async hallarFin(){
@@ -269,10 +297,10 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
               console.log(data);
               var auxi = JSON.parse(JSON.stringify(this.state.tramos));
               for(let i = 0;i<auxi.length;i++){
-                auxi[i].bloqueado = 0;
+                 if(auxi[i].bloqueado!=2) auxi[i].bloqueado = 0;
               }
               for(let i = 0;i<data.length;i++){
-                 auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
+                if(auxi[i].bloqueado!=2) auxi[(data[i].id_tramo.id_tramo)-1].bloqueado = 1;
               }
               this.setState({tramos:auxi});
             }
@@ -366,7 +394,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
               this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
                 idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[j].id_ciudad.id,
                 tiempo: diff,
-                inicial: this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada
+                inicial: this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada,
+                ant:this.state.rutas.movimientos[i].ruta_ciudad[j-1].id_ciudad.id
              });
              inicial = final;
             }
@@ -384,7 +413,13 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     data = JSON.parse(LZString.decompress(window.localStorage.getItem("tramos")))
     console.log(data);
     this.setState({tramos:data});
-
+    var ini,fin;
+    for(let i =0;i<data.length;i++){
+     ini = data[i].ciudad_destino.id;
+     fin = data[i].ciudad_origen.id;
+     var cadena = ini + "+" + fin;
+    Mapita[cadena] = data[i].id_tramo;
+   }
     data = JSON.parse(LZString.decompress(window.localStorage.getItem("mantenimientos")))
     //console.log("Los mantenimientos son: ")
     //console.log(data);
@@ -417,6 +452,14 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         }
         this.setState({estadosCamion:data});
         this.setState({camiones:data});
+        var bbb=[];
+        for(let z = 0;z<data.length;z++){
+          bbb.push({
+          label:"Camion "+(z+1).toString(),
+          id:z
+          });
+        }
+        this.setState({labelCamiones:bbb});
         // setOpenResume(true);
         // var d = JSON.parse(JSON.stringify(historico.current));
         // setHistorico(d);
@@ -456,14 +499,63 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
          }
         otro[idx].estado = 0;
          this.setState({estadosCamion:otro});
+         var anterior = "";
          for (let i =0;i<this.state.moviXCamion[idx].length;i++){
+          // var nuevaCiudad = this.state.moviXCamion[idx][i];
+          // //Verificamos si nosotros hacemos el lag
+          // otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+          // otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
           var nuevaCiudad = this.state.moviXCamion[idx][i];
-          //Verificamos si nosotros hacemos el lag
-          otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
-          otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+          var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
+          // console.log(cadena);
+          // console.log(Mapita[cadena]);
+          if(i==0){
+            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[Mapita[cadena]-1].bloqueado = 2;
+            const y = [
+              ...this.state.tramos.slice(0,Mapita[cadena]-1),
+              auxi[Mapita[cadena]-1],   
+              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:y});
+            anterior = Mapita[cadena]-1;
+          }
+          else{
+           //Quitar antiguo
+           var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[anterior].bloqueado = 0;
+            var z = [
+              ...this.state.tramos.slice(0,anterior),
+              auxi[anterior],   
+              ...this.state.tramos.slice(anterior+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:z});
+            anterior = Mapita[cadena]-1;
+            //////////Nuevo 
+            var auxi = JSON.parse(JSON.stringify(this.state.tramos));
+            auxi[Mapita[cadena]-1].bloqueado = 2;
+            var y = [
+              ...this.state.tramos.slice(0,Mapita[cadena]-1),
+              auxi[Mapita[cadena]-1],   
+              ...this.state.tramos.slice(Mapita[cadena]-1+1,this.state.tramos.length)
+            ]
+            this.setState({tramos:y});
+          }
+
+          //if(i==0) await this.sleep(6000);
           let min = nuevaCiudad.tiempo/(1000*60*60);
           otro[idx].tiempo = 10*min*80; 
-          this.state.camiones[idx] = otro[idx];
+          //this.state.camiones[idx] = otro[idx];
+          //await this.sleep(10000*min);
+          // otro[idx].tiempo = nuevaCiudad.tiempo;
+          otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
+          otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
+          const x = [
+           ...this.state.camiones.slice(0,idx),
+           otro[idx],   
+           ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+          ]
+          this.setState({camiones:x});
           await this.sleep(10000*min);
          }
          //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
@@ -514,7 +606,63 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     this.CargarData();
   }
 
-    
+
+
+
+
+
+  camionSeleccionado(camion){
+    var existeAnterior = false;
+    var aux;
+    if(this.state.anterior.length!=0){
+      console.log(this.state.anterior);
+      var ss = this.state.anterior[0];
+      aux = JSON.parse(JSON.stringify(this.state.camiones));
+      aux[ss.id].estado = ss.estadoAntiguo;
+      var x = [
+        ...this.state.camiones.slice(0,ss.id),
+        aux[ss.id],   
+        ...this.state.camiones.slice(ss.id+1,this.state.camiones.length)
+       ];
+      this.setState({camiones:x});
+      this.setState({anterior:[]});
+      existeAnterior = true;
+     //  this.setState({anterior:camion}); 
+    }
+   if(camion==null){}
+   else if(existeAnterior==true){
+    // if(existeAnterior==true) var au = aux;
+    //    else var au = JSON.parse(JSON.stringify(this.state.camiones));
+    var estado = this.state.camiones[camion.id].estado;
+    this.state.camiones[camion.id].estado = 4;
+    // var z = [
+    //   ...this.state.camiones.slice(0,camion.id),
+    //   au[camion.id],   
+    //   ...this.state.camiones.slice(camion.id+1,this.state.camiones.length)
+    //  ];
+    // this.setState({camiones:z});
+    camion.estadoAntiguo = estado;
+    var sd = [];
+    sd.push(camion);
+    this.setState({anterior:sd});
+   }
+   else{
+    if(existeAnterior==true) var au = aux;
+       else var au = JSON.parse(JSON.stringify(this.state.camiones));
+    var estado = this.state.camiones[camion.id].estado;
+    au[camion.id].estado = 4;
+    var z = [
+      ...this.state.camiones.slice(0,camion.id),
+      au[camion.id],   
+      ...this.state.camiones.slice(camion.id+1,this.state.camiones.length)
+     ];
+    this.setState({camiones:z});
+    camion.estadoAntiguo = estado;
+    var sd = [];
+    sd.push(camion);
+    this.setState({anterior:sd});
+   }
+  } 
       // Acelerarx2(){
       // //console.log(this.Marker1.current);
       // var a = this.state.duracion/2;
@@ -530,7 +678,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
   render(){
     return (
-      <MapContainer center={position1} zoom={6} scrollWheelZoom={true} id="idMapita">
+      <MapContainer center={position1} zoom={16} scrollWheelZoom={true} id="idMapita">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -554,6 +702,25 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         <button style={{width:"45px",height:"30px"}}>x4</button> */}
 
       </div>
+      {/* { this.state.labelCamiones.length!=0 ? 
+        (<div style={{position:'relative',zIndex:9999,float:'right',marginTop:'10px',marginRight:'15px'}}>
+          <Autocomplete  style={{backgroundColor:"inherit"}} 
+              id="combo-box-demo"
+              options={this.state.labelCamiones}
+              sx={{ width: 200 }} 
+              onChange={(event,newValue) => {
+                console.log(newValue);
+                this.camionSeleccionado(newValue);
+              }}      
+              renderInput={({ inputProps, ...rest }) =>    <TextField
+              {...rest}
+              inputProps={{ ...inputProps, readOnly: true }} label="Camiones"/>}
+            />
+        </div>):(<></>)
+        }
+      <div style={{position:'absolute',zIndex:9999,float:'left',bottom:0,width:"500px"}}>
+         <Legend/>
+      </div> */}
 
       {(
         this.state.ciudades?.map((ciudad)=>(
@@ -576,20 +743,48 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       )
       }
 
-    {(
-        this.state.tramos ?.map((tramo)=>(
-          tramo.bloqueado == 1 && this.state.mostrarTramos == true ? (
-          <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
-            ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>)      
-        ))
-      )
-      }
+   {(
+          this.state.tramos ?.map((tramo)=>(
+            tramo.bloqueado == 1 && this.state.mostrarTramos == true ? (
+            <Polyline pathOptions={limeOptions} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
+              ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(
+              tramo.bloqueado == 2 && this.state.mostrarTramos == true ?   
+              (
+              <Polyline pathOptions={TramosColor} positions={[[tramo.ciudad_origen.latitud,tramo.ciudad_origen.longitud]
+              ,[tramo.ciudad_destino.latitud,tramo.ciudad_destino.longitud]]}/> ):(<></>) 
+              
+              )
+          ))
+        )
+       }
 
-    {
-      (
-        this.state.camiones?.map((camion)=>(
-          camion.estado == 2 ? (
-          <ReactLeafletDriftMarker  icon={IconMantenimiento}
+   {
+        (
+          this.state.camiones?.map((camion)=>(
+            camion.estado == 4 ? (
+              <ReactLeafletDriftMarker  icon={myIconSeleccionado}
+                  position={[camion.lat,camion.log]}
+                  duration={camion.tiempo}
+                  keepAtCenter={false}>
+                  <Tooltip>
+                    {"Id: " + camion.id}
+                    <br></br>
+                    {"Placa: " + camion.placa}
+                  </Tooltip>
+                  </ReactLeafletDriftMarker>)
+            :(camion.estado == 2 ? (
+            <ReactLeafletDriftMarker  icon={IconMantenimiento}
+                position={[camion.lat,camion.log]}
+                duration={camion.tiempo}
+                keepAtCenter={false}>
+                <Tooltip>
+                  {"Id: " + camion.id}
+                  <br></br>
+                  {"Placa: " + camion.placa}
+                </Tooltip>
+                </ReactLeafletDriftMarker>):(
+              camion.almacen.id==135 ? (
+              <ReactLeafletDriftMarker  icon={myIcon}
               position={[camion.lat,camion.log]}
               duration={camion.tiempo}
               keepAtCenter={false}>
@@ -598,22 +793,33 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
                 <br></br>
                 {"Placa: " + camion.placa}
               </Tooltip>
-              </ReactLeafletDriftMarker>):(
-            <ReactLeafletDriftMarker  icon={myIcon}
-            position={[camion.lat,camion.log]}
-            duration={camion.tiempo}
-            keepAtCenter={false}>
-            <Tooltip>
-              {"Id: " + camion.id}
-              <br></br>
-              {"Placa: " + camion.placa}
-            </Tooltip>
-            </ReactLeafletDriftMarker>
-              ) 
+              </ReactLeafletDriftMarker>
+                ) :( camion.almacen.id==123 ? (
+                  <ReactLeafletDriftMarker  icon={myIcon2}
+                  position={[camion.lat,camion.log]}
+                  duration={camion.tiempo}
+                  keepAtCenter={false}>
+                  <Tooltip>
+                    {"Id: " + camion.id}
+                    <br></br>
+                    {"Placa: " + camion.placa}
+                  </Tooltip>
+                  </ReactLeafletDriftMarker>
+                    ) :( camion.almacen.id==35 ? (
+                      <ReactLeafletDriftMarker  icon={myIcon3}
+                      position={[camion.lat,camion.log]}
+                      duration={camion.tiempo}
+                      keepAtCenter={false}>
+                      <Tooltip>
+                        {"Id: " + camion.id}
+                        <br></br>
+                        {"Placa: " + camion.placa}
+                      </Tooltip>
+                      </ReactLeafletDriftMarker>
+                        ) :(<></>)))))
           )
-        )
-      )
-      }
+        ))
+        }
 
     </MapContainer>
     
