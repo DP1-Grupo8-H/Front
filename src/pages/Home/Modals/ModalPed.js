@@ -22,9 +22,12 @@ function isOverCharged (pedido) {
       let pedido1 = structuredClone(pedido);    pedido1.id_padre=pedido.id_pedido;     pedido1.estado = 1;       pedido1.id_pedido = undefined;
       //Le reducimos la cantidad del pedido a un MOD del promedio
       cantPedidos -= 30;
-      if(cantPedidos >= 0) {
+      if(cantPedidos > 0) {
         pedido1.cantidad = 30;
         newPedidos.push(pedido1);//1 pedido
+      }
+      else if(cantPedidos === 0 ){
+        break;
       }
       else{
         pedido1.cantidad = 30+cantPedidos;
