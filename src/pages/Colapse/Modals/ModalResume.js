@@ -18,8 +18,8 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
   //FALTA FILTRAR LOS RESULTADOS DEL HISTORICO --> SI NO SE ENVIARON TONCES NO SE VEN
 
   const openNav = (nav) => {
-    console.log(historicoNew);
-    navigate('/sim/colapso/resumen', { state: {historico: historicoNew} });
+    console.log(historico);
+    navigate('/sim/colapso/resumen', { state: {historico: historico} });
   }
 
   const handleClick = (event) => {
@@ -48,18 +48,13 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
     }
     return cant_paq;
   }
-  const [historicoNew, setHistoricoNew] = useState([]);
 
   useEffect(() => {
     //VAMOSA FILTRAR LOS PEDIDOS
-    const auxhistorico = historico.filter(ped => {
-      return (ped.plan_transporte.length > 0);
-    });
-    setHistoricoNew(auxhistorico);
-    const ped_entr = historicoNew.filter(ped => {
+    const ped_entr = historico.filter(ped => {
       return (ped.plan_transporte.length > 0);
     }).length;
-    const paq_entr = retrievePaq(historicoNew);
+    const paq_entr = retrievePaq(historico);
     const km_rec = [];
     
     const sim = { ped_entr: ped_entr, paq_entr: paq_entr, km_rec: km_rec };
@@ -69,11 +64,11 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
   }, [historico])
   console.log(data);
 
-  console.log(historicoNew);
+  console.log(historico);
 
   return(
     <>
-    { (historicoNew.length > 0 && data.ped_entr > 0) ?
+    { (historico.length > 0 && data.ped_entr > 0) ?
     <>
     < Typography variant="b1" mb={2} fontFamily = "Roboto">
       La simulación termino su ejecución. El resumen de la ejecución es el siguiente:
