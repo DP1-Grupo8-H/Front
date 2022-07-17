@@ -322,7 +322,7 @@ const myIconSeleccionado = L.icon({
    forzarPedidos(){
     var xd = {position:position2,zoom:zoom2}
     this.setState({opciones:xd});
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/forzar/diario')
+    fetch('http://localhost:8000/forzar/diario')
     .then(() => 
       {
       console.log("Se forzo los pedidos");
@@ -330,7 +330,7 @@ const myIconSeleccionado = L.icon({
       var aux = new Date();
       aux.setHours(aux.getHours() - 5);
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-      fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+      fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -395,7 +395,7 @@ const myIconSeleccionado = L.icon({
     Mapita[cadena] = datos[i].id_tramo;
    }
    //console.log(Mapita);
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
+    fetch('http://localhost:8000/camion/listar')
     .then(response => response.json())
     .then(dat => 
       {
@@ -421,7 +421,7 @@ const myIconSeleccionado = L.icon({
         var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
         let blq = 0;
         console.log(ahora); 
-        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarDiario/' + ahora)
+        fetch('http://localhost:8000/bloqueo/listarDiario/' + ahora)
             .then(response => response.json())
             .then(data => 
               {
@@ -450,7 +450,7 @@ const myIconSeleccionado = L.icon({
                 aux.setHours(aux.getHours() - 5);
                 var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                 //console.log(ahora); 
-                fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+                fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
                 .then(response => response.json())
                 .then(data => 
                   {
@@ -681,14 +681,14 @@ const myIconSeleccionado = L.icon({
     var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');
     console.log(ahora);
     let blq = 0;
-    fetch('http://inf226g8.inf.pucp.edu.pe:8000/diario/cargarMapa/'+ahora)
+    fetch('http://localhost:8000/diario/cargarMapa/'+ahora)
       .then(response => response.json())
       .then(data => 
         {
         console.log(data);
         this.llenarMovimientos(data.movimientos);
         console.log(this.state.moviXCamion);
-        fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
+        fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
