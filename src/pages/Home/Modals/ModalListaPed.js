@@ -27,6 +27,8 @@ function isOverCharged (pedido) {
         newPedidos.push(pedido1);//1 pedido
       }
       else if(cantPedidos === 0 ){
+        pedido1.cantidad = 30;
+        newPedidos.push(pedido1);//1 pedido
         break;
       }
       else{
