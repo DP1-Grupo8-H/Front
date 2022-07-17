@@ -204,7 +204,7 @@ const myIconSeleccionado = L.icon({
       cami:"",
       tiempo: "",
       guardado: new Date(fechaActual.getTime()+6*1000*60*60),
-      cronometro:new Date(fechaActual.getTime()+6*1000*60*60),
+      cronometro:new Date(fechaActual.getTime()+6*1000*60*60-15*6*60*1000),
       mostrarTramos:true,
       segundos:0,
       minutos:0,
@@ -295,7 +295,7 @@ const myIconSeleccionado = L.icon({
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -429,7 +429,7 @@ const myIconSeleccionado = L.icon({
     //console.log("Los mantenimientos son: ")
     //console.log(data);
     var dat = data;
-    fetch('http://localhost:8000/camion/listar')
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
