@@ -16,7 +16,7 @@ function isOverCharged (pedido) {
 
   //console.log(pedido);
   let newPedidos = [];
-  if(pedido.cantidad > 30){
+  if(pedido.cantidad > 90){
     let cantPedidos = pedido.cantidad;
     while(1){
       let pedido1 = structuredClone(pedido);    pedido1.id_padre=pedido.id_pedido;     pedido1.estado = 1;       pedido1.id_pedido = undefined;
@@ -27,7 +27,7 @@ function isOverCharged (pedido) {
         newPedidos.push(pedido1);//1 pedido
       }
       else{
-        pedido1.cantidad = 30-cantPedidos;
+        pedido1.cantidad = 30+cantPedidos;
         newPedidos.push(pedido1);//1 pedido
         break;
       }
@@ -102,7 +102,7 @@ export default function ModalPed({setOpenPopup, setPedidos}){
     }
     //EVALUAMOS SI EL PEDIDO EXCEDE LA CANTIDAD
     let flag = 0;
-    if(newPed.cantidad > 30){  //HAY PARCIALES
+    if(newPed.cantidad > 90){  //HAY PARCIALES
       newPed = { ...newPed,  estado: 3 };
       const respNewPed = await PedidoService.insertPedido(newPed)
       setPedidos(pedidos => [...pedidos, respNewPed]);
