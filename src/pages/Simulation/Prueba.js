@@ -28,6 +28,28 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       iconAnchor: [9, 10],
       popupAnchor: [2, -40]
   });
+  
+  const myIcon2 = L.icon({
+    iconUrl:  require('../../archives/green-circle-16.png'),
+    iconSize: [14, 14],
+    iconAnchor: [10, 10],
+    popupAnchor: [2, -40]
+});
+  
+const myIcon3 = L.icon({
+  iconUrl:  require('../../archives/blue-circle-16.png'),
+  iconSize: [14, 14],
+  iconAnchor: [10, 10],
+  popupAnchor: [2, -40]
+});
+
+const myIconSeleccionado = L.icon({
+  iconUrl:  require('../../archives/orange-circle-32.png'),
+  iconSize: [18, 18],
+  iconAnchor: [9, 10],
+  popupAnchor: [2, -40]
+});
+
 
   const IconMantenimiento = L.icon({
     iconUrl:  require('../../archives/red-circle-32.png'),
@@ -117,7 +139,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       cami:"",
       tiempo: "",
       guardado: new Date(fechaActual.getTime()+6*1000*60*60),
-      cronometro:new Date(fechaActual.getTime()+5*1000*60*60),
+      cronometro:new Date(fechaActual.getTime()+6*1000*60*60),
       mostrarTramos:true,
       segundos:0,
       minutos:0,
@@ -506,11 +528,33 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       )
       }
 
-    {
-      (
-        this.state.camiones?.map((camion)=>(
-          camion.estado == 2 ? (
-          <ReactLeafletDriftMarker  icon={IconMantenimiento}
+{
+        (
+          this.state.camiones?.map((camion)=>(
+            camion.estado == 4 ? (
+              <ReactLeafletDriftMarker  icon={myIconSeleccionado}
+                  position={[camion.lat,camion.log]}
+                  duration={camion.tiempo}
+                  keepAtCenter={false}>
+                  <Tooltip>
+                    {"Id: " + camion.id}
+                    <br></br>
+                    {"Placa: " + camion.placa}
+                  </Tooltip>
+                  </ReactLeafletDriftMarker>)
+            :(camion.estado == 2 ? (
+            <ReactLeafletDriftMarker  icon={IconMantenimiento}
+                position={[camion.lat,camion.log]}
+                duration={camion.tiempo}
+                keepAtCenter={false}>
+                <Tooltip>
+                  {"Id: " + camion.id}
+                  <br></br>
+                  {"Placa: " + camion.placa}
+                </Tooltip>
+                </ReactLeafletDriftMarker>):(
+              camion.almacen.id==135 ? (
+              <ReactLeafletDriftMarker  icon={myIcon}
               position={[camion.lat,camion.log]}
               duration={camion.tiempo}
               keepAtCenter={false}>
@@ -519,22 +563,33 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
                 <br></br>
                 {"Placa: " + camion.placa}
               </Tooltip>
-              </ReactLeafletDriftMarker>):(
-            <ReactLeafletDriftMarker  icon={myIcon}
-            position={[camion.lat,camion.log]}
-            duration={camion.tiempo}
-            keepAtCenter={false}>
-            <Tooltip>
-              {"Id: " + camion.id}
-              <br></br>
-              {"Placa: " + camion.placa}
-            </Tooltip>
-            </ReactLeafletDriftMarker>
-              ) 
+              </ReactLeafletDriftMarker>
+                ) :( camion.almacen.id==123 ? (
+                  <ReactLeafletDriftMarker  icon={myIcon2}
+                  position={[camion.lat,camion.log]}
+                  duration={camion.tiempo}
+                  keepAtCenter={false}>
+                  <Tooltip>
+                    {"Id: " + camion.id}
+                    <br></br>
+                    {"Placa: " + camion.placa}
+                  </Tooltip>
+                  </ReactLeafletDriftMarker>
+                    ) :( camion.almacen.id==35 ? (
+                      <ReactLeafletDriftMarker  icon={myIcon3}
+                      position={[camion.lat,camion.log]}
+                      duration={camion.tiempo}
+                      keepAtCenter={false}>
+                      <Tooltip>
+                        {"Id: " + camion.id}
+                        <br></br>
+                        {"Placa: " + camion.placa}
+                      </Tooltip>
+                      </ReactLeafletDriftMarker>
+                        ) :(<></>)))))
           )
-        )
-      )
-      }
+        ))
+        }
 
     </MapContainer>
     

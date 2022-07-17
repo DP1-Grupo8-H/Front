@@ -228,7 +228,7 @@ const myIcon3 = L.icon({
 });
 
 const myIconSeleccionado = L.icon({
-  iconUrl:  require('../../archives/orange-circle-16.png'),
+  iconUrl:  require('../../archives/orange-circle-32.png'),
   iconSize: [18, 18],
   iconAnchor: [9, 10],
   popupAnchor: [2, -40]
