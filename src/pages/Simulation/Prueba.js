@@ -116,11 +116,11 @@ const myIconSeleccionado = L.icon({
           'id_plan_transporte': plan.id_plan_transporte,
           'id_ruta': ruta.id_ruta,
           'cantidad': 0,
-          'hora_llegada': allRoute.at(-1).fecha_llegada,
-          'hora_salida': allRoute[0].fecha_llegada,
+          'hora_llegada': allRoute.length > 0 ? allRoute.at(-1).fecha_llegada : historico[index].plan_transporte.at(-1).hora_llegada,
+          'hora_salida': allRoute.length > 0 ? allRoute[0].fecha_llegada : historico[index].plan_transporte.at(-1).hora_salida,
           'pedido': null,
           'pedido_padre': null,
-          'plan_transporte': allRoute,
+          'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
           });
         }  
         else{
@@ -130,11 +130,11 @@ const myIconSeleccionado = L.icon({
             'id_plan_transporte': plan.id_plan_transporte,
             'id_ruta': ruta.id_ruta,
             'cantidad': ruta.pedido.cantidad,
-            'hora_llegada': allRoute.at(-1).fecha_llegada,
-            'hora_salida': allRoute[0].fecha_llegada,
+            'hora_llegada': allRoute.length > 0 ? allRoute.at(-1).fecha_llegada : historico[index].plan_transporte.at(-1).hora_llegada,
+            'hora_salida': allRoute.length > 0 ? allRoute[0].fecha_llegada : historico[index].plan_transporte.at(-1).hora_salida,
             'pedido': ruta.pedido,
             'pedido_padre': pedPadre,
-            'plan_transporte': allRoute,
+            'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
           });
         }
         histCamiones[index].plan_transporte.at(-1).plan_transporte = await histCamiones[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
