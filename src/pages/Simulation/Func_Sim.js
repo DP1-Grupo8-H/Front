@@ -95,12 +95,18 @@ const processParciales = (pedidos, camiones, cantPedidos) => { // Generamos pedi
       numPed++;
       //Le reducimos la cantidad del pedido a un MOD del promedio
       cantPedidos -= prom;
-      if(cantPedidos >= 0) {
+      if(cantPedidos > 0) {
         pedido1.cantidad = prom;
         newPedidos.push(pedido1);//1 pedido
       }
+      else if(cantPedidos === 0 ){
+        pedido1.cantidad = prom;
+        newPedidos.push(pedido1);//1 pedido
+        pedidos = pedidos.filter(d => {return d.id_pedido !== pedido.id_pedido;});
+        break;
+      }
       else{
-        pedido1.cantidad = -cantPedidos;
+        pedido1.cantidad = prom+cantPedidos;
         newPedidos.push(pedido1);//1 pedido
         pedidos = pedidos.filter(d => {return d.id_pedido !== pedido.id_pedido;});
         break;
