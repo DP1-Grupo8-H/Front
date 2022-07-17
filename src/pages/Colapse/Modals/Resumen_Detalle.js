@@ -116,11 +116,20 @@ function findFecha_entrega(planes){
     return planes[maxIndex].hora_llegada;
 }
 
+function soloRecibidos(historico){
+  const auxHist = historico.filter(ped => {
+      return (ped.plan_transporte.length > 0);
+  });
+
+  return auxHist;
+}
 
 export default function ResumenDetalleColapse(){
   //Uso de Redux - seleccionamso la data que regresará de Topics y lo llenamos
   const {state} = useLocation();
-  const historico = state.historico;
+  const dataHistorica = state.historico;
+
+  const historico = soloRecibidos(dataHistorica);
   //Segunda version - ahora con paginación
   const classes = useStyles();  
   const [value, setValue] = useState(0);
@@ -210,6 +219,13 @@ export default function ResumenDetalleColapse(){
                             >
                               {
                                 hist.plan_transporte.map((plan) => {
+                                  const index_plan = hist.plan_transporte.findIndex(plan_tran => plan_tran.id_hijo == plan.id_hijo);
+                                  console.log(index_plan);
+                                  if(index_plan < hist.plan_transporte.length -1 && index_plan !== null){
+                                    console.log(hist.plan_transporte[index_plan].id_plan_transporte, '==' ,hist.plan_transporte[index_plan+1].id_plan_transporte);
+                                  if (hist.plan_transporte[index_plan].id_plan_transporte == hist.plan_transporte[index_plan+1].id_plan_transporte) 
+                                      return (<></>);
+                                  }
                                   return(<Tab value={plan.id_plan_transporte} label={`Plan #${plan.id_plan_transporte}`} {...a11yProps(plan.id_plan_transporte)} />);
                                 })
                               }

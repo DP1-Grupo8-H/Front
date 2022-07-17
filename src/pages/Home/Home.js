@@ -62,6 +62,7 @@ function TabPanel(props) {
     }
   }
 
+
   return (
     <div
       role="tabpanel"
@@ -224,7 +225,11 @@ const Home = () => {
   
   console.log(historico);
 
-
+  const classedDiario = React.useMemo(() => {
+    return(
+      <Diario historico={historico} setHistorico = {setHistorico} histCamiones = {histCamiones} setHistCamiones = {setHistCamiones}/>
+    );
+  },[])
 
   return(
     <>
@@ -238,7 +243,7 @@ const Home = () => {
 
           <Grid item xs = {7.5} sm = {7.5} align = "center" sx = {{marginTop:"-1.5rem"}}>
             {/* MAPA DE LA SIMULACION */}
-            <Diario historico={historico} setHistorico = {setHistorico} histCamiones = {histCamiones} setHistCamiones = {setHistCamiones}/>
+            {classedDiario}
           </Grid>
           
           <Grid item xs = {4.5} sm = {4.5} align = "left" >

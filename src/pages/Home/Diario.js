@@ -106,7 +106,7 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
           //Ahora cambiamos el estado del pedido
           const camion_alm = await movimientos.find(camion => camion.id_camion === plan.camion.id);
           const almacen = await ciudades[camion_alm.ruta_ciudad[0].id_ciudad.id-1];
-          historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
+          historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => a.orden - b.orden);
           historico[index].pedido.cantidad += ruta.pedido.cantidad;
           historico[index].pedido.almacen = almacen;
         }
@@ -183,7 +183,7 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
             'plan_transporte': allRoute.length > 0 ? allRoute : historico[index].plan_transporte.at(-1).plan_transporte,
           });
         }
-        historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
+        historico[index].plan_transporte.at(-1).plan_transporte = await historico[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => a.orden - b.orden);
         historico[index].camion.num_paquetes += ruta.pedido ? ruta.pedido.cantidad : 0;
         historico[index].camion.estado = 0;
       }
@@ -348,7 +348,8 @@ const myIconSeleccionado = L.icon({
       .then(auxhistorico => 
         {
           console.log(auxhistorico);
-          setHistorico(auxhistorico);
+          const toCopy = auxhistorico.slice(0);
+          setHistorico(toCopy);
         }
       );
       //AHORA HAREMOS LA FUNCIONALIDAD PARA LOS CAMIONES
@@ -356,7 +357,8 @@ const myIconSeleccionado = L.icon({
       .then(auxcamiones => 
         {
           console.log(auxcamiones);
-          setHistCamiones(auxcamiones);
+          const toCopy = auxcamiones.slice(0);
+          setHistCamiones(toCopy);
         }
       );
     }
@@ -371,7 +373,8 @@ const myIconSeleccionado = L.icon({
             else
               auxcamiones[camion.id-1].camion.estado = camion.estado;
           })
-          setHistCamiones(auxcamiones);
+          const toCopy = auxcamiones.slice(0);
+          setHistCamiones(toCopy);
         }
       }
     }

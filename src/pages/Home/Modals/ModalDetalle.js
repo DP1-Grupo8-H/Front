@@ -188,6 +188,13 @@ export default function ModalDetalle({setOpenDetail, pedDetail}){
                 >
                   {
                     pedDetail.plan_transporte.map((plan) => {
+                      const index_plan = pedDetail.plan_transporte.findIndex(plan_tran => plan_tran.id_hijo == plan.id_hijo);
+                      console.log(index_plan);
+                      if(index_plan < pedDetail.plan_transporte.length -1 && index_plan !== null){
+                        console.log(pedDetail.plan_transporte[index_plan].id_plan_transporte, '==' ,pedDetail.plan_transporte[index_plan+1].id_plan_transporte);
+                       if (pedDetail.plan_transporte[index_plan].id_plan_transporte == pedDetail.plan_transporte[index_plan+1].id_plan_transporte) 
+                          return (<></>);
+                      }
                       return(<Tab value={plan.id_plan_transporte} label={`Plan #${plan.id_plan_transporte}`} {...a11yProps(plan.id_plan_transporte)} />);
                     })
                   }
