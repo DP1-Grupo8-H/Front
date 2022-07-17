@@ -507,6 +507,8 @@ const myIconSeleccionado = L.icon({
           // otro[idx].log = this.state.ciudades[nuevaCiudad.idCiudad-1].longitud;
           var nuevaCiudad = this.state.moviXCamion[idx][i];
           var cadena = (nuevaCiudad.ant).toString() + "+" + (nuevaCiudad.idCiudad).toString();
+          if(nuevaCiudad.ant==nuevaCiudad.idCiudad) continue;
+          //console.log(cadena);
           // console.log(cadena);
           // console.log(Mapita[cadena]);
           if(i==0){
@@ -577,10 +579,30 @@ const myIconSeleccionado = L.icon({
         final.setMinutes(59);
         if(this.state.guardado>=inicio && this.state.guardado<=final){
           var espera  = final.getTime() - this.state.guardado.getTime();
-          this.state.camiones[idx].estado = 2;
+          //this.state.camiones[idx].estado = 2;
           console.log("Estoy en mantenimiento: " + idx);
+          var auxi = JSON.parse(JSON.stringify(this.state.camiones));
+          auxi[idx].estado = 2;
+          var x = [
+            ...this.state.camiones.slice(0,idx),
+            auxi[idx],   
+            ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+           ];
+          this.setState({camiones:x});
+         // var ccc = JSON.parse(JSON.stringify(this.state.arrMantenimientos));
+          //ccc.push({id:idx});
+          //this.setState({arrMantenimientos:ccc});
+          //console.log("Los mantenimiento cargados son: ")
+          //console.log(this.state.arrMantenimientos);
           await this.sleep(espera/(1000*60*60)*10000);
-          this.state.camiones[idx].estado = 1;
+          //this.state.camiones[idx].estado = 1;
+          auxi[idx].estado = 1;
+          var x = [
+            ...this.state.camiones.slice(0,idx),
+            auxi[idx],   
+            ...this.state.camiones.slice(idx+1,this.state.camiones.length)
+           ];
+          this.setState({camiones:x})
         }
       }
    }
