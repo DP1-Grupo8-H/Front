@@ -12,7 +12,7 @@ import { color } from '@mui/system';
 import LZString from 'lz-string';
 
 
-const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin}) => {
+const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones}) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -64,7 +64,62 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     }
   }, [flagOut])
   
+  const addCamiones = async (histCamiones, planes, ciudades, movimientos) => {
+    for(let plan of planes){
+      let allRoute = [];  //Este acumulara las rutas totales -- pero para el cmaion y no para el pedido que se va sumando
+      //plan.rutas.pop(); //Quitamos el ultimo de todos
+      for(let ruta of plan.rutas){
+        const newRoutes = [];
+        ruta.ruta_ciudad.forEach(r => {
+          newRoutes.push(
+            {
+              'fecha_llegada':r.fecha_llegada,
+              'id_ciudad':r.id_ciudad,
+              'ciudad': ciudades[r.id_ciudad.id-1],
+              'orden': r.orden,
+            }
+          )
+        })
+        //newRoutes.shift();
+        allRoute = newRoutes; //Hacemos que vaya creciendo la ruta -- Este en resume
 
+        //Agregamos el pedido en el item -> plan_transporte para separarlo por pedido como tal
+        let index = await histCamiones.findIndex(camion => camion.camion.id === plan.camion.id);
+        //Buscamos el pedido padre
+        if(ruta.pedido == null){
+          histCamiones[index].plan_transporte.push({
+          'id_plan_transporte': plan.id_plan_transporte,
+          'id_ruta': ruta.id_ruta,
+          'cantidad': 0,
+          'hora_llegada': allRoute.at(-1).fecha_llegada,
+          'hora_salida': allRoute[0].fecha_llegada,
+          'pedido': null,
+          'pedido_padre': null,
+          'plan_transporte': allRoute,
+          });
+        }  
+        else{
+          const pedPadre = await ruta.pedido.id_padre > 0 ? historico.current[ruta.pedido.id_padre-1].pedido: null;
+          //ES UN PEDIDO ATENDIDO COMPLETAMENTE
+          histCamiones[index].plan_transporte.push({
+            'id_plan_transporte': plan.id_plan_transporte,
+            'id_ruta': ruta.id_ruta,
+            'cantidad': ruta.pedido.cantidad,
+            'hora_llegada': allRoute.at(-1).fecha_llegada,
+            'hora_salida': allRoute[0].fecha_llegada,
+            'pedido': ruta.pedido,
+            'pedido_padre': pedPadre,
+            'plan_transporte': allRoute,
+          });
+        }
+        histCamiones[index].plan_transporte.at(-1).plan_transporte = await histCamiones[index].plan_transporte.at(-1).plan_transporte.sort((a,b) => new Date(a.orden) - new Date(b.orden));
+        histCamiones[index].camion.num_paquetes += ruta.pedido ? ruta.pedido.cantidad : 0;
+        histCamiones[index].camion.estado = 0;
+      }
+    }
+    
+    return histCamiones;
+  }
 
  /**********************************************************************/
   /* IMPLEMENTACIÓN DE LA SIMULACION ITERATIVA */
@@ -163,6 +218,31 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
           return ;
         }
       }
+      if (this.state.rutas !== prevState.rutas) {
+        //AHORA HAREMOS LA FUNCIONALIDAD PARA LOS CAMIONES
+        addCamiones (histCamiones, this.state.rutas.planes, this.state.ciudades, this.state.rutas.movimientos)
+        .then(auxcamiones => 
+          {
+            console.log(auxcamiones);
+            setHistCamiones(auxcamiones);
+          }
+        );
+      }
+      if(this.state.arrMantenimientos !== prevState.arrMantenimientos){
+        //vamos a hallar los camiones en curso y en mantenimiento
+        if(histCamiones !== null){
+          const auxcamiones = histCamiones;
+          if(histCamiones.length > 0){
+            this.state.camiones.forEach(camion => {
+              if(camion.estado === 2)
+                auxcamiones[camion.id-1].camion.estado = 2;
+              else
+                auxcamiones[camion.id-1].camion.estado = camion.estado;
+            })
+            setHistCamiones(auxcamiones);
+          }
+        }
+      }
     }
 
     async ObtenerRutas(){
@@ -180,7 +260,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       var ahora = aux.toISOString().replace(/T/, ' ').replace(/\..+/, '');   
       console.log("Hora para bloqueos: ");  
       console.log(ahora);
-      fetch('http://localhost:8000/bloqueo/listarFront/' + ahora)
+      fetch('http://inf226g8.inf.pucp.edu.pe:8000/bloqueo/listarFront/' + ahora)
           .then(response => response.json())
           .then(data => 
             {
@@ -307,7 +387,7 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
     //console.log("Los mantenimientos son: ")
     //console.log(data);
     var dat = data;
-    fetch('http://localhost:8000/camion/listar')
+    fetch('http://inf226g8.inf.pucp.edu.pe:8000/camion/listar')
     .then(response => response.json())
     .then(data => 
       {
@@ -473,9 +553,6 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
 
       </div>
 
-      <div style={{position:'absolute',zIndex:9999,float:'left',bottom:0,width:"500px"}}>
-         <Legend/>
-      </div>
       {(
         this.state.ciudades?.map((ciudad)=>(
             ciudad.tipo==1 ? (
