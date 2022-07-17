@@ -127,7 +127,7 @@ const Diario = React.memo(({historico, setHistorico,re, histCamiones, setHistCam
       if(!historico.some(cam =>  cam.camion.id === camion.id)){
         historico.push(
         {
-          'camion': {...camion, estado:(camion.estado === 0 ||camion.estado === 4 )? 1 : camion.estado },
+          'camion': {...camion, estado:(camion.estado === 4 )? 1 : camion.estado },
           'plan_transporte': [],
         });  //AGREGAMOS LOS QUE NO ESTÁN
       }
