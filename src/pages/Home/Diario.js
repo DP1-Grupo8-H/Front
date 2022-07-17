@@ -961,11 +961,11 @@ const myIconSeleccionado = L.icon({
           </Button>
         </div>
         { this.state.labelCamiones.length!=0 ? 
-        (<div style={{position:'relative',zIndex:9999,float:'right',marginTop:'10px',marginRight:'15px'}}>
-          <Autocomplete  style={{backgroundColor:"inherit"}} 
+        (<div style={{position:'relative',zIndex:9999,float:'right',marginTop:'10px',marginRight:'15px', backgroundColor: 'primary.main'}}>
+          <Autocomplete  style={{backgroundColor:"primary.main"}} 
               id="combo-box-demo"
               options={this.state.labelCamiones}
-              sx={{ width: 200 }} 
+              sx={{ width: 200 , backgroundColor: 'primary.main'}} 
               onChange={(event,newValue) => {
                 console.log(newValue);
                 this.camionSeleccionado(newValue);

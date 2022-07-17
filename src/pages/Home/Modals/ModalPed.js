@@ -27,7 +27,7 @@ function isOverCharged (pedido) {
         newPedidos.push(pedido1);//1 pedido
       }
       else{
-        pedido1.cantidad = 30-cantPedidos;
+        pedido1.cantidad = 30+cantPedidos;
         newPedidos.push(pedido1);//1 pedido
         break;
       }

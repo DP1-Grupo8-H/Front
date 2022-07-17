@@ -13,6 +13,7 @@ import LZString from 'lz-string';
 
 
 const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones}) => {
+  console.log(datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones);
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -223,8 +224,9 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
         addCamiones (histCamiones, this.state.rutas.planes, this.state.ciudades, this.state.rutas.movimientos)
         .then(auxcamiones => 
           {
-            console.log(auxcamiones);
-            setHistCamiones(auxcamiones);
+            const toCopy = auxcamiones.slice(0);
+            setHistCamiones(toCopy);
+            console.log(histCamiones);
           }
         );
       }
@@ -623,5 +625,8 @@ const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFec
       {flagOut === null&&<Prueba/>}
     </div>
   );
+
 }
+
+
 export default Mapa_Simulacion;
