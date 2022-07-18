@@ -11,7 +11,7 @@ import { color } from '@mui/system';
 
 import LZString from 'lz-string';
 
-const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones}) => {
+const Mapa_Simulacion = ({datos,fechaActual, setOpenResume, setHistorico, setFechaFin,setMinutosFin,setSegundosFin, histCamiones, setHistCamiones, arrHistCamiones, setArrHistCamiones }) => {
   //USO DE PARÁMETROS
   const data = useRef(datos);
 
@@ -82,6 +82,9 @@ const myIconSeleccionado = L.icon({
       setOpenResume(true);
     }
   }, [flagOut])
+
+
+  
   
   const addCamiones = async (histCamiones, planes, ciudades, camiones) => {
     //Iteramos todos los camiones para ver sus estados 
@@ -249,8 +252,7 @@ const myIconSeleccionado = L.icon({
         .then(auxcamiones => 
           {
             const toCopy = auxcamiones.slice(0);
-            setHistCamiones(toCopy);
-            console.log(histCamiones);
+            setHistCamiones(toCopy)
           }
         );
       }

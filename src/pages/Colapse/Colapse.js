@@ -23,9 +23,11 @@ const Colapse = () => {
   const [data, setData] = useState([]);
   const [historico, setHistorico] = useState([]);
   const [histCamiones, setHistCamiones] = useState([])
+  const [arrHistCamiones, setArrHistCamiones] = useState([])
   //const [processPedidos, setProcessPedidos] = useState([]);
   useEffect(() => {
     const auxhistCamiones = [];
+    const auxarrhistCamiones = [];
     camionService.getCamiones()
     .then(camiones => {
       for(let camion of camiones){
@@ -34,11 +36,58 @@ const Colapse = () => {
           'camion': {...camion, estado:1 },
           'plan_transporte': [],
         });  //AGREGAMOS LOS QUE NO ESTÁN
+        auxarrhistCamiones.push(
+        {
+          'camion': {...camion, estado:1 },
+          'planes_transporte': [],  //Agregamos la lista de planes de transporte del camion
+        });  //AGREGAMOS LOS QUE NO ESTÁN
       }
     })
     setHistCamiones(auxhistCamiones);
+    setArrHistCamiones(auxarrhistCamiones);
   }, [])
-  console.log(histCamiones);
+  console.log("ARRCAMIONES: ", arrHistCamiones);
+  console.log("CAMIONES: ", histCamiones);
+
+  const hallarAuxArr = (arrHistCamiones, histCamiones)=>{
+  const auxArrCamiones = arrHistCamiones;
+  let flag = 0;
+  for(let planCam of histCamiones){
+    if(histCamiones[planCam.camion.id-1].plan_transporte.length === 0 ) continue; //Esquivamos los de arreglo tamaño 0
+    flag = 0;
+    if(auxArrCamiones[planCam.camion.id-1].planes_transporte.length !== 0 ){
+      for(let i = 0; i< histCamiones[planCam.camion.id-1].plan_transporte.length; i++){
+        //console.log(histCamiones[planCam.camion.id-1].plan_transporte[i], '===', auxArrCamiones[planCam.camion.id-1].planes_transporte.at(-1).plan_transporte[i]);
+        if(histCamiones[planCam.camion.id-1].plan_transporte[i].pedido.id_pedido === auxArrCamiones[planCam.camion.id-1].planes_transporte.at(-1).plan_transporte[i].pedido.id_pedido){
+          flag = 1;
+          break;
+        }
+      }
+    } 
+    //console.log(flag, ' for ->', auxArrCamiones[planCam.camion.id-1]);
+    if(flag === 0){      
+      const auxPlanTransp = structuredClone(histCamiones[planCam.camion.id-1]);   
+      const planesHistoria = [];
+      auxPlanTransp.plan_transporte.forEach(ruta => {
+        planesHistoria.push(structuredClone(ruta));
+      });
+      auxArrCamiones[planCam.camion.id-1].planes_transporte.push({
+        'plan_transporte': planesHistoria 
+      });
+    }
+  }
+  return auxArrCamiones;
+}
+
+  // useEffect(() => {
+  //   //AHORA CON EL ARREGLO QUE JUNTA A TODOS LOS CAMIONES
+  //   if(histCamiones.length>0){
+  //     console.log(histCamiones);
+  //     const auxArrCamiones = hallarAuxArr(arrHistCamiones, histCamiones) 
+  //     const toCopy = auxArrCamiones.slice(0);
+  //     setArrHistCamiones(toCopy);
+  //   }
+  // }, [histCamiones])
   
   //const [processPedidos, setProcessPedidos] = useState([]);
 
@@ -101,7 +150,7 @@ const Colapse = () => {
   console.log(openPopup, data.length);
   return(
     <>
-      {(!openPopup && data.length > 0 && !openReusme) ? 
+      {(!openPopup && data.length > 0) ? 
       <div className="App">
         <Grid container padding= "2rem 0rem 2rem 2rem" alignItems = "center">
           <Grid item xs = {12} sm = {12} align = "left" >
@@ -225,10 +274,9 @@ const Colapse = () => {
         <Popup
           openPopup={openReusme}
           setOpenPopup={setOpenResume}
-          noClose={true}
           title="Finalización de la Simulación"
           >
-          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin} minutosFin={minutosFin} segundosFin={segundosFin}/>
+          <ModalResume setOpenResume = {setOpenResume} historico = {historico} fechaActual={fechaActual} fechaFin = {fechaFin} minutosFin={minutosFin} segundosFin={segundosFin} histCamiones = {arrHistCamiones}/>
         </Popup>
         <Popup
           openPopup={openCamion}

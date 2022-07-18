@@ -6,13 +6,14 @@ import CustomizedInputs from "../../../components/utils/CustomizedInputs";
 import CiudadService from '../../../services/ciudadService.js'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
+import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { format } from 'date-fns';
 
 import {useNavigate} from 'react-router-dom';
 
 
-export default function ModalResume({setOpenResume, historico, fechaActual, fechaFin,minutosFin,segundosFin}){
+export default function ModalResume({setOpenResume, historico, histCamiones, fechaActual, fechaFin,minutosFin,segundosFin}){
   const navigate = useNavigate(); //Para poder hacer uso de redux
   
   //FALTA FILTRAR LOS RESULTADOS DEL HISTORICO --> SI NO SE ENVIARON TONCES NO SE VEN
@@ -21,9 +22,16 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
     console.log(historico);
     navigate('/sim/colapso/resumen', { state: {historico: historico} });
   }
+  const openNav2 = (nav) => {
+    console.log(histCamiones);
+    navigate('/sim/colapso/camiones', { state: {histCamiones: histCamiones} });
+  }
 
   const handleClick = (event) => {
     openNav(event.currentTarget);
+  };
+  const handleClick2 = (event) => {
+    openNav2(event.currentTarget);
   };
     
   const [data, setData] = useState({ped_entr: '', paq_entr: '', km_rec: ''});
@@ -160,11 +168,20 @@ export default function ModalResume({setOpenResume, historico, fechaActual, fech
           </Box>
         </Grid>
         <Grid item xs = {12} sm = {12} align = "right" marginTop = {0}>
-        <Grid item xs = {3} sm = {3} align = "right" marginTop = {0}>
-            <Button variant = "text" color = "primary" size = "large" type = "submit"  onClick = {handleClick}> 
-              <Typography variant = "button_max" > Ver Detalle </Typography>
-              <ArrowCircleRightOutlinedIcon sx={{ fontSize: 40, color:'primary.main' }}/>
-            </Button>
+          <Grid container>
+          {/* <Grid item xs = {5} sm = {5} align = "left" marginTop = {0}>
+              <Button variant = "text" color = "primary" size = "large" type = "submit"  onClick = {handleClick2}> 
+                <ArrowCircleLeftOutlinedIcon sx={{ fontSize: 40, color:'primary.main' }}/>
+                <Typography variant = "button_max" > Ver Camiones </Typography>
+              </Button>
+          </Grid> */}
+          <Grid item xs = {7} sm = {7} align = "right" marginTop = {0}></Grid>
+          <Grid item xs = {5} sm = {5} align = "right" marginTop = {0}>
+              <Button variant = "text" color = "primary" size = "large" type = "submit"  onClick = {handleClick}> 
+                <Typography variant = "button_max" > Ver Detalle </Typography>
+                <ArrowCircleRightOutlinedIcon sx={{ fontSize: 40, color:'primary.main' }}/>
+              </Button>
+          </Grid>
         </Grid>
         </Grid>
       </Grid>

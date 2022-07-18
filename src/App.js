@@ -12,6 +12,7 @@ import Navbar from "./components/NavBar/NavBar";
 import ResumenDetalle from "./pages/Simulation/Modals/Resumen_Detalle.js";
 import Colapse from "./pages/Colapse/Colapse.js";
 import ResumenDetalleColapse from "./pages/Colapse/Modals/Resumen_Detalle.js";
+import ResumenCamionColapse from "./pages/Colapse/Modals/Resumen_Camion.js";
 
 import ciudadService from "./services/ciudadService.js";
 import tramoService from "./services/tramoService.js";
@@ -69,6 +70,8 @@ const App = () => {
           <Route path="/sim/colapso" exact element = {< Colapse />} />
           {/* Redireccionamiento - hacia un detalle */}
           <Route path="sim/colapso/resumen" exact element = {< ResumenDetalleColapse />} />
+          {/* Redireccionamiento - hacia un detalle */}
+          <Route path="sim/colapso/camiones" exact element = {< ResumenCamionColapse />} />
           {/*Redireccionamiento a reportes */}
           <Route path="/sim/7_dias" exact element = {< Home />} />
           <Route path="/rep" exact element = {< Home />} />
