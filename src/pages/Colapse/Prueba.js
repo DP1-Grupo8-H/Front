@@ -200,7 +200,7 @@ const myIconSeleccionado = L.icon({
       cami:"",
       tiempo: "",
       guardado: new Date(fechaActual.getTime()+6*1000*60*60),
-      cronometro:new Date(fechaActual.getTime()+4*1000*60*60),
+      cronometro:new Date(fechaActual.getTime()+6*1000*60*60-15*12*60*1000),
       mostrarTramos:true,
       segundos:0,
       minutos:0,
@@ -362,43 +362,45 @@ const myIconSeleccionado = L.icon({
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
         //console.log(ruta);
-        await this.setState({rutas:ruta});  //SET_STATE--> RUTAS -- SE LLENAS LAS RUTAS :: RUTAS : MOVIMIENTOS - PLANES {CAMIONES, MOVIMIENTOS, PEDIDOS_FALT (NO HAY PEDIDO ORIGINAL - SOLO EL PARCIAL), PLANES}
-        
+        if(ruta!=null){
+          if(ruta.pedidos_faltantes!=null && ruta.planes!=null && ruta.movimientos!=null && ruta.camiones!=null){
+              await this.setState({rutas:ruta});  //SET_STATE--> RUTAS -- SE LLENAS LAS RUTAS :: RUTAS : MOVIMIENTOS - PLANES {CAMIONES, MOVIMIENTOS, PEDIDOS_FALT (NO HAY PEDIDO ORIGINAL - SOLO EL PARCIAL), PLANES}
+              //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
+              if(this.state.rutas!=null){
+              arr = SimFunction.addRoutes(historico.current, this.state.rutas.planes, this.state.ciudades);
+              historico.current = arr[0];        const pedido_plan = arr[1];
+              missingPedidos.current = SimFunction.llenarMissingPedidos(this.state.rutas.pedidos_faltantes, missingPedidos.current, pedido_plan);
+              if(this.state.rutas!=null){
+                if(this.state.moviXCamion.length==0) { //Primera vez que se genera los movimientos
+                    this.state.moviXCamion= Array(this.state.camiones.length);
+                    for(let i =0;i<this.state.camiones.length;i++){
+                      this.state.moviXCamion[i] = [];
+                    }
+                }
+                let inicial,final;
+                for(let i =0;i<this.state.rutas.movimientos.length;i++){
+                  inicial =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada);
+                  for(let j=1;j<this.state.rutas.movimientos[i].ruta_ciudad.length;j++){
+                    final =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[j].fecha_llegada);
+                    var diff = Math.abs(final.getTime() - inicial.getTime());
+                    this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
+                      idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[j].id_ciudad.id,
+                      tiempo: diff,
+                      inicial: this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada
+                  });
+                  inicial = final;
+                  }
+                }
+          //this.state.rutas = null;
+          }  
+              }
+            }
+        }
         //Poner las rutas en los movimientos de cada camion
-        
-        //Acumulacion de los pedidos en un arreglo grande - HISTORICO ARREGLADO
-        arr = SimFunction.addRoutes(historico.current, this.state.rutas.planes, this.state.ciudades);
-        historico.current = arr[0];        const pedido_plan = arr[1];
-        
-        //Llenado de pedidos faltantes
-        missingPedidos.current = SimFunction.llenarMissingPedidos(this.state.rutas.pedidos_faltantes, missingPedidos.current, pedido_plan);
         console.log("MISSING: ", missingPedidos.current);
         console.log("HISTORICOOOOOO::: ", historico.current);
         console.log(this.state.rutas);
-
-        if(this.state.rutas!=null){
-          if(this.state.moviXCamion.length==0) { //Primera vez que se genera los movimientos
-              this.state.moviXCamion= Array(this.state.camiones.length);
-              for(let i =0;i<this.state.camiones.length;i++){
-                this.state.moviXCamion[i] = [];
-              }
-          }
-          let inicial,final;
-          for(let i =0;i<this.state.rutas.movimientos.length;i++){
-            inicial =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada);
-            for(let j=1;j<this.state.rutas.movimientos[i].ruta_ciudad.length;j++){
-               final =  new Date(this.state.rutas.movimientos[i].ruta_ciudad[j].fecha_llegada);
-              var diff = Math.abs(final.getTime() - inicial.getTime());
-              this.state.moviXCamion[(this.state.rutas.movimientos[i].id_camion)-1].push({
-                idCiudad: this.state.rutas.movimientos[i].ruta_ciudad[j].id_ciudad.id,
-                tiempo: diff,
-                inicial: this.state.rutas.movimientos[i].ruta_ciudad[0].fecha_llegada
-             });
-             inicial = final;
-            }
-          }
-          this.state.rutas = null;
-        }      
+        //Llenado de pedidos faltantes    
       //  setTimeout( this.ObtenerRutas
       // , timing.current);
   }
@@ -481,7 +483,11 @@ const myIconSeleccionado = L.icon({
          }
         otro[idx].estado = 0;
          this.setState({estadosCamion:otro});
+         var anterior = "";
          for (let i =0;i<this.state.moviXCamion[idx].length;i++){
+          if(i>0){
+            if(anterior==this.state.moviXCamion[idx][i].idCiudad) continue;
+          }
           var nuevaCiudad = this.state.moviXCamion[idx][i];
           //Verificamos si nosotros hacemos el lag
           otro[idx].lat = this.state.ciudades[nuevaCiudad.idCiudad-1].latitud;
@@ -490,6 +496,7 @@ const myIconSeleccionado = L.icon({
           otro[idx].tiempo = 5*min*80; 
           this.state.camiones[idx] = otro[idx];
           await this.sleep(5000*min);
+          anterior = nuevaCiudad.idCiudad;
          }
          //console.log("Termine con el camion " + idx + "a las: " + this.state.guardado);
          this.state.moviXCamion[idx] = [];
